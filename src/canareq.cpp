@@ -43,6 +43,7 @@ canareq::canareq() {
     filenameEqCdClCqCmCgEq = "canareq.cdclcqcmcgeq";
     filenameEqList = "canareq.list";
     filenameEqStab = "canareq.stab";
+    filenameEqDataOpt = "canareq.optimized";
     
     // constants
     pi=2.*asin(1.);
@@ -133,6 +134,72 @@ void canareq::mat3(double usdet, double **a, double *b) {
     b[0]=b1;
     b[1]=b2;
     b[2]=b3;
+}
+
+void canareq::linearModel() {
+    //*****linear model results
+    aleq=-(Cmac0+(xcg-xac)*Cl0/lref)
+            /(dCmacda+(xcg-xac)*dClda/lref);
+    Cleq=Cl0+dClda*aleq;
+    Cweq=Cleq;
+    if(Cleq.le.0.) cout << "################# no linear solution with Cleq<0" << endl;
+
+    Ueq=sqrt(2.*mg/(rho*aref*Cleq));
+    reyeq=Ref*Ueq/100.;
+    dynaref=0.5*rho*Ueq**2*aref;
+
+    dTdv = thrust(ndatx,ndat,Ueq,vr,tr,T,dTdv);
+
+    Cteq=rcor*(T+dTdv*Ueq)/dynaref
+    //     search for point on wing polar and interpolate Cd
+    m=1;
+    prod=aleq+0.5*pi;
+
+    for (int j = 1; j < kx-1; ++j) {
+        prod=prod*(aleq-inc(k));
+        if(prod < -eps) break;
+        prod=1.;
+        m=j;
+    }
+
+    Cdeq=cx[m]+(aleq-inc[m])*(cx[m+1]-cx[m])
+            /(inc[m+1]-inc[m]);
+
+    //     wing induced drag estimation
+    Cdmeq=Cdeq;
+    Clmeq=Clm0+dCldam*aleq;
+    Cdim=Clmeq**2/(pi*em*arm);
+    Cdm0=Cdmeq-Cdim;
+
+    //     calculate fuselage friction drag
+    reyf=reyeq*lf/cam;
+    Cdf0=1.328/sqrt(reyf);
+
+    if(reyf > 1.0E5) Cdf0=.072/pow(reyf,.2);
+
+    Cdfeq=Cdf0;
+
+    //     calculate canard induced drag and friction drag (2 elements)
+    Clceq=Clc0+dCldac*aleq;
+    Cdic=2.0*Clceq**2/(pi*ec*arc);
+    reyc=reyeq*cac/cam;
+    Cdc0=1.328/sqrt(reyc)
+    if(reyc > 1.0E5) Cdc0=.072/pow(reyc,.2);
+    Cdceq=Cdic+2.0*Cdc0;
+
+    //     total drag
+    Cdeq=(am*Cdmeq+af*Cdfeq+ac*Cdceq)/aref;
+    Cdeq=Cdeq+Cdbrake;
+    beteq=(Cteq-Cdeq)/Cweq;
+    Cmac=Cmac0+dCmacda*aleq;
+    Cmeq=Cm0+dCmda*aleq;
+    bb[0]=-(Cmeq+xcg*Cweq*cos(aleq+beteq)/lref);
+    bb[1]=-(Cleq-Cweq*cos(beteq)+Cteq*sin(aleq));
+    bb[2]=-(Cdeq+Cweq*sin(beteq)-Cteq*cos(aleq));
+    cout << "\n\n";
+    cout << "****linear model results: m = " << m << endl;
+    cout << "aleq = " << aleq << " Ueq  = " << Ueq << " beteq = " << beteq << endl;
+    cout << "Cleq = " << Cleq << " Cdeq = " << Cdeq << " Cteq = " << Cteq << " CM,ac = " << Cmac << endl;
 }
 
 void canareq::readInputParams() {
@@ -262,8 +329,37 @@ void canareq::readInputParams() {
     tr0=rcor*(T+dTdv*Ueq);
     dtrdv=rcor*dTdv;
     arm=bm*bm/am;
+
+    if(statmarg >0.) xcg=xac-statmarg*lref;
     
     paramfile.close();
+}
+
+void canareq::readOptimizedParams() {
+    // open input file
+    ifstream paramfile(filenameEqData);
+    if (!paramfile.is_open()) {
+        cout << "\n\tCannot Read " << filenameEqData;
+        cout << " File - Error in: readInputParams()" << endl;
+        abort();
+    }
+
+    std::string line;
+    std::string a; float b; std::string c; float v; float t;
+    for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+
+        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) break;
+
+        // newton method parameters
+        if(a.compare("ALEQ")==0) aleq = b;
+        if(a.compare("UEQ")==0) Ueq = b;
+        if(a.compare("BETAQ")==0) beteq = b;
+        if(a.compare("CLEQ")==0) Cleq = b;
+        if(a.compare("CDEQ")==0) Cdeq = b;
+        if(a.compare("CMAC")==0) Cmac = b;
+    }
 }
 
 void canareq::readPolarDat() {
@@ -625,6 +721,7 @@ int canareq::outputPolarCdClCq() {
 }
 
 int canareq::outputEqList(){
+    // formerly known as write(24,...)
     ofstream file;
 
     // open new file
@@ -650,6 +747,10 @@ int canareq::outputEqList(){
     file << "total:       dCmda = " << left << setw(10) << dCmda << "     Cm0 = " << Cm0 << endl;
     file << "**estimate aerodynamic center location:" << endl;
     file << "               xac = " << left << setw(10) << xac << " (m)  xcg = " << xcg << " (m)" << endl;
+
+    file << "\n**********************************************" << endl;
+    file << " aleq = " << aleq << " Ueq = " << Ueq << "beteq=" << beteq << endl;
+    file << " Cleq = " << Cleq << " Cdeq = " << Cdeq << " Cteq = " << Cteq << " CM,ac=" << Cmac << endl;
 
     return 1;
 }

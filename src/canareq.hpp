@@ -12,7 +12,7 @@
 
 class canareq{
     public:
-        canareq();
+        canareq(char** argv);
         ~canareq();
         
         // memory
@@ -23,10 +23,12 @@ class canareq{
         // subroutines
         float thrust(int, int, float, float *, float *, float, float);
         void mat3(double, double**, double*);
-    
+        void linearModel(); // generate 'best' values
+
         // file input
         void readInputParams();
         void readPolarDat();
+        void readOptimizedParams(); // read 'best' values
 
         // screen output
         int printInputParams();
@@ -85,6 +87,7 @@ class canareq{
         std::string filenameEqCdClCqCmCgEq;
         std::string filenameEqList;
         std::string filenameEqStab;
+        std::string filenameEqDataOpt;
 };
 
 #endif
