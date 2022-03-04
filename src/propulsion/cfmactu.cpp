@@ -12,7 +12,7 @@
 
 using namespace std; // g++ cfmactu.cpp -c
 
-cfmactu::cfmactu(char** argv) {
+cfmactu::cfmactu(int argc, char** argv) {
     // parameters
     eps=1.0e-6;
     pi=2.0*asin(1.0);
@@ -21,8 +21,14 @@ cfmactu::cfmactu(char** argv) {
     filenameOutputVT = "cfmactu.vt";
     inputBOOL = false;
 
+    // initialize arrays
+    U = (double *) malloc(sizeof(double)*10);
+    Thrust = (double *) malloc(sizeof(double)*10);
+    Udummy = NULL;
+    ThrustDummy = NULL;
+
     // INPUT commandline
-    for (int iarg = 0; iarg<10 ; ++iarg) {
+    for (int iarg = 0; iarg<argc ; ++iarg) {
         if (!strcmp(argv[iarg],"-in")){
             inputBOOL=true;
             inflag=iarg+1;
@@ -31,6 +37,8 @@ cfmactu::cfmactu(char** argv) {
             iarg+=2;
         }
     }
+    cout << "\n############################################" << endl;
+    cout << "(done initializing)\n" << endl;
 }
 
 cfmactu::~cfmactu() {
@@ -38,7 +46,7 @@ cfmactu::~cfmactu() {
     free(Thrust);
 }
 
-void cfmactu::readInputParams(char** argv) {
+void cfmactu::readInputParams(int argc, char** argv) {
     // open input file
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -55,37 +63,56 @@ void cfmactu::readInputParams(char** argv) {
     double v_start, v_end, v_inc;
     for (int i=0; i<100; i++, std::getline(paramfile, line) ) {
         if (line.empty()) continue; // blank lines
+        std::istringstream issf(line);
         std::istringstream iss(line);
+        std::istringstream issl(line);
         if (!(iss >> a >> b1 >> c) && (a.compare("VEL") != 0)) {
             cout << " read in error: " << line << endl;
             break;
         }
+        issf >> a;
 
         // *****cfmactu.data
         if (a.compare("ITX") == 0) itx = b1;
         if (a.compare("OMEGA") == 0) omega = b1;
         if (a.compare("RHO") == 0) Rho = b1;
         if (a.compare("VEL") == 0) {
-            iss >> a >> b1 >> b2 >> b3;
+            issl >> a >> b1 >> b2 >> b3 >> c;
             v_start = b1;
             v_end = b2;
             v_inc = b3;
-            nVel = int((v_end - v_start) / v_inc);
+            if (v_end < v_start) {
+                cout << "v_end must be larger than v_start" << endl;
+                abort();
+            }
+            nVel = round((v_end - v_start) / v_inc);
         }
         if (a.compare("R") == 0) R = b1;
         if (a.compare("TR") == 0) Thrust0 = b1;
     }
 
-    // initialize velocities
-    U = (double *) malloc(sizeof(double)*nVel);
-    Thrust = (double *) malloc(sizeof(double)*nVel);
+    // initialize velocity and thrust array structures
+    Udummy = (double *) realloc(U, sizeof(double)*nVel);
+    ThrustDummy = (double *) realloc(Thrust, sizeof(double)*nVel);
+
+    if (Udummy!=NULL && ThrustDummy!=NULL) {
+        U=Udummy;
+        Thrust=ThrustDummy;
+    }
+    else {
+        free(U);
+        free(Thrust);
+        cout << "Error (re)allocating memory" << endl;
+        exit(1);
+    }
+
     for (int i = 0; i < nVel; ++i) {
         U[i] = v_start + i*v_inc;
         Thrust[i] = 0;
     }
 
     // read commandline inputs for override
-    for (int iarg = 0; iarg<10 ; ++iarg) {
+    for (int iarg = 0; iarg<argc ; ++iarg) {
         if (!strcmp(argv[iarg],"-rho")){
             rhoBOOL=true;
             rhoflag=iarg+1;
@@ -101,19 +128,23 @@ void cfmactu::readInputParams(char** argv) {
     pohp=Power/735.5;
 
     // *****cfmactu.data
-    cout << "    itx = " << itx;
-    cout << "  omega = " << omega;
-    cout << "    Rho = " << Rho << " (kg/m**3)";
-    cout << "      R = " << R << " (m)";
-    cout << "Thrust0 = " << Thrust0 << " (N)";
-    cout << "  power = " << pokw << " (kW)" << "   power = " << pohp << " (hp)";
+    cout << "\n############################################" << endl;
+    cout << "(initial power based on thrust0)" << endl << endl;
+    cout << "    itx = " << itx << endl;
+    cout << "  omega = " << omega << endl;
+    cout << "    Rho = " << Rho << " (kg/m**3)" << endl;
+    cout << "      R = " << R << " (m)" << endl;
+    cout << "Thrust0 = " << Thrust0 << " (N)" << endl;
+    cout << "  power = " << pokw << " (kW)" << endl;
+    cout << "  power = " << pohp << " (hp)" << endl;
 }
 
 void cfmactu::thrustCalc() {
     //*****Trust correction coefficient due to density
     rcor=pow((Rho/1.225), us3);
     //100  continue
-    cout << "############################################";
+    cout << "\n############################################" << endl;
+    cout << "(results)" << endl;
     //cout << "U=? exit -100"; // get new value of U
     //read(5,*)U
     for (int i = 0; i < nVel; ++i) {
@@ -139,7 +170,7 @@ void cfmactu::thrustCalc() {
         ub = 0;
 
         //do 200 it=1,itx
-        for (int i = 0; i < itx; ++i) {
+        for (int j = 0; j < itx; ++j) {
             dub = para / pow((1.0 + ub),2) - ub;
             ub = ub + omega * dub;
             if (abs(dub) < eps) break; // goto 300
@@ -148,8 +179,10 @@ void cfmactu::thrustCalc() {
         }
 
         // *****dimensionless result
-        cout << "it=" << it << endl;
-        cout << "    dub=" << dub << "           ub=" << ub << endl;
+        it = i;
+        cout << "\n";
+        cout << right << setw(12) << " it  = " << it << endl;
+        cout << right << setw(12) << " dub = " << dub << "           ub = " << ub << endl;
 
         // *****dimensional results
         Ubd = ub * U[i];
@@ -157,8 +190,9 @@ void cfmactu::thrustCalc() {
 
         // print results and ask for new input U
         //400  continue
-        cout << "             U=" << U[i] << " (m/s)    Ubd=" << Ubd << " (m/s)" << endl;
-        cout << "       Thrust0=" << Thrust0 << " (N)   Thrust=" << Thrust << " (N)";
+        cout << std::setprecision(8);
+        cout << right << setw(12) << " U = "  << right << setw(10) << U[i] << " (m/s)    Ubd = " << Ubd << " (m/s)" << endl;
+        cout << right << setw(12) << " Thrust0 = "  << right << setw(10) << Thrust0 << " (N)   Thrust = " << Thrust[i] << " (N)" << endl;
         //write(14,*)U,Thrust
         //goto 100 // restart cycle of reading inputs
 
@@ -177,12 +211,12 @@ void cfmactu::outputVT() {
     }
 
     // write results to file
-    file << left << setw(16) << "U";
-    file << left << "Thrust";
+    file << left << setw(16) << "#U";
+    file << left << "Thrust" << endl;
     for (int i=0; i<nVel; i++) {
         file << std::setprecision(8);
         file << left << setw(16) << U[i];
-        file << left << Thrust[i];
+        file << left << Thrust[i] << endl;
     }
     file.close();
 }

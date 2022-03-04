@@ -12,12 +12,12 @@
 
 class cfmactu{
 public:
-    cfmactu(char** argv);
+    cfmactu(int argc, char** argv);
     ~cfmactu();
 
     void thrustCalc();
 
-    void readInputParams(char** argv);
+    void readInputParams(int argc, char** argv);
     void outputVT();
 
 private:
@@ -25,7 +25,8 @@ private:
     int itx,it;
     double eps,pi,omega,Rho,R,Thrust0,Power,pokw,pohp;
     double para,ub,dub,Ubd,us3,rcor,K;
-    double *U; double *Thrust;
+    double *U; double *Udummy;
+    double *Thrust; double *ThrustDummy;
     std::string filenameInputData;
     std::string filenameOutputVT;
     bool inputBOOL; int inflag;
