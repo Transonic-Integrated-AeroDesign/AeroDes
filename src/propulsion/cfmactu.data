@@ -3,3 +3,4 @@ OMEGA   0.25		#omega
 RHO     1.2		    #Rho (kg/m**3)
 R       0.875		#R (m)
 TR      125000.0    #Thrust (N)
+VEL     10  100 20  #U [vstart] [vend] [vinc] 10 100 20 -> {10,30, 50, 70, 90}
