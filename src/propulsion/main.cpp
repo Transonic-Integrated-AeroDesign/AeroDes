@@ -14,6 +14,8 @@
  * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp cfmactu.cpp
  * 	g++ -o test main.cpp cfmactu.cpp
  *  ./test
+ *  ./test -rho 1.2
+ *  ./test -in cfmactu.data
  *	valgrind --leak-check=yes ./test
  */
 
