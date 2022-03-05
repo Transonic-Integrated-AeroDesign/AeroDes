@@ -736,11 +736,12 @@ void canareq::readPolarDat() {
     //kx=k-1; // off by 1 -Cp 3/4/22
     kx = km+1; // +1 to include zero'th point -Cp 3/4/22
 
+    //*****zero incidence coefficients with assumption of small angles
     for(k=0; k<kx; k++) {
-        kp=k+1;
+        kp=k+1; // kplus
         if(kp > kx) kp=kx;
-        km=k-1;
-        if(km < 1) km=1;
+        km=k-1; // kminus
+        if(km < 0) km=1;
         if((k>1) && (k<kx)) {
             dcxm=((cx[k]-cx[km])*(cz[kp]-cz[k])*(cz[k]+cz[kp]-2.*cz[km])
                     -(cx[kp]-cx[k])*pow(cz[k]-cz[km],2))
