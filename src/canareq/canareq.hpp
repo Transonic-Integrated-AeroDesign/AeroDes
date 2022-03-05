@@ -12,7 +12,7 @@
 
 class canareq{
     public:
-        canareq(char** argv);
+        canareq(int argc, char** argv);
         ~canareq();
         
         // memory
@@ -21,14 +21,14 @@ class canareq{
         void delete_2d_double_array(double **array);
     
         // subroutines
-        float thrust(int, int, float, float *, float *, float, float);
+        float thrust(int, float);
         void mat3(double, double**, double*);
         void linearModel(); // generate 'best' values
+        void nonlinearModel();
 
         // file input
         void readInputParams();
         void readPolarDat();
-        void readOptimizedParams(); // read 'best' values
 
         // screen output
         int printInputParams();

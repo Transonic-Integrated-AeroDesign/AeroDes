@@ -20,7 +20,7 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    canareq *canary = new canareq();
+    canareq *canary = new canareq(argc, argv);
 
     canary->readInputParams();
     canary->printInputParams();
@@ -28,6 +28,8 @@ int main(int argc, char** argv) {
     canary->readPolarDat();
     canary->printPolarDat();
     canary->printGlobalCoefs();
+
+    canary->linearModel();
 
     delete canary;
 }

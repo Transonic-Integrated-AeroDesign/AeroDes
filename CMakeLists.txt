@@ -3,9 +3,15 @@ project(AeroDes)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(src)
+include_directories(src/canareq)
+include_directories(src/propulsion)
 
-add_executable(AeroDes
-        src/canareq.cpp
-        src/canareq.hpp
-        src/main.cpp)
+add_executable(canareq
+        src/canareq/canareq.cpp
+        src/canareq/canareq.hpp
+        src/canareq/main.cpp)
+
+add_executable(cfmactu
+        src/propulsion/cfmactu.cpp
+        src/propulsion/cfmactu.hpp
+        src/propulsion/main.cpp)
