@@ -63,6 +63,7 @@ class canareq{
         float Clceq,canarlift,reyc,Cdic,Cdceq,Clc0,Cmacc0,Cmacm0,Cmacm;
         float Cmc0,dCldac,dCmacdac,dCmacdam,dCmdac,Cdc0,Cmacc;
         float aleq0,Ueq0,beteq0,Cleq0,Cdeq0,rcor,xcpm,xcpc,dCldalind;
+        float aleqB, UeqB, beteqB, CleqB, CdeqB, CmacB;
         float zeng,rav,ruh,ar,reyr,Cdr0,Cdreq,dna,lna,reyn,an;
         float Cdn0,Cdneq;
         float *vr; float *tr;

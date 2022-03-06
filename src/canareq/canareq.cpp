@@ -49,6 +49,7 @@ canareq::canareq(int argc, char** argv) {
     pi=2.*asin(1.);
     eps=1.e-6;
     us3=1.0/3.0;
+    cout << "pi = " << pi << endl;
     degrad=pi/180.;
     radeg=1./degrad;
     nal=30;
@@ -160,7 +161,7 @@ void canareq::linearModel() {
 
     Cteq=rcor*(T+dTdv*Ueq)/dynaref;
     //     search for point on wing polar and interpolate Cd
-    m=1;
+    m=0;
     prod=aleq+0.5*pi;
 
     for (int j = 0; j < kx; ++j) {
@@ -169,7 +170,7 @@ void canareq::linearModel() {
         prod=1.;
         m=j;
     }
-
+    //m=8;
     Cdeq=cx[m]+(aleq-inc[m])*(cx[m+1]-cx[m])
             /(inc[m+1]-inc[m]);
 
@@ -213,25 +214,23 @@ void canareq::linearModel() {
     cout << "Cleq = " << left << setw(10) << Cleq << " Cdeq = " << left << setw(10) << Cdeq << " Cteq = " << left << setw(10) <<  Cteq << " CM,ac = " << left << setw(10) << Cmac << endl;
     cout << "*****************non-linear equations residuals from linear solution:" << endl;
     cout << "equ1 = " << left << setw(10) << bb[1] << "equ2 = " << left << setw(10) << bb[2] << " equ3 = " << left << setw(10) << bb[3] << endl;
-
-    cout << "\n";
     cout << "*****given best design parameters:" << endl;
-    cout << "aleq = " << left << setw(10) << aleq0 << " Ueq  = " << left << setw(10) << Ueq0 << " beteq = " << left << setw(10) <<  beteq0 << endl;
-    cout << "Cleq = " << left << setw(10) << Cleq0 << " Cdeq = " << left << setw(10) << Cdeq0 << " CM,ac = " << left << setw(10) << Cmac0 << endl;
+    cout << "aleq = " << left << setw(10) << aleqB << " Ueq  = " << left << setw(10) << UeqB << " beteq = " << left << setw(10) <<  beteqB << endl;
+    cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl;
 
-    // replace ideal design parameters with new calculated design values
-    aleq0=aleq;
-    Ueq0=Ueq;
-    beteq0=beteq;
-    Cleq0=Cleq;
-    Cdeq0=Cdeq;
-    Cmac0=Cmac;
+    // replace initial design parameters with ideal design parameters
+    aleq0=aleqB; //aleq;
+    Ueq0=UeqB; //Ueq;
+    beteq0=beteqB; //beteq;
+    Cleq0=CleqB; // Cleq;
+    Cdeq0=CdeqB; // Cdeq;
+    Cmac0=CmacB; // Cmac;
 
     // ...
-    Cteq=Cdeq;
-    Cweq=Cleq;
-    Cmeq=Cmac-xac*Cleq*cos(aleq)/lref;
-    Cmcg=Cmeq+xcg*Cweq*cos(aleq+beteq)/lref;
+    Cteq=CdeqB;
+    Cweq=CleqB;
+    Cmeq=CmacB-xac*CleqB*cos(aleqB)/lref;
+    Cmcg=Cmeq+xcg*Cweq*cos(aleqB+beteqB)/lref;
     amarg=100.*(xac-xcg-eps)/lref;
 }
 
@@ -619,12 +618,12 @@ void canareq::readInputParams() {
         }
 
         // best design input params
-        if(a.compare("ALEQ")==0) aleq0 = b;
-        if(a.compare("UEQ")==0) Ueq0 = b;
-        if(a.compare("BETAQ")==0) beteq0 = b;
-        if(a.compare("CLEQ")==0) Cleq0 = b;
-        if(a.compare("CDEQ")==0) Cdeq0 = b;
-        if(a.compare("CMAC")==0) Cmac0 = b;
+        if(a.compare("ALEQ")==0) aleqB = b;
+        if(a.compare("UEQ")==0) UeqB = b;
+        if(a.compare("BETAQ")==0) beteqB = b;
+        if(a.compare("CLEQ")==0) CleqB = b;
+        if(a.compare("CDEQ")==0) CdeqB = b;
+        if(a.compare("CMAC")==0) CmacB = b;
     }
 
     // airflow and weight calcs
@@ -831,7 +830,6 @@ void canareq::readPolarDat() {
         //     aerodynamic center of airplane
         xac=lref*(dCmacda-dCmda)/dClda;
         // change inc[k] back into original angle
-        inc[k] = incd;
         //write(14,*)cx(k),cz(k),cq(k),incd // compose this in 'outputPolarCdClCq()'
         //cout << left << setw(10) << k;
         //cout << left << setw(10) << incd;
@@ -939,12 +937,12 @@ int canareq::printInputParams() {
     }
     cout << "\n***********************\n";
     cout << "equilibrium data:" << endl;
-    cout << right << setw(32) << " aleq = " << aleq0 <<  "\n";
-    cout << right << setw(32) << " ueq = " << Ueq0 <<  "\n";
-    cout << right << setw(32) << " beteq = " << beteq0 <<  "\n";
-    cout << right << setw(32) << " cleq = " << Cleq0 <<  "\n";
-    cout << right << setw(32) << " cdeq = " << Cdeq0 <<  "\n";
-    cout << right << setw(32) << " cmac = " << Cmac0 <<  "\n";
+    cout << right << setw(32) << " aleq = " << aleqB <<  "\n";
+    cout << right << setw(32) << " ueq = " << UeqB <<  "\n";
+    cout << right << setw(32) << " beteq = " << beteqB <<  "\n";
+    cout << right << setw(32) << " cleq = " << CleqB <<  "\n";
+    cout << right << setw(32) << " cdeq = " << CdeqB <<  "\n";
+    cout << right << setw(32) << " cmac = " << CmacB <<  "\n";
     return 1;
 }
 
