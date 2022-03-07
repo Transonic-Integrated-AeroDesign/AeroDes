@@ -21,8 +21,8 @@ class canareq{
         void delete_2d_double_array(double **array);
     
         // subroutines
-        float thrust(int, float);
-        void mat3(double, double**, double*);
+        double thrust(int, float);
+        double mat3(double**, double*);
         void linearModel(); // generate 'best' values
         void nonlinearModel();
 
@@ -89,6 +89,9 @@ class canareq{
         std::string filenameEqList;
         std::string filenameEqStab;
         std::string filenameEqDataOpt;
+
+        bool inputBool; int inflag;
+        bool tcdBool; int tcdflag; double tcd0;
 };
 
 #endif

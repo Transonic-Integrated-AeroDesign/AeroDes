@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     canary->printGlobalCoefs();
 
     canary->linearModel();
+    canary->nonlinearModel();
 
     delete canary;
 }
