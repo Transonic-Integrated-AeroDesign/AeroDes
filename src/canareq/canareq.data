@@ -63,8 +63,6 @@ ENGPERF
     400.000000       103994.477
 ENDPERF
 
-
-
 ALEQ        0.01425		    # aleq equilibrium incidence (rd)
 UEQ         233.0		    # Ueq equilibrium velocity (m/s)
 BETAQ       0.0		        # beteq equilibrium descent angle (rd)

@@ -152,26 +152,30 @@ double canareq::thrust(int ndat, float v){
 }
 
 double canareq::mat3(double **a, double *b) {
-    double usdet;
+    double usdet, c1, c2, c3;
     usdet=1./(a[0][0]*(a[1][1]*a[2][2]-a[1][2]*a[2][1])
             -a[1][0]*(a[0][1]*a[2][2]-a[0][2]*a[2][1])
             +a[2][0]*(a[0][1]*a[1][2]-a[0][2]*a[1][1]));
     
-    b1=(b[0]*(a[1][1]*a[2][2]-a[1][2]*a[2][1])
+    c1=(b[0]*(a[1][1]*a[2][2]-a[1][2]*a[2][1])
         -b[1]*(a[0][1]*a[2][2]-a[0][2]*a[2][1])
         +b[2]*(a[0][1]*a[1][2]-a[0][2]*a[1][1]))*usdet;
     
-    b2=(-b[0]*(a[1][0]*a[2][2]-a[1][2]*a[2][0])
+    c2=(-b[0]*(a[1][0]*a[2][2]-a[1][2]*a[2][0])
         +b[1]*(a[0][0]*a[2][2]-a[0][2]*a[2][0])
         -b[2]*(a[0][0]*a[1][2]-a[0][2]*a[1][0]))*usdet;
     
-    b3=(b[0]*(a[1][0]*a[2][1]-a[1][1]*a[2][0])
+    c3=(b[0]*(a[1][0]*a[2][1]-a[1][1]*a[2][0])
        -b[1]*(a[0][0]*a[2][1]-a[0][1]*a[2][0])
        +b[2]*(a[0][0]*a[1][1]-a[0][1]*a[1][0]))*usdet;
     
-    b[0]=b1;
-    b[1]=b2;
-    b[2]=b3;
+    b[0]=c1;
+    b[1]=c2;
+    b[2]=c3;
+
+    bb[0]=c1;
+    bb[1]=c2;
+    bb[2]=c3;
 
     return usdet;
 }
@@ -296,11 +300,9 @@ void canareq::nonlinearModel() {
 
     // *****equilibrium
     //     alpha at equilibrium, lift and moment
-    iter=0;
+    iter=1;
     // *****iterations
     for (int i = 0; i < itx; ++i) {
-        //do 9 it=1,itx
-        //cout << "i = " << i << " reseq0 = " << reseq0 << " reseq = " << reseq << endl;
         // engine operating point
         dTdv = thrust(ndat, Ueq);
         dynaref = 0.5*rho*aref*pow(Ueq,2);
@@ -584,8 +586,7 @@ void canareq::nonlinearModel() {
     tr0=rcor*(T+dTdv*Ueq);
 
     cout <<"*****************************" << endl;
-    cout <<"        canard setting angle = " << tc << " (rd) =" << endl;
-    cout <<"        canard setting angle = " << tcd << " (deg)" << endl;
+    cout <<"        canard setting angle = " << tc << " (rd) = " << tcd << " (deg)" << endl;
     if(it >= itx) {
         cout << "equilibrium solution:" << endl;
         cout << "  iter = " << iter << endl;
@@ -608,8 +609,8 @@ void canareq::nonlinearModel() {
     cout <<"global results:" << endl;
     cout <<"             (reference area = " << aref << " (m**2))" << endl;
     cout <<"                   incidence = " << aleq << " (rd) = " << aleqd <<" (deg)" << endl;
-    cout <<"                 climb slope = " << beteq << " (rd) =" << beteqd<<" (deg)" << endl;
-    cout <<"            airplane setting = " << theq << " (rd) =" << theqd<<" (deg)" << endl;
+    cout <<"                 climb slope = " << beteq << " (rd) = " << beteqd<<" (deg)" << endl;
+    cout <<"            airplane setting = " << theq << " (rd) = " << theqd<<" (deg)" << endl;
     cout <<"                    velocity = " << Ueq << " (m/s)" << endl;
     cout <<"                  climb rate = " << weq << " (m/s)" << endl;
     cout <<"            dynamic pressure = " << dyn << " (Pa)" << endl;
@@ -632,7 +633,7 @@ void canareq::nonlinearModel() {
     cout <<"                    drag CDm = " << Cdmeq << endl;
     cout <<"                        xcpm = " << xcpm <<" (m)" << endl;
     cout <<"canard:" << endl;
-    cout <<"          (ref/can. area=" << ac << " (m**2))" << endl;
+    cout <<"              (ref/can. area = " << ac << " (m**2))" << endl;
     cout <<"                    lift CLc = " << Clceq << "    Lc=" << canarlift << " (N)" << endl;
     cout <<"canard pitching moment CMacc = " << Cmacc << endl;
     cout <<"             canard Reynolds = " << reyc << endl;
