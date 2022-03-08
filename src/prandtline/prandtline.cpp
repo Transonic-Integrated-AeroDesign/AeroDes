@@ -7,10 +7,11 @@
 #include <fstream>  // fopen, ifstream
 #include <string>
 #include <stdio.h>  // strcpy
+#include <math.h>   // copysign
 //#include <string.h>
 #include "prandtline.hpp"
 
-using namespace std; // g++ cfmactu.cpp -c
+using namespace std; // g++ prandtline.cpp -c
 
 prandtline::prandtline(int argc, char** argv) {
     int jxx = 201;
@@ -66,20 +67,28 @@ prandtline::prandtline(int argc, char** argv) {
     m  = (int *) malloc(sizeof(int)*jxx);
     polar  = (int *) malloc(sizeof(int)*jxx);
 
-    kx  = (double *) malloc(sizeof(double)*nxx);
-    kxtrem  = (double **) malloc(sizeof(double *)*nxx);
-    mxtrem  = (double **) malloc(sizeof(double *)*nxx);
+    kx  = (int *) malloc(sizeof(int)*nxx);
+    kxtrm  = (int **) malloc(sizeof(int *)*nxx);
+    mxtrm  = (int *) malloc(sizeof(int)*nxx);
 
-    create_2d_double_array(lxx, nxx, kxtrm);
-    create_2d_double_array(lxx, nxx, mxtrm);
+    create_2d_int_array(lxx, nxx, kxtrm);
 
     //
     filenameInputData = "prandtline.data";
-    inputBOOL = false;
+    inputBool = false;
+
+    filenameInputPolar = "polarbl.dat";
+    polarBool = false;
     // input commandline
     for (int iarg = 0; iarg<argc ; ++iarg) {
         if (!strcmp(argv[iarg],"-in")){
-            inputBOOL=true;
+            inputBool=true;
+            inputFlag=iarg+1;
+            filenameInputData = argv[inputFlag];
+            iarg+=2;
+        }
+        if (!strcmp(argv[iarg],"-bl")){
+            polarBool=true;
             inputFlag=iarg+1;
             filenameInputData = argv[inputFlag];
             iarg+=2;
@@ -137,8 +146,19 @@ prandtline::~prandtline() {
     free(polar);
 
     free(kx);
-    delete_2d_double_array(kxtrm);
-    delete_2d_double_array(mxtrm);
+    delete_2d_int_array(kxtrm);
+    free(mxtrm);
+}
+
+int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
+    // create a n1 x n2 matrix
+    int n=0;
+    int *data = (int *) malloc(n1*n2*sizeof(int));
+    for (int i=0; i<n2; i++) {
+        array[i] = &data[n];
+        n += n2;
+    }
+    return array;
 }
 
 double **prandtline::create_2d_double_array(int n1, int n2, double **array) {
@@ -152,12 +172,17 @@ double **prandtline::create_2d_double_array(int n1, int n2, double **array) {
     return array;
 }
 
+void prandtline::delete_2d_int_array(int **array) {
+    free(array[0]);
+    free(array);
+}
+
 void prandtline::delete_2d_double_array(double **array) {
     free(array[0]);
     free(array);
 }
 
-void prandtline::readInputParams(int argc, char** argv) {
+void prandtline::readInputParams(int argc, char **argv) {
     // open input file
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -166,212 +191,190 @@ void prandtline::readInputParams(int argc, char** argv) {
         abort();
     }
 
-    // read input parameters
+    // *****dimensionless variables
+    cout << "************************" << endl;
+    cout << "dimensionless variables:" << endl;
+    cout << "                      Y=0.5*B*y" << endl;
+    cout << "                      C=0.5*B*c" << endl;
+    cout << "                      A=0.25*B**2*am" << endl;
+    cout << "                      D=C*d" << endl;
+    cout << "                      W=U*w" << endl;
+    cout << "                   GAMA=0.5*U*B*g" << endl;
+    cout << "                   LIFT=0.5*RHO*U**2*A*Cl" << endl;
+    cout << "                   DRAG=0.5*RHO*U**2*A*Cd" << endl;
+    cout << "               MOMENT,0=0.5*RHO*U**2*A*Cav*Cm0" << endl;
+    cout << "               REYNOLDS=RHO*U*C/AMU" << endl;
+    cout << "                     Fz=0.5*RHO*U**2*A*fz" << endl;
+    cout << "                     Mf=0.25*RHO*U**2*A*B*cmf" << endl;
+    cout << "                     Mt=0.5*RHO*U**2*A*Cav*cmt" << endl;
+
+    // *****read in data
     std::string line;
-    std::string a,c;
-    double b1, b2, b3;
-    double v; float t;
-    double v_start, v_end, v_inc;
-    for (int i=0; i<100; i++, std::getline(paramfile, line) ) {
-        if (line.empty()) continue; // blank lines
-        std::istringstream issf(line);
+    std::string a; float b; std::string c; float v; float t;
+    for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
+        if (line.empty()) continue;
         std::istringstream iss(line);
-        std::istringstream issl(line);
-        if (!(iss >> a >> b1 >> c) && (a.compare("VEL") != 0)) {
-            cout << " read in error: " << line << endl;
-            break;
+
+        if (a.compare("JX") == 0) jx = b;
+        if(jx > jxx) {
+            cout << "jx=" << jx << " jxx= " << jxx << ", change dimension:exiting!" << endl;
+            abort();
         }
-        issf >> a;
+        if (a.compare("ITX") == 0) itx = b;
+        if (a.compare("OMEGA") == 0) omega = b;
+        if (a.compare("AVIS") == 0) avis = b;
+        if (a.compare("B") == 0) B = b;
+        if (a.compare("CX0") == 0) Cx0 = b;
+        if (a.compare("LAMBD") == 0) Lambd = b;
+        if (a.compare("RSTR0") == 0) Rstr0 = b;
+        if (a.compare("RF0") == 0) Rf0 = b;
+        if (a.compare("DM") == 0) dm = b;
+        if (a.compare("TM") == 0) tmd = b;
+        if (a.compare("IWING") == 0) iwing = b;
+        if (a.compare("ALPHAD") == 0) alphad = b;
+        if (a.compare("ACWASH") == 0) acwash = b;
+        if (a.compare("RHO") == 0) Rho = b;
+        if (a.compare("VINF") == 0) Vinf = b;
+        if (a.compare("AMU") == 0) Amu = b;
 
-        // *****prandtline.data
-        if (a.compare("ITX") == 0) itx = b1;
-        if (a.compare("OMEGA") == 0) omega = b1;
-        if (a.compare("RHO") == 0) Rho = b1;
-        if (a.compare("VEL") == 0) {
-            issl >> a >> b1 >> b2 >> b3 >> c;
-            v_start = b1;
-            v_end = b2;
-            v_inc = b3;
-            if (v_end < v_start) {
-                cout << "v_end must be larger than v_start" << endl;
-                abort();
-            }
-            nVel = round((v_end - v_start) / v_inc);
-        }
-        if (a.compare("R") == 0) R = b1;
-        if (a.compare("TR") == 0) Thrust0 = b1;
+        if (a.compare("IPOLAR") == 0) { polarBool = true; }
+        if (a.compare("NPOLAR") == 0) { nx = b; }
     }
 
-    // initialize velocity and thrust array structures
-    Udummy = (double *) realloc(U, sizeof(double)*nVel);
-    ThrustDummy = (double *) realloc(Thrust, sizeof(double)*nVel);
-
-    if (Udummy!=NULL && ThrustDummy!=NULL) {
-        U=Udummy;
-        Thrust=ThrustDummy;
-    }
-    else {
-        free(U);
-        free(Thrust);
-        cout << "Error (re)allocating memory" << endl;
-        exit(1);
-    }
-
-    for (int i = 0; i < nVel; ++i) {
-        U[i] = v_start + i*v_inc;
-        Thrust[i] = 0;
-    }
-
-    // read commandline inputs for override
-    for (int iarg = 0; iarg<argc ; ++iarg) {
-        if (!strcmp(argv[iarg],"-rho")){
-            rhoBOOL=true;
-            rhoflag=iarg+1;
-            Rho = (double) atof(argv[rhoflag]);
-            iarg+=2;
-        }
-    }
-
-    // initial power calculations (velocity independent)
-    ub=sqrt(Thrust0/(2.0*pi*Rho*pow(R,2)));
-    Power=2.0*pi*Rho*pow(R,2)*pow(ub,3);
-    pokw=Power/1000.0;
-    pohp=Power/735.5;
-
-    // *****prandtline.data
-    cout << "\n############################################" << endl;
-    cout << "(initial power based on thrust0)" << endl << endl;
-    cout << "    itx = " << itx << endl;
-    cout << "  omega = " << omega << endl;
-    cout << "    Rho = " << Rho << " (kg/m**3)" << endl;
-    cout << "      R = " << R << " (m)" << endl;
-    cout << "Thrust0 = " << Thrust0 << " (N)" << endl;
-    cout << "  power = " << pokw << " (kW)" << endl;
-    cout << "  power = " << pohp << " (hp)" << endl;
+    cxm=2.0*Cx0/B;
+    lamb=degrad*Lambd;
+    rstr=2.0*Rstr0/B;
+    rf=2.0*Rf0/B;
+    tm=degrad*tmd;
+    alpha=degrad*alphad;
 }
 
-void prandtline::readInputPolar(int argc, char **argv) {
+void prandtline::readInputPolar(std::string filename) {
     // open input file
-    ifstream paramfile(filenameInputData);
-    if (!paramfile.is_open()) {
-        cout << "\n\tCannot Read " << filenameInputData;
-        cout << " File - Error in: readInputParams()" << endl;
+    ifstream polarfile(filename);
+    if (!polarfile.is_open()) {
+        cout << "\n\tCannot Read " << filename;
+        cout << " File - Error in: readInputPolar()" << endl;
         abort();
     }
 
     // *****polar data
-    write(6,*)'\n******do you want to use polar data? Y/N=1/0'
-    read(5,*)ipolar
-    if(ipolar.ne.1)goto 5
-    read(13,*)nx
-    write(6,*)'******profile polars:'
-    write(6,*)' nx= ',nx,' number of polars to be read'
-    if(nx.ge.nxx)then
-        write(6,*)'!! nx > nxx !!'
-    write(6,*)'TOO MANY POLARS: EXITING!'
-    stop
-            endif
-    do 4 n=1,nx
-    write(6,*)'******n= ',n
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-    read(13,1000)title
-    write(6,1000)title
-            write(6,*)
-    read(5,1000)bry
-            write(6,*)
-    write(6,*)'*****extrema of the cl(alpha) function:'
-    prod=1.
-    km=1
-    kfirst=0
-    do 1 k=1,lxx
-    kdum=k
-    read(13,*,end=2)inc(k,n),cz(k,n),cx(k,n),dum,cq(k,n)
-    if(inc(k,n).gt.89.)then
-    read(13,*)rbreak(n)
-    write(6,*)' n=',n,' rbreak(n)=',rbreak(n)
-    if(n.ge.nx)then
-        rbreak(n)=1.+eps
-    endif
-            kdum=k+1
-    goto 2
-    endif
-    kxtrm(k,n)=0
-    if(k.eq.1)goto 1
-    dcz=cz(k,n)-cz(km,n)
-    prod=prod*dcz
-    if(prod.lt.-eps)then
-        write(6,*)'kxtrm(',n,')=',km,' cz(kxtrm,n)=',cz(km,n)
-    kxtrm(km,n)=km
-    if(kfirst.le.0)then
-    mxtrm(n)=km
-    kfirst=1
-    endif
-            endif
-    prod=sign(1.,dcz)
-    km=k
-    1    continue
-    2    continue
-    kx(n)=kdum-1
-    if(kx(n).eq.lxx-1)then
-        write(6,*)' attention: check if all data has been read;'
-                  &        ,' continuing/exiting=1/0?'
-    read(5,*)ice
-    if(ice.eq.0)stop
-            endif
-    write(6,*)
-    write(6,*)'*************profile data from Xfoil:'
-    write(6,1001)
-    do 3 k=1,kx(n)
-    kp=k+1
-    if(kp.gt.kx(n))kp=kx(n)
-    km=k-1
-    if(km.lt.1)km=1
-    prod=1.
-    if(k.gt.1.and.k.lt.kx(n))then
-            dcxm=((cx(k,n)-cx(km,n))*(cz(kp,n)-cz(k,n))*(cz(k,n)+cz(kp,n)
-                                                         &        -2.*cz(km,n))-(cx(kp,n)-cx(k,n))*(cz(k,n)-cz(km,n))**2)/
-                 &     ((cz(kp,n)-cz(k,n))*(cz(kp,n)-cz(km,n))*(cz(k,n)-cz(km,n)))
-    dcxp=((cx(k,n)-cx(kp,n))*(cz(km,n)-cz(k,n))*(cz(k,n)+cz(km,n)
-                                                 &        -2.*cz(kp,n))-(cx(km,n)-cx(k,n))*(cz(k,n)-cz(kp,n))**2)/
-         &     ((cz(km,n)-cz(k,n))*(cz(km,n)-cz(kp,n))*(cz(k,n)-cz(kp,n)))
-    prod=dcxm*dcxp
-    endif
-    if(prod.lt.-eps.and.(kxtrm(km,n).ne.0.
-                                       &        or.kxtrm(kp,n).ne.0))then
-    write(6,*)'bad data distribution:',
-            &           ' interpolate a new data n=',n
-    endif
-            incd=inc(k,n)
-    inc(k,n)=degrad*inc(k,n)
-    write(6,*)' k=',k,' inc(k,n)=',inc(k,n),' cz(k,n)=',cz(k,n)
-                                                        &        ,' cx(k,n)=',cx(k,n),' cq(k,n)=',cq(k,n)
-    write(14,*)cx(k,n),cz(k,n),cq(k,n),incd
-    3    continue
-    write(6,*)
-    write(6,*)'******extrema pointer:'
-    write(6,*)'kxtrm(k,',n,')=',(kxtrm(k,n),k=1,kx(n))
-    write(6,*)
-    4    continue
-    5    continue
+    if(!polarBool) exit(1); // exit function
+
+    //read(13,*)nx
+    cout << "******profile polars:" << endl;
+    nx = 0;
+    //cout << " nx= " << nx << " number of polars to be read" // this is undetermined
+    //if(nx >= nxx) {
+    //    cout << "!! nx > nxx !!" << endl;
+    //    cout << "TOO MANY POLARS: EXITING!" << endl;
+    //    abort();
+    //} // not needed
+
+    // read file
+    double c1, c2, c3, c4, c5;
+    int jp, jm;
+    std::string line;
+
+    for (int i = 0; i < nxx; ++i) {
+        cout << "****** i = " << i << endl;
+
+        cout << "\n*****extrema of the cl(alpha) function:" << endl;
+        prod = 1.;
+        jm = 0;
+        kfirst = 0;
+        for (int j = 0; j < lxx; ++j) {
+            //do 1 k = 1, lxx
+            std::getline(polarfile, line);
+            std::istringstream iss(line);
+            //cout << "\nline: \""<< line << "\""<< endl;
+
+            // skip headers
+            kdum = j;
+
+            // read [alpha] [CL] [CD] [CDp] [CM]
+            if (!polarfile.eof() && !(iss >> c1 >> c2 >> c3 >> c4 >> c5)) {
+                cout << "c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << " c4 = " << c4 << " c5 = " << c5 << endl;
+                inc[i][j] = c1;
+                cz[i][j] = c2;
+                cx[i][j] = c3;
+                dum = c4;
+                cq[i][j] = c5;
+            }
+            // read [breakpoint]
+            else if (!polarfile.eof() && !(iss >> c1)) {
+                //read(13, *) rbreak[n]
+                cout << "c1 = " << c1 << endl;
+                rbreak[i] = c1;
+            }
+            // end of file
+            else {
+                break;
+            }
+
+            //if (inc[i][j] > 89) {
+            //    cout << " n = " << n << " rbreak(n) = " << rbreak[i] << endl;
+            //    if (i >= nx) { rbreak[i] = 1. + eps; }
+            //    kdum = j + 1;
+            //    break; //goto 2
+            //}
+
+            // extrema values
+            kxtrm[i][j] = 0;
+            if (j==0) continue;
+            dcz = cz[i][j] - cz[i][jm];
+            prod = prod * dcz;
+            if (prod < -eps) {
+                cout << "kxtrm[" << i << "] = " << jm << " cz[kxtrm][n] = " << cz[i][jm] << endl;
+                kxtrm[i][j] = j;
+                if (kfirst <= 0) {
+                    mxtrm[i] = jm;
+                    kfirst = 1;
+                }
+            }
+            prod = copysign(1., dcz);
+            jm = j;
+        }
+
+        nx++;
+        if(polarfile.eof()) break;
+
+        kx[i] = kdum - 1;
+        if (kx[i]==(lxx - 1)) {
+            cout << " attention: check if all data has been read; continuing/exiting=1/0?" << endl;
+            cout << " increase the size of lxx" << endl;
+            //read(5, *) ice
+            //if (ice.eq.0) abort(); //stop
+        }
+
+        cout << "*************profile data from Xfoil:" << endl;
+        for (int j = 0; j < kx[i]; ++j) {
+            //do 3 k = 1, kx(n)
+            jp = j + 1;
+            if (jp > kx[i]) jp = kx[i];
+            jm = j - 1;
+            if (jm < 0.0) jm = 1;
+            prod = 1.;
+            if ((j > 0) && (j < kx[i])) {
+                dcxm = ((cx[i][j] - cx[i][jm]) * (cz[i][jp] - cz[i][j]) * (cz[i][j] + cz[i][jp] - 2. * cz[i][jm]) -
+                        (cx[i][jp] - cx[i][j]) * pow((cz[i][j] - cz[i][jm]),2)) /
+                       ((cz[i][jp] - cz[i][j]) * (cz[i][jp] - cz[i][jm]) * (cz[i][j] - cz[i][jm]));
+
+                dcxp = ((cx[i][j] - cx[i][jp]) * (cz[i][jm] - cz[i][j]) * (cz[i][j] + cz[i][jm] - 2. * cz[i][jp]) -
+                        (cx[i][jm] - cx[i][j]) * pow((cz[i][j] - cz[i][jp]),2)) /
+                       ((cz[i][jm] - cz[i][j]) * (cz[i][jm] - cz[i][jp]) * (cz[i][j] - cz[i][jp]));
+                prod = dcxm * dcxp;
+            }
+            if ((prod < (-eps)) && ((kxtrm[i][jm] == 0) || (kxtrm[i][jp] == 0))) {
+                cout << "bad data distribution: interpolate a new data i = " << n << endl;
+            }
+            incd = inc[i][j];
+            inc[i][j] = degrad * inc[i][j];
+            cout << " i=" << i << " inc[i][j] = " << inc[i][j] << " cz[k][n]=" << cz[i][j] << " cx[i][j] = " << cx[i][j]
+                 << " cq[i][j] = " << cq[i][j] << endl;
+        }
+
+        cout << "******extrema pointer:" << endl;
+        cout << "kxtrm[" << i << "]["<< jm << "] = " << kxtrm[i][jm] << " kx[i] = " << kx[i] << endl;
+    }
 }

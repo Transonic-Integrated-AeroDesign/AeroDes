@@ -16,15 +16,18 @@ public:
     ~prandtline();
 
     // memory
+    int** create_2d_int_array(int n1, int n2, int **array);
     double** create_2d_double_array(int n1, int n2, double **array);
+
+    void delete_2d_int_array(int **array);
     void delete_2d_double_array(double **array);
 
     void readInputParams(int argc, char** argv);
-    void readInputPolar(int argc, char** argv);
+    void readInputPolar(std::string);
 
 private:
-    int jxx,lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx;
-    int jx2,is,iwing,j,nsteps,ivis,nstep,iter,it,mj,jdx,jm;
+    int jxx,lxx,nxx,nx,n,kfirst,k,kdum,ice,jx;
+    int jx2,is,iwing,nsteps,ivis,nstep,iter,it,mj,jdx;
     int itx;
     //parameter(jxx=201,lxx=101,nxx=10)
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
@@ -43,11 +46,12 @@ private:
     double *xle, *xte, *wcanar, *xacm, *xiac;
     double *rbreak;
     int *m, *polar;
-    int *kx, **kxtrm, **mxtrm;
+    int *kx, **kxtrm, *mxtrm;
     std::string bry;
     std::string title;
     std::string typcode;
     std::string filenameInputData; bool inputBool; int inputFlag;
+    std::string filenameInputPolar; bool polarBool; int polarFlag;
 };
 
 #endif
