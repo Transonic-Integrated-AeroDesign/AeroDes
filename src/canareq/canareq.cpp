@@ -957,27 +957,87 @@ void canareq::readPolarDat() {
         
         //     aerodynamic center of airplane
         xac=lref*(dCmacda-dCmda)/dClda;
-        // change inc[k] back into original angle
-        //write(14,*)cx(k),cz(k),cq(k),incd // compose this in 'outputPolarCdClCq()'
-        //cout << left << setw(10) << k;
-        //cout << left << setw(10) << incd;
-        //cout << left << setw(10) << cz[k];
-        //cout << left << setw(10) << cx[k];
-        //cout << cq[k] << endl;
     }
     
-    // read input file
-    /*
-    string oneline;
-    while (getline(polarfile,oneline)) {
-        //cout << "Read in from file: " << oneline << endl;
-        if ( oneline.empty() ) continue;
-        double input = (double)atof(oneline.c_str());
-    }
-    */
-
     // note: do not change kx after this point
     polarfile.close();
+}
+
+void canareq::mainwingModel() {
+    tfd=tf*radeg;
+    // *****loop on incidence
+    nalmin = radeg * inc[0];
+    nalmax = nalmin + nal;
+    for (int j = nalmin; j < nalmax; ++j) {
+        //do 13 n = nalmin, nalmax
+        alphd = n;
+        alph = degrad * alphd;
+        // *****lift drag and moment of wing
+        // search for point on polar of wing
+        m = 1;
+        prod = alph + .5 * pi;
+
+        for (int l = 1; l < (kx-1); ++l) {
+            //do 11 k = 2, kx - 1
+            prod = prod * (alph - inc[l]);
+            if (prod <= eps) break; //goto 12
+            prod = 1.;
+            m = l;
+            //11 continue
+            //12 continue
+        }
+
+        // main wing lift
+        dCldam = (cz[m + 1] - cz[m]) / (inc[m + 1] - inc[m]);
+        Clm0 = cz[m] + dCldam * (-inc[m]);
+
+        // add flap influence on Cl
+        Clm0 = Clm0 + dClmdtf * tf;
+
+        // main wing moment coefficients
+        Clmeq = Clm0 + dCldam * aleq;
+        dCmacda = (cq[m + 1] - cq[m]) / (inc[m + 1] - inc[m]);
+        dCmdam = dCmacda - xac * dCldam / cam;
+        Cmac0 = cq[m] + dCmacda * (-inc[m]);
+        Cmm0 = Cmac0 - xac * Clm0 / cam;
+
+        // add flap influence on Cm
+        Cmac0 = Cmac0 + dCmmdtf * tf;
+        Cmm0 = Cmm0 + dCmmdtf * tf;
+
+        // moments at ac andx = 0
+        Cmac = Cmac0 + dCmacda * aleq;
+        Cmeq = Cm0 + dCmda * aleq;
+        if (kxtrm[m] != 0) m = m + 1;
+        if (m < 2) m = 2;
+        if (m > (kx - 1)) m = kx - 1;
+        dcxdcz = (cx[m] - cx[m - 1]) / (cz[m] - cz[m - 1]);
+        d2cxdcz2 = ((cx[m + 1] - cx[m]) * (cz[m] - cz[m - 1])
+                     -(cx[m] - cx[m - 1]) * (cz[m + 1] - cz[m]))
+                        /((cz[m + 1] - cz[m]) * (cz[m + 1] - cz[m - 1]) * (cz[m] - cz[m - 1]));
+        Cdm = cx[m - 1] + dcxdcz * (Clmeq - cz[m - 1])
+               +d2cxdcz2 * (Clmeq - cz[m - 1]) * (Clmeq - cz[m]);
+        dClda = dCldam;
+        Cl0 = Clm0;
+        dCmda = dCmdam;
+        Cm0 = Cmm0;
+        // *****global lift drag andmoment
+        Cl = Cl0 + dClda * alph;
+        Cm = Cm0 + dCmda * alph;
+        Cd = (am * Cdm + af * Cdf0) / aref;
+        Cl3 = pow(Cl,3);
+        Cd2 = pow(Cd,2);
+        ratio1 = Cl / Cd;
+        ratio2 = Cl3 / Cd2;
+        incidence = n;
+        //write(16, *) Cdm, Clmeq, Cmmeq, incidence
+        //write(18, *) Cd, Cl, Cm, incidence
+        //write(19, *) Cl, Cd, ratio1, Cd2, Cl3, ratio2, incidence
+        Cmcg = Cmeq + xcg * Cweq * cos(aleq + beteq) / lref;
+        //write(20, *) incidence, Cmcg
+    }
+    // 13   continue
+    Cmmeq=Cmeq;
 }
 
 int canareq::printInputParams() {

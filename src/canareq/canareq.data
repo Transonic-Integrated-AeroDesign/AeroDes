@@ -17,7 +17,7 @@ DM          0.01	        # dm relative camber of main wing
 EM          0.9		        # em efficiency coefficient of main wing
 ACW         -1.7		    # acw influence of canard on wing
 dCldAlfaInd 0.0		        # dCldalind influence of canard on wing lift
-TFD         0.0		        # tfd flat deflection (deg)
+TFD         0.0		        # tfd flat deflection (deg) flap?
 dClmdtf     0.371		    # dClmdtf empennage sensitivity on lift
 dCmmdtf     -0.343		    # dCmmdtf empennage sensitivity on pitching moment
 dCdtf0      0.01014		    # dCdtf0 flap influence on Cd independent of alfa

@@ -25,6 +25,7 @@ class canareq{
         double mat3(double**, double*);
         void linearModel(); // generate 'best' values
         void nonlinearModel();
+        void mainwingModel();
 
         // file input
         void readInputParams();
