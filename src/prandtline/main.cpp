@@ -28,6 +28,12 @@ int main(int argc, char** argv) {
     prants->readInputPolar("polarbl1.dat");
     prants->readInputPolar("polarbl2.dat");
     prants->readInputPolar("polarbl3.dat");
+    prants->readInputPolar("polarbl4.dat");
+    prants->readInputPolar("polarbl5.dat");
+    prants->readInputPolar("polarbl6.dat");
+    prants->readInputPolar("polarbl7.dat");
+    prants->readInputPolar("polarbl8.dat");
+    prants->readInputPolar("polarbl9.dat");
 
     delete prants;
 }

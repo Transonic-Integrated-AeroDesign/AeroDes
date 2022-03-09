@@ -218,30 +218,35 @@ void prandtline::readInputParams(int argc, char **argv) {
         std::istringstream iss(line);
         if(!(iss >> a >> b >> c)) break;
 
-        if (a.compare("JX") == 0) jx = b;
-        if(jx > jxx) {
-            cout << "jx=" << jx << " jxx= " << jxx << ", change dimension:exiting!" << endl;
+        if (a.compare("JX") == 0) {
+            jx = b;
+            if (jx > jxx) {
+                cout << "jx=" << jx << " jxx= " << jxx << ", change dimension:exiting!" << endl;
+                abort();
+            }
+        }
+        else if (a.compare("ITX") == 0) itx = b;
+        else if (a.compare("OMEGA") == 0) omega = b;
+        else if (a.compare("AVIS") == 0) avis = b;
+        else if (a.compare("B") == 0) B = b;
+        else if (a.compare("CX0") == 0) Cx0 = b;
+        else if (a.compare("LAMBD") == 0) Lambd = b;
+        else if (a.compare("RSTR0") == 0) Rstr0 = b;
+        else if (a.compare("RF0") == 0) Rf0 = b;
+        else if (a.compare("DM") == 0) dm = b;
+        else if (a.compare("TM") == 0) tmd = b;
+        else if (a.compare("IWING") == 0) iwing = b;
+        else if (a.compare("ALPHAD") == 0) alphad = b;
+        else if (a.compare("ACWASH") == 0) acwash = b;
+        else if (a.compare("RHO") == 0) Rho = b;
+        else if (a.compare("VINF") == 0) Vinf = b;
+        else if (a.compare("AMU") == 0) Amu = b;
+        else if (a.compare("IPOLAR") == 0) { polarBool = true; }
+        else {
+            cout << " command: " << a << " not known" << endl;
             abort();
         }
-        if (a.compare("ITX") == 0) itx = b;
-        if (a.compare("OMEGA") == 0) omega = b;
-        if (a.compare("AVIS") == 0) avis = b;
-        if (a.compare("B") == 0) B = b;
-        if (a.compare("CX0") == 0) Cx0 = b;
-        if (a.compare("LAMBD") == 0) Lambd = b;
-        if (a.compare("RSTR0") == 0) Rstr0 = b;
-        if (a.compare("RF0") == 0) Rf0 = b;
-        if (a.compare("DM") == 0) dm = b;
-        if (a.compare("TM") == 0) tmd = b;
-        if (a.compare("IWING") == 0) iwing = b;
-        if (a.compare("ALPHAD") == 0) alphad = b;
-        if (a.compare("ACWASH") == 0) acwash = b;
-        if (a.compare("RHO") == 0) Rho = b;
-        if (a.compare("VINF") == 0) Vinf = b;
-        if (a.compare("AMU") == 0) Amu = b;
-
-        if (a.compare("IPOLAR") == 0) { polarBool = true; }
-        if (a.compare("NPOLAR") == 0) { nx = b; }
+        //if (a.compare("NPOLAR") == 0) { nx = b; }
     }
 
     cxm=2.0*Cx0/B;
@@ -268,8 +273,10 @@ void prandtline::readInputPolar(std::string filename) {
     }
 
     //read(13,*)nx
-    cout << "\n******profile polars:" << endl;
-    nx = 0;
+    cout << "\n" << endl;
+    cout << "**************" << endl;
+    cout << "profile polar:" << nx << endl;
+    //nx = 0;
     //cout << " nx= " << nx << " number of polars to be read" // this is undetermined
     //if(nx >= nxx) {
     //    cout << "!! nx > nxx !!" << endl;
@@ -284,7 +291,6 @@ void prandtline::readInputPolar(std::string filename) {
     std::string line;
 
     int i = nx;
-    cout << "****** i = " << i << endl;
     prod = 1.;
     kfirst = 0;     // start flag for reading polar
     c = 0;
@@ -294,7 +300,6 @@ void prandtline::readInputPolar(std::string filename) {
         if (line.empty()) continue; // blank line
         std::istringstream iss(line);
         std::istringstream issl(line);
-        //cout << "\nline: \'"<< line << "\'" << endl;
         // skip headers
         iss >> c1 >> c2 >> c3 >> c4 >> c5;
         issl >> c1;
@@ -303,7 +308,7 @@ void prandtline::readInputPolar(std::string filename) {
 
         // read [alpha] [CL] [CD] [CDp] [CM]
         if (!polarfile.eof() && !iss.fail()) {
-            cout << "nx = " << nx << " c = " << c << " c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << " c4 = " << c4 << " c5 = " << c5 << endl;
+            //cout << "nx = " << nx << " c = " << c << " c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << " c4 = " << c4 << " c5 = " << c5 << endl;
             inc[i][c] = c1;
             cz[i][c] = c2;
             cx[i][c] = c3;
@@ -318,7 +323,8 @@ void prandtline::readInputPolar(std::string filename) {
                 dcz = cz[i][c] - cz[i][cm];
                 prod = prod * dcz;
                 if (prod < (-eps)) {
-                    cout << "****** extrema of the cl(alpha) function:" << endl;
+                    cout << "**********************************" << endl;
+                    cout << "extrema of the cl(alpha) function:" << endl;
                     cout << "kxtrm[" << i << "] = " << cm << " cz[kxtrm][n] = " << cz[i][cm] << endl;
                     kxtrm[i][j] = cm;
                     if (kfirst <= 0) {
@@ -330,15 +336,19 @@ void prandtline::readInputPolar(std::string filename) {
             }
             c++;
         }
-            // read [breakpoint]
-        else if (!polarfile.eof() && !issl.fail()) {
+
+        // read [breakpoint]
+        else if (!issl.fail()) {
             //read(13, *) rbreak[n]
-            cout << "c1 = " << c1 << endl;
+            //cout << "c1 = " << c1 << " eof = " << polarfile.eof() << endl;
             rbreak[i] = c1;
+            //continue;
         }
-            // skip headers
-        else if (!line.empty()) {
-            cout << " headers: " << line << endl;
+
+        // done reading input polar
+        if (polarfile.eof()==1) {
+            //cout << "break" << endl;
+            break;
         }
 
         // not sure what this does ...
@@ -355,7 +365,7 @@ void prandtline::readInputPolar(std::string filename) {
         cout << " increase the size of lxx" << endl;
     }
 
-    cout << "*************profile data from Xfoil:" << endl;
+    //cout << "*************profile data from Xfoil:" << endl;
     int jm, jp;
     for (int j = 0; j < kx[i]; ++j) {
         //do 3 k = 1, kx(n)
@@ -383,8 +393,9 @@ void prandtline::readInputPolar(std::string filename) {
         //     << " cq[i][j] = " << cq[i][j] << endl;
     }
 
-    cout << "******extrema pointer:" << endl;
-    cout << "mxtrm[" << i << "] = " << mxtrm[i] << " kx[i] = " << kx[i] << endl;
+    cout << "*****************************" << endl;
+    cout << "extrema pointer + break point" << endl;
+    cout << "mxtrm[" << i << "] = " << mxtrm[i] << " kx[i] = " << kx[i] << " rbreak[i] = " << rbreak[i] << endl;
 
     nx++;
 }
