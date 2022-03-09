@@ -25,6 +25,8 @@ public:
     void readInputParams(int argc, char** argv);
     void readInputPolar(std::string);
 
+    void printInputParams();
+
 private:
     int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
     int jx2,is,iwing,nsteps,ivis,nstep,iter,it,mj,jdx;

@@ -253,6 +253,143 @@ void prandtline::readInputParams(int argc, char **argv) {
 }
 
 void prandtline::readInputPolar(std::string filename) {
+    // open input file
+    ifstream polarfile(filename);
+    if (!polarfile.is_open()) {
+        cout << "\n\tCannot Read " << filename;
+        cout << " File - Error in: readInputPolar()" << endl;
+        abort();
+    }
+
+    // *****polar data
+    if(polarBool==false) {
+        cout << " exiting polar is [off]" << endl;
+        exit(1); // exit function
+    }
+
+    //read(13,*)nx
+    cout << "\n******profile polars:" << endl;
+    nx = 0;
+    //cout << " nx= " << nx << " number of polars to be read" // this is undetermined
+    //if(nx >= nxx) {
+    //    cout << "!! nx > nxx !!" << endl;
+    //    cout << "TOO MANY POLARS: EXITING!" << endl;
+    //    abort();
+    //} // not needed
+
+    //for (int i = 0; i < 1; ++i) {   // fix this to work with combined file later... -Cp 3/09/22
+    // read file
+    double c1, c2, c3, c4, c5;
+    int c, cm;
+    std::string line;
+
+    int i = nx;
+    cout << "****** i = " << i << endl;
+    prod = 1.;
+    kfirst = 0;     // start flag for reading polar
+    c = 0;
+    for (int j = 0; j < lxx; ++j) {
+        //do 1 k = 1, lxx
+        std::getline(polarfile, line);
+        if (line.empty()) continue; // blank line
+        std::istringstream iss(line);
+        std::istringstream issl(line);
+        //cout << "\nline: \'"<< line << "\'" << endl;
+        // skip headers
+        iss >> c1 >> c2 >> c3 >> c4 >> c5;
+        issl >> c1;
+
+        kdum = j;
+
+        // read [alpha] [CL] [CD] [CDp] [CM]
+        if (!polarfile.eof() && !iss.fail()) {
+            cout << "nx = " << nx << " c = " << c << " c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << " c4 = " << c4 << " c5 = " << c5 << endl;
+            inc[i][c] = c1;
+            cz[i][c] = c2;
+            cx[i][c] = c3;
+            dum = c4;
+            cq[i][c] = c5;
+            kx[i] = c;
+
+            // extrema values
+            kxtrm[i][j] = 0;
+            if (c>0) {
+                cm = c-1;
+                dcz = cz[i][c] - cz[i][cm];
+                prod = prod * dcz;
+                if (prod < (-eps)) {
+                    cout << "****** extrema of the cl(alpha) function:" << endl;
+                    cout << "kxtrm[" << i << "] = " << cm << " cz[kxtrm][n] = " << cz[i][cm] << endl;
+                    kxtrm[i][j] = cm;
+                    if (kfirst <= 0) {
+                        mxtrm[i] = cm;   // index for first polar value
+                        kfirst = 1;
+                    }
+                }
+                prod = copysign(1., dcz);
+            }
+            c++;
+        }
+            // read [breakpoint]
+        else if (!polarfile.eof() && !issl.fail()) {
+            //read(13, *) rbreak[n]
+            cout << "c1 = " << c1 << endl;
+            rbreak[i] = c1;
+        }
+            // skip headers
+        else if (!line.empty()) {
+            cout << " headers: " << line << endl;
+        }
+
+        // not sure what this does ...
+        //if (inc[i][j] > 89) {
+        //    cout << " n = " << n << " rbreak(n) = " << rbreak[i] << endl;
+        //    if (i >= nx) { rbreak[i] = 1. + eps; }
+        //    kdum = j + 1;
+        //    break; //goto 2
+        //}
+    }
+
+    if (kx[i]==(lxx - 1)) {
+        cout << " attention: check if all data has been read; continuing/exiting=1/0?" << endl;
+        cout << " increase the size of lxx" << endl;
+    }
+
+    cout << "*************profile data from Xfoil:" << endl;
+    int jm, jp;
+    for (int j = 0; j < kx[i]; ++j) {
+        //do 3 k = 1, kx(n)
+        jp = j + 1;
+        if (jp > kx[i]) jp = kx[i];
+        jm = j - 1;
+        if (jm < 0.0) jm = 1;
+        prod = 1.;
+        if ((j > 0) && (j < kx[i])) {
+            dcxm = ((cx[i][j] - cx[i][jm]) * (cz[i][jp] - cz[i][j]) * (cz[i][j] + cz[i][jp] - 2. * cz[i][jm]) -
+                    (cx[i][jp] - cx[i][j]) * pow((cz[i][j] - cz[i][jm]),2)) /
+                   ((cz[i][jp] - cz[i][j]) * (cz[i][jp] - cz[i][jm]) * (cz[i][j] - cz[i][jm]));
+
+            dcxp = ((cx[i][j] - cx[i][jp]) * (cz[i][jm] - cz[i][j]) * (cz[i][j] + cz[i][jm] - 2. * cz[i][jp]) -
+                    (cx[i][jm] - cx[i][j]) * pow((cz[i][j] - cz[i][jp]),2)) /
+                   ((cz[i][jm] - cz[i][j]) * (cz[i][jm] - cz[i][jp]) * (cz[i][j] - cz[i][jp]));
+            prod = dcxm * dcxp;
+        }
+        if ((prod < (-eps)) && ((kxtrm[i][jm] != 0) || (kxtrm[i][jp] != 0))) {
+            cout << "bad data distribution: interpolate a new data i = " << nx << endl;
+        }
+        incd = inc[i][j];
+        inc[i][j] = degrad * inc[i][j];
+        //cout << " i=" << i << " j = " << j << " inc[i][j] = " << inc[i][j] << " cz[k][n]=" << cz[i][j] << " cx[i][j] = " << cx[i][j]
+        //     << " cq[i][j] = " << cq[i][j] << endl;
+    }
+
+    cout << "******extrema pointer:" << endl;
+    cout << "mxtrm[" << i << "] = " << mxtrm[i] << " kx[i] = " << kx[i] << endl;
+
+    nx++;
+}
+
+void prandtline::printInputParams() {
     cout << "ITX = " << itx << endl;
     cout << "OMEGA = " << omega << endl;
     cout << "AVIS = " << avis << endl;
@@ -271,144 +408,4 @@ void prandtline::readInputPolar(std::string filename) {
     cout << "AMU = " << Amu << endl;
     cout << "IPOLAR = " << polarBool << endl;
     cout << "NPOLAR = " << nx << endl;
-
-    // open input file
-    ifstream polarfile(filename);
-    if (!polarfile.is_open()) {
-        cout << "\n\tCannot Read " << filename;
-        cout << " File - Error in: readInputPolar()" << endl;
-        abort();
-    }
-
-    // *****polar data
-    if(polarBool==false) {
-        cout << " exiting polar is [off]" << endl;
-        exit(1); // exit function
-    }
-
-    //read(13,*)nx
-    cout << "******profile polars:" << endl;
-    nx = 0;
-    //cout << " nx= " << nx << " number of polars to be read" // this is undetermined
-    //if(nx >= nxx) {
-    //    cout << "!! nx > nxx !!" << endl;
-    //    cout << "TOO MANY POLARS: EXITING!" << endl;
-    //    abort();
-    //} // not needed
-
-    // read file
-    double c1, c2, c3, c4, c5;
-    int c, cm;
-    std::string line;
-    bool doneBool = false;
-
-    //for (int i = 0; i < nxx; ++i) {
-    for (int i = nx; i < 1; ++i) {
-        cout << "****** i = " << i << endl;
-        prod = 1.;
-        //kfirst = 0;     // start flag for reading polar
-        c = 0;
-        for (int j = 0; j < lxx; ++j) {
-            //do 1 k = 1, lxx
-            std::getline(polarfile, line);
-            if (line.empty()) continue; // blank line
-            std::istringstream iss(line);
-            std::istringstream issl(line);
-            //cout << "\nline: \'"<< line << "\'" << endl;
-            // skip headers
-            iss >> c1 >> c2 >> c3 >> c4 >> c5;
-            issl >> c1;
-
-            kdum = j;
-
-            // read [alpha] [CL] [CD] [CDp] [CM]
-            if (!polarfile.eof() && !iss.fail()) {
-                cout << "nx = " << nx << " c = " << c << " c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << " c4 = " << c4 << " c5 = " << c5 << endl;
-                inc[i][c] = c1;
-                cz[i][c] = c2;
-                cx[i][c] = c3;
-                dum = c4;
-                cq[i][c] = c5;
-                kx[i] = c;
-
-                // extrema values
-                kxtrm[i][j] = 0;
-                if (c>0) {
-                    cm = c-1;
-                    dcz = cz[i][c] - cz[i][cm];
-                    prod = prod * dcz;
-                    if (prod < (-eps)) {
-                        cout << "****** extrema of the cl(alpha) function:" << endl;
-                        cout << "kxtrm[" << i << "] = " << cm << " cz[kxtrm][n] = " << cz[i][cm] << endl;
-                        kxtrm[i][j] = cm;
-                        if (kfirst <= 0) {
-                            mxtrm[i] = cm;   // index for first polar value
-                            kfirst = 1;
-                        }
-                    }
-                    prod = copysign(1., dcz);
-                }
-                c++;
-            }
-            // read [breakpoint]
-            else if (!polarfile.eof() && !issl.fail()) {
-                //read(13, *) rbreak[n]
-                //cout << "c1 = " << c1 << endl;
-                rbreak[i] = c1;
-            }
-            // end of file
-            else if (polarfile.eof()) {
-                cout << " HEY WERE DONE HERE!" << endl;
-                doneBool = true;
-                break;
-            }
-
-            // not sure what this does ...
-            //if (inc[i][j] > 89) {
-            //    cout << " n = " << n << " rbreak(n) = " << rbreak[i] << endl;
-            //    if (i >= nx) { rbreak[i] = 1. + eps; }
-            //    kdum = j + 1;
-            //    break; //goto 2
-            //}
-        }
-
-        nx++;
-        if(doneBool) break;
-
-        if (kx[i]==(lxx - 1)) {
-            cout << " attention: check if all data has been read; continuing/exiting=1/0?" << endl;
-            cout << " increase the size of lxx" << endl;
-        }
-
-        cout << "*************profile data from Xfoil:" << endl;
-        int jm, jp;
-        for (int j = 0; j < kx[i]; ++j) {
-            //do 3 k = 1, kx(n)
-            jp = j + 1;
-            if (jp > kx[i]) jp = kx[i];
-            jm = j - 1;
-            if (jm < 0.0) jm = 1;
-            prod = 1.;
-            if ((j > 0) && (j < kx[i])) {
-                dcxm = ((cx[i][j] - cx[i][jm]) * (cz[i][jp] - cz[i][j]) * (cz[i][j] + cz[i][jp] - 2. * cz[i][jm]) -
-                        (cx[i][jp] - cx[i][j]) * pow((cz[i][j] - cz[i][jm]),2)) /
-                       ((cz[i][jp] - cz[i][j]) * (cz[i][jp] - cz[i][jm]) * (cz[i][j] - cz[i][jm]));
-
-                dcxp = ((cx[i][j] - cx[i][jp]) * (cz[i][jm] - cz[i][j]) * (cz[i][j] + cz[i][jm] - 2. * cz[i][jp]) -
-                        (cx[i][jm] - cx[i][j]) * pow((cz[i][j] - cz[i][jp]),2)) /
-                       ((cz[i][jm] - cz[i][j]) * (cz[i][jm] - cz[i][jp]) * (cz[i][j] - cz[i][jp]));
-                prod = dcxm * dcxp;
-            }
-            if ((prod < (-eps)) && ((kxtrm[i][jm] != 0) || (kxtrm[i][jp] != 0))) {
-                cout << "bad data distribution: interpolate a new data i = " << nx << endl;
-            }
-            incd = inc[i][j];
-            inc[i][j] = degrad * inc[i][j];
-            cout << " i=" << i << " j = " << j << " inc[i][j] = " << inc[i][j] << " cz[k][n]=" << cz[i][j] << " cx[i][j] = " << cx[i][j]
-                 << " cq[i][j] = " << cq[i][j] << endl;
-        }
-
-        cout << "******extrema pointer:" << endl;
-        cout << "mxtrm[" << i << "] = " << mxtrm[i] << " kx[i] = " << kx[i] << endl;
-    }
 }
