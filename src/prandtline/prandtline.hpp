@@ -26,7 +26,7 @@ public:
     void readInputPolar(std::string);
 
 private:
-    int jxx,lxx,nxx,nx,n,kfirst,k,kdum,ice,jx;
+    int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
     int jx2,is,iwing,nsteps,ivis,nstep,iter,it,mj,jdx;
     int itx;
     //parameter(jxx=201,lxx=101,nxx=10)
