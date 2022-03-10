@@ -21,13 +21,13 @@ canareq::canareq(int argc, char** argv) {
     
     lxx=101; ndatx=21;
     kxtrm = (int *) malloc(sizeof(int)*lxx);
-    vr = (float *) malloc(sizeof(float)*ndatx);
-    tr = (float *) malloc(sizeof(float)*ndatx);
+    vr = (double *) malloc(sizeof(double)*ndatx);
+    tr = (double *) malloc(sizeof(double)*ndatx);
     
-    cx = (float *) malloc(sizeof(float)*lxx);
-    cz = (float *) malloc(sizeof(float)*lxx);
-    cq = (float *) malloc(sizeof(float)*lxx);
-    inc = (float *) malloc(sizeof(float)*lxx);
+    cx = (double *) malloc(sizeof(double)*lxx);
+    cz = (double *) malloc(sizeof(double)*lxx);
+    cq = (double *) malloc(sizeof(double)*lxx);
+    inc = (double *) malloc(sizeof(double)*lxx);
     
     filenamePolarDat = "canarpolar.dat";
     filenamePolarPrandtline = "canarpolar.prandtline";
@@ -123,10 +123,10 @@ void canareq::delete_2d_double_array(double **array) {
     free(array);
 }
 
-double canareq::thrust(int ndat, float v){
+double canareq::thrust(int ndat, double v){
     // return thrust slope dT/dv
     int im;
-    float prod;
+    double prod;
 
     if(abs(v) < 1.0) {
         dTdv=(tr[1]-tr[0])/(vr[1]-vr[0]);
@@ -186,7 +186,10 @@ void canareq::linearModel() {
             /(dCmacda+(xcg-xac)*dClda/lref);
     Cleq=Cl0+dClda*aleq;
     Cweq=Cleq;
-    if(Cleq <= 0.) cout << "################# no linear solution with Cleq<0" << endl;
+    if(Cleq <= 0.) {
+        cout << "################# no linear solution with Cleq<0" << endl;
+        abort();
+    }
 
     Ueq=sqrt(2.*mg/(rho*aref*Cleq));
     reyeq=Ref*Ueq/100.;
@@ -542,12 +545,14 @@ void canareq::nonlinearModel() {
         //write(17, *) iter, reseq, inewton
         if (reseq < epser) {
             cout << " done iterating " << endl;
-            break; // goto 10
+            break;
         }
-        //9       continue
+
+        if (isnan(reseq)) {
+            cout << " NaN error: reseq = " << reseq << " iteration = " << i << endl;
+            abort();
+        }
     }
-    //cout << "DONE?" << endl;
-    //10   continue
 
     //*****non-linear equations residuals
     if(inewton==0) {
@@ -666,7 +671,7 @@ void canareq::readInputParams() {
     }
 
     std::string line;
-    std::string a; float b; std::string c; float v; float t;
+    std::string a; double b; std::string c; double v; double t;
     for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
         if (line.empty()) continue;
         std::istringstream iss(line);
@@ -799,7 +804,7 @@ void canareq::readInputParams() {
 
 void canareq::readPolarDat() {
     // readPolarDat must be read after reading input parameters
-    float a, b, c, d, e;
+    double a, b, c, d, e;
     std::string line;
     
     // open input file
@@ -1124,7 +1129,7 @@ int canareq::printInputParams() {
         cout << tr[i];
     }
     cout << "\n***********************\n";
-    cout << "equilibrium data:" << endl;
+    cout << "best equilibrium data:" << endl;
     cout << right << setw(32) << " aleq = " << aleqB <<  "\n";
     cout << right << setw(32) << " ueq = " << UeqB <<  "\n";
     cout << right << setw(32) << " beteq = " << beteqB <<  "\n";
