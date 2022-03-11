@@ -15,6 +15,9 @@ public:
     prandtline(int argc, char** argv);
     ~prandtline();
 
+    //
+    void setMesh();
+
     // memory
     int** create_2d_int_array(int n1, int n2, int **array);
     double** create_2d_double_array(int n1, int n2, double **array);
@@ -27,6 +30,7 @@ public:
     void readInputDownwash();
 
     void printInputParams();
+    void printCalculations();
 
 private:
     int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;

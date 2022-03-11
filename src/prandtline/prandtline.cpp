@@ -154,6 +154,133 @@ prandtline::~prandtline() {
     free(mxtrm);
 }
 
+void prandtline::setMesh() {
+    // set mesh, geometry, and flow
+    cout << "******point distribution, geometry and flow:"
+    cout << "y(j) = "
+         << "eta(j) = "
+            << "c(j) = "
+               << "t(j) = "
+                  << "d(j) = "
+                     << " g(j) = "
+                     << " w(j) = "
+                        << "at(j) = "
+                           << "polar(j) = " << endl;
+
+    amdum=0.;
+    cavdum=0.;
+    dtet=pi/(jx-1);
+    int n=0; // get main wing polar (index = 0)
+
+    for (int j = 0; j < jx; ++j) {
+        //do 6 j=1,jx
+        tetj = (j - 1) * dtet;
+        yj = -cos(tetj);
+        y[j] = yj;
+        etaj = -cos(tetj + .5 * dtet);
+        eta[j] = etaj;
+
+        //
+        if (j==0) {
+            etajm = -1.;
+        } else {
+            etajm = eta[j - 1];
+        }
+
+        // reached last point
+        if (j==jx) {
+            etaj = eta[j - 1];
+        }
+        dem[j] = dm;
+        t[j] = tm;
+        g[j] = 0.;
+        w[j] = 0.;
+        at[j] = 0.;
+        a0[j] = -pi * dm;
+        a1[j] = 0.;
+        b0[j] = 2. * pi * (2. * dem[j]);
+        b1[j] = 2. * pi;
+        // elliptic wing
+        if (iwing==0) {
+            c[j] = cxm * sin(tetj);
+            xacm[j] = 0.25 * cxm;
+            xacm[j] = xacm[j] + tan(lamb) * abs(y[j]);
+            xle[j] = xacm[j] - 0.25 * c[j];
+            xte[j] = xle[j] + c[j];
+            if (j>=2) xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
+            amdum = amdum + c[j] * (etaj - etajm);
+            cavdum = cavdum + pow(c[j],2) * (etaj - etajm);
+        }
+        // rectangular wing
+        if (iwing==1) {
+            c[j] = cxm;
+            xle[j] = 0.0;
+            xte[j] = cxm;
+            xacm[j] = 0.5 * cxm;
+            xiac[j] = 0.5 * cxm;
+            amdum = amdum + c[j] * (etaj - etajm);
+            cavdum = cavdum + pow(c[j],2) * (etaj - etajm);
+        }
+        // tailess configuration
+        if (iwing==2) {
+            if (abs(yj)>=rf) {
+                if(abs(yj)>=rstr) {
+                    xle[j] = cxm + 0.01589 - 0.468 * (1.0 - abs(yj));
+                    xte[j] = cxm + 0.1269 - 0.181 * (1.0 - abs(yj));
+                }
+                else {
+                    xle[j] = cxm - 0.31111 - 1.0 * (0.3 - abs(yj));
+                    xte[j] = cxm;
+                }
+                c[j] = xte[j] - xle[j];
+                xacm[j] = xle[j] + 0.25 * c[j];
+                if (j>=2) {
+                    xiac(j - 1) = 0.5 * (xacm(j) + xacm(j - 1));
+                }
+                amdum = amdum + c(j) * (etaj - etajm);
+                cavdum = cavdum + c(j)**2 * (etaj - etajm);
+                a0(j) = 0.
+            }
+            else {
+                // slender body treatment of fuselage
+                phij = acos(yj / rf);
+                xle(j) = rf * (1.0 - sin(phij));
+                xte(j) = cxm;
+                c(j) = xte(j) - xle(j);
+                xacm(j) = xacm(j - 1) + 0.033333 * ((yj / 0.11111)**2 -(y(j - 1) / 0.11111) * *2);
+                if (j.ge.2) {
+                    xiac(j - 1) = 0.5 * (xacm(j) + xacm(j - 1));
+                }
+                a0(j) = 0.;
+            }
+        }
+
+        // if polar is [on] off
+        if (ipolar) {
+            if (y[j]>(rbreak[n]-eps)) {
+                cout << "rbreak(n) = " << rbreak[n];
+                n = n + 1;
+            }
+        }
+        else {
+            n = 0;
+        }
+
+        polar(j) = n
+        write(6, 1003) y(j), eta(j), c(j), t(j), dem(j), g(j), w(j), at(j), polar(j)
+        write(17, *) y(j), c(j), dem(j), t(j)
+        write(29, *) y(j), xle(j), xte(j), xacm(j)
+        if (j.ge.2) write(33, *) eta(j - 1), xiac(j - 1)
+    }
+    cout << " "
+    eta(jx)=eta(jx-1)
+    xiac(jx)=xiac(jx-1)
+    am=amdum
+    cav=cavdum/am
+    arm=4./am
+    Re=0.5*Rho*Vinf*B*cav/Amu
+}
+
 int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
     // create a n1 x n2 matrix
     int n=0;
@@ -462,4 +589,33 @@ void prandtline::printInputParams() {
     cout << right << setw(10) << "AMU = " << Amu << endl;
     cout << right << setw(10) << "IPOLAR = " << polarBool << endl;
     cout << right << setw(10) << "NPOLAR = " << nx << endl;
+}
+
+void prandtline::printCalculations() {
+    cout << "======================================" << endl;
+    cout << "numerical data:" << endl;
+    cout << right << setw(32) << " number of points jx = " << left << setw(10) << jx << endl;
+    cout << right << setw(32) << " max number of iterations itx = " << left << setw(10) << itx << endl;
+    cout << right << setw(32) << "                        omega = " << left << setw(10) << omega << endl;
+    cout << right << setw(32) << "   viscosity coefficient avis = " << left << setw(10) << avis << endl;
+    cout << right << setw(32) << "main wing data:"
+    cout << right << setw(32) << "                  wing span B = " << left << setw(10) << B << " (m)" << endl;
+    cout << right << setw(32) << "   maximum chord/fuselage Cx0 = " << left << setw(10) << Cx0 << " (m)" << endl;
+    cout << right << setw(32) << "      a. c. sweep angle Lambd = " << left << setw(10) << Lambd << "(deg)" << endl;
+    cout << right << setw(32) << "    half span of strake Rstr0 = " << left << setw(10) << Rstr0 << " (m)" << endl;
+    cout << right << setw(32) << "          fuselage radius Rf0 = " << left << setw(10) << Rf0 << " (m)" << endl;
+    cout << right << setw(32) << "    relative camber height dm = " << left << setw(10) << dm << " (ref. C)" << endl;
+    cout << right << setw(32) << "        wing setting angle tm = " << left << setw(10) << tm << " (rd) =" <<tmd<<" (deg)" << endl;
+    cout << right << setw(32) << "             wing shape 0/1/2 = " << left << setw(10) << iwing << endl;
+    cout << right << setw(32) << "    downwash of canard acwash = " << left << setw(10) << acwash << endl;
+    cout << right << setw(32) << "air data:"
+    cout << right << setw(32) << "              air density Rho = " << left << setw(10) << Rho << " (kg/m**3)" << endl;
+    cout << right << setw(32) << "           wind velocity Vinf = " << left << setw(10) << Vinf << " (m/s)" << endl;
+    cout << right << setw(32) << "        dynamic viscosity Amu = " << left << setw(10) << Amu << " (kg/(m*s))" << endl;
+    cout << right << setw(32) << "        reference Reynolds Re = " << left << setw(10) << Re << endl;
+    cout << "======================================" << endl;
+    cout << "calculated data:"
+    cout << right << setw(32) << "                 wing area am = " << left << setw(10) <<am<< " (ref. B**2/4)" << endl;
+    cout << right << setw(32) << "        wing aspect ratio arm = " << left << setw(10) << arm << endl;
+    cout << right << setw(32) << "average aerodynamic chord cav = " << left << setw(10) << cav << " (ref. B/2)" << endl;
 }
