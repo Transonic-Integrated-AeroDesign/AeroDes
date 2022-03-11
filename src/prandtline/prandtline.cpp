@@ -80,6 +80,9 @@ prandtline::prandtline(int argc, char** argv) {
 
     filenameInputPolar = "polarbl.dat";
     polarBool = false;
+
+    filenameInputDownwash = "canarwash.ylwl";
+
     // input commandline
     for (int iarg = 0; iarg<argc ; ++iarg) {
         if (!strcmp(argv[iarg],"-in")){
@@ -255,6 +258,9 @@ void prandtline::readInputParams(int argc, char **argv) {
     rf=2.0*Rf0/B;
     tm=degrad*tmd;
     alpha=degrad*alphad;
+
+    // optional read-in files
+    if(acwash) readInputDownwash();
 }
 
 void prandtline::readInputPolar(std::string filename) {
@@ -266,7 +272,7 @@ void prandtline::readInputPolar(std::string filename) {
         abort();
     }
 
-    // *****polar data
+    // polar data
     if(polarBool==false) {
         cout << " exiting polar is [off]" << endl;
         exit(1); // exit function
@@ -274,7 +280,7 @@ void prandtline::readInputPolar(std::string filename) {
 
     //read(13,*)nx
     cout << "\n" << endl;
-    cout << "**************" << endl;
+    cout << "=================" << endl;
     cout << "profile polar:" << nx << endl;
     //nx = 0;
     //cout << " nx= " << nx << " number of polars to be read" // this is undetermined
@@ -300,7 +306,6 @@ void prandtline::readInputPolar(std::string filename) {
         if (line.empty()) continue; // blank line
         std::istringstream iss(line);
         std::istringstream issl(line);
-        // skip headers
         iss >> c1 >> c2 >> c3 >> c4 >> c5;
         issl >> c1;
 
@@ -323,9 +328,9 @@ void prandtline::readInputPolar(std::string filename) {
                 dcz = cz[i][c] - cz[i][cm];
                 prod = prod * dcz;
                 if (prod < (-eps)) {
-                    cout << "**********************************" << endl;
+                    cout << "==================================" << endl;
                     cout << "extrema of the cl(alpha) function:" << endl;
-                    cout << "kxtrm[" << i << "] = " << cm << " cz[kxtrm][n] = " << cz[i][cm] << endl;
+                    cout << "kxtrm[" << i << "] = " << cm << " cz[i][kxtrm] = " << cz[i][cm] << endl;
                     kxtrm[i][j] = cm;
                     if (kfirst <= 0) {
                         mxtrm[i] = cm;   // index for first polar value
@@ -339,10 +344,8 @@ void prandtline::readInputPolar(std::string filename) {
 
         // read [breakpoint]
         else if (!issl.fail()) {
-            //read(13, *) rbreak[n]
             //cout << "c1 = " << c1 << " eof = " << polarfile.eof() << endl;
             rbreak[i] = c1;
-            //continue;
         }
 
         // done reading input polar
@@ -393,30 +396,70 @@ void prandtline::readInputPolar(std::string filename) {
         //     << " cq[i][j] = " << cq[i][j] << endl;
     }
 
-    cout << "*****************************" << endl;
+    cout << "==================================" << endl;
     cout << "extrema pointer + break point" << endl;
-    cout << "mxtrm[" << i << "] = " << mxtrm[i] << " kx[i] = " << kx[i] << " rbreak[i] = " << rbreak[i] << endl;
+    cout << right << setw(12) << " mxtrm[" << i << "] = " << left << setw(12) << mxtrm[i] << " # index for extrema location" << endl;
+    cout << right << setw(12) << " kx[ " << i << "] = " << left << setw(12) << kx[i] << " # maximum number of incidence angles for particular polar" << endl;
+    cout << right << setw(12) << " rbreak[" << i << "] = " << left << setw(12) << rbreak[i] << " # break point location" << endl;
 
     nx++;
 }
 
+void prandtline::readInputDownwash() {
+    //     downwash due to canard on wing for Clc/(pi*arc)=0.1
+    cout << endl << " readInputDownwash()" << endl;
+    // open input file
+    ifstream inputfile(filenameInputDownwash);
+    if (!inputfile.is_open()) {
+        cout << "\n\tCannot Read: " << filenameInputDownwash << endl;
+        cout << " File - Error in: readInputDownwash()" << endl;
+        abort();
+    }
+
+    // read file
+    double c1, c2;
+    std::string line;
+
+    for (int j = 0; j < lxx; ++j) {
+        //do 1 k = 1, lxx
+        std::getline(inputfile, line);
+        if (line.empty()) continue; // blank line
+        std::istringstream iss(line);
+        iss >> c1 >> c2;
+
+        // fill vectors
+        if (!iss.fail()) {
+            //cout << "wcanar[j] = " << c2 << endl;
+            dum = c1;
+            wcanar[j] = c2;
+        }
+        else if (inputfile.eof()==1) {
+            //cout << "done index = " << j << endl;
+            break;
+        }
+    }
+
+    // unit 32 -> canarwash.ylwl
+}
+
 void prandtline::printInputParams() {
-    cout << "ITX = " << itx << endl;
-    cout << "OMEGA = " << omega << endl;
-    cout << "AVIS = " << avis << endl;
-    cout << "B = " << B << endl;
-    cout << "Cx0 = " << Cx0 << endl;
-    cout << "LAMBD = " << Lambd << endl;
-    cout << "RSTR0 = " << Rstr0 << endl;
-    cout << "RF0 = " << Rf0 << endl;
-    cout << "DM = " << dm << endl;
-    cout << "TM = " << tmd << endl;
-    cout << "IWING = "<< iwing << endl;
-    cout << "ALPHAD = " << alphad << endl;
-    cout << "ACWASH = " << acwash << endl;
-    cout << "RHO = " << Rho << endl;
-    cout << "VINF = " << Vinf << endl;
-    cout << "AMU = " << Amu << endl;
-    cout << "IPOLAR = " << polarBool << endl;
-    cout << "NPOLAR = " << nx << endl;
+    cout << endl << " printInputParams()" << endl;
+    cout << right << setw(10) << "ITX = " << itx << endl;
+    cout << right << setw(10) << "OMEGA = " << omega << endl;
+    cout << right << setw(10) << "AVIS = " << avis << endl;
+    cout << right << setw(10) << "B = " << B << endl;
+    cout << right << setw(10) << "Cx0 = " << Cx0 << endl;
+    cout << right << setw(10) << "LAMBD = " << Lambd << endl;
+    cout << right << setw(10) << "RSTR0 = " << Rstr0 << endl;
+    cout << right << setw(10) << "RF0 = " << Rf0 << endl;
+    cout << right << setw(10) << "DM = " << dm << endl;
+    cout << right << setw(10) << "TM = " << tmd << endl;
+    cout << right << setw(10) << "IWING = "<< iwing << endl;
+    cout << right << setw(10) << "ALPHAD = " << alphad << endl;
+    cout << right << setw(10) << "ACWASH = " << acwash << endl;
+    cout << right << setw(10) << "RHO = " << Rho << endl;
+    cout << right << setw(10) << "VINF = " << Vinf << endl;
+    cout << right << setw(10) << "AMU = " << Amu << endl;
+    cout << right << setw(10) << "IPOLAR = " << polarBool << endl;
+    cout << right << setw(10) << "NPOLAR = " << nx << endl;
 }

@@ -24,6 +24,7 @@ public:
 
     void readInputParams(int argc, char** argv);
     void readInputPolar(std::string);
+    void readInputDownwash();
 
     void printInputParams();
 
@@ -54,6 +55,7 @@ private:
     std::string typcode;
     std::string filenameInputData; bool inputBool; int inputFlag;
     std::string filenameInputPolar; bool polarBool; int polarFlag;
+    std::string filenameInputDownwash;
 };
 
 #endif
