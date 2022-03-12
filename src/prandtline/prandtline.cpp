@@ -156,16 +156,18 @@ prandtline::~prandtline() {
 
 void prandtline::setMesh() {
     // set mesh, geometry, and flow
-    cout << "******point distribution, geometry and flow:"
-    cout << "y(j) = "
-         << "eta(j) = "
-            << "c(j) = "
-               << "t(j) = "
-                  << "d(j) = "
-                     << " g(j) = "
-                     << " w(j) = "
-                        << "at(j) = "
-                           << "polar(j) = " << endl;
+    cout << "=================================\n";
+    cout << "point distribution, geometry and flow:" << endl;
+    cout << "=================================\n";
+    cout << left << setw(10) << "y(j) = "
+            << left << setw(10) << "eta(j) = "
+            << left << setw(10) << "c(j) = "
+            << left << setw(10) << "t(j) = "
+            << left << setw(10) << "d(j) = "
+            << left << setw(10) << " g(j) = "
+            << left << setw(10) << " w(j) = "
+            << left << setw(10) << "at(j) = "
+            << left << setw(10) << "polar(j) = " << endl;
 
     amdum=0.;
     cavdum=0.;
@@ -174,7 +176,7 @@ void prandtline::setMesh() {
 
     for (int j = 0; j < jx; ++j) {
         //do 6 j=1,jx
-        tetj = (j - 1) * dtet;
+        tetj = j * dtet; //(j - 1) * dtet;
         yj = -cos(tetj);
         y[j] = yj;
         etaj = -cos(tetj + .5 * dtet);
@@ -235,30 +237,30 @@ void prandtline::setMesh() {
                 c[j] = xte[j] - xle[j];
                 xacm[j] = xle[j] + 0.25 * c[j];
                 if (j>=2) {
-                    xiac(j - 1) = 0.5 * (xacm(j) + xacm(j - 1));
+                    xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
                 }
-                amdum = amdum + c(j) * (etaj - etajm);
-                cavdum = cavdum + c(j)**2 * (etaj - etajm);
-                a0(j) = 0.
+                amdum = amdum + c[j] * (etaj - etajm);
+                cavdum = cavdum + pow(c[j],2) * (etaj - etajm);
+                a0[j] = 0.;
             }
             else {
                 // slender body treatment of fuselage
                 phij = acos(yj / rf);
-                xle(j) = rf * (1.0 - sin(phij));
-                xte(j) = cxm;
-                c(j) = xte(j) - xle(j);
-                xacm(j) = xacm(j - 1) + 0.033333 * ((yj / 0.11111)**2 -(y(j - 1) / 0.11111) * *2);
-                if (j.ge.2) {
-                    xiac(j - 1) = 0.5 * (xacm(j) + xacm(j - 1));
+                xle[j] = rf * (1.0 - sin(phij));
+                xte[j] = cxm;
+                c[j] = xte[j] - xle[j];
+                xacm[j] = xacm[j - 1] + 0.033333 * (pow((yj / 0.11111),2) -pow((y[j - 1]/0.11111),2));
+                if (j>=2) {
+                    xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
                 }
-                a0(j) = 0.;
+                a0[j] = 0.;
             }
         }
 
         // if polar is [on] off
-        if (ipolar) {
+        if (polarBool) {
             if (y[j]>(rbreak[n]-eps)) {
-                cout << "rbreak(n) = " << rbreak[n];
+                cout << "rbreak(n) = " << rbreak[n] << endl;
                 n = n + 1;
             }
         }
@@ -266,19 +268,380 @@ void prandtline::setMesh() {
             n = 0;
         }
 
-        polar(j) = n
-        write(6, 1003) y(j), eta(j), c(j), t(j), dem(j), g(j), w(j), at(j), polar(j)
-        write(17, *) y(j), c(j), dem(j), t(j)
-        write(29, *) y(j), xle(j), xte(j), xacm(j)
-        if (j.ge.2) write(33, *) eta(j - 1), xiac(j - 1)
+        polar[j] = n;
+        cout << left << setw(12) << y[j]
+                << left << setw(12) << eta[j]
+                << left << setw(12) << c[j]
+                << left << setw(12) << t[j]
+                << left << setw(12) << dem[j]
+                << left << setw(12) << g[j]
+                << left << setw(12) << w[j]
+                << left << setw(12) << at[j]
+                << left << setw(12) << polar[j] << endl;
+
+        //write(17, *) y(j), c(j), dem(j), t(j)
+        //write(29, *) y(j), xle(j), xte(j), xacm(j)
+        //if (j>=2) write(33, *) eta(j - 1), xiac(j - 1)
     }
-    cout << " "
-    eta(jx)=eta(jx-1)
-    xiac(jx)=xiac(jx-1)
-    am=amdum
-    cav=cavdum/am
-    arm=4./am
-    Re=0.5*Rho*Vinf*B*cav/Amu
+
+    // geometry calculations & physics
+    eta[jx] = eta[jx - 1];
+    xiac[jx] = xiac[jx - 1];
+    am=amdum;
+    cav=cavdum/am;
+    arm=4./am;
+    Re=0.5*Rho*Vinf*B*cav/Amu;
+}
+
+void prandtline::solveLiftingLine() {
+    int jp, jm;
+    int n = 0;  // polar index
+    ivis=0;
+    vis=0.;
+
+    cout << endl << endl << "solveLiftingLine() " << endl;
+    cout << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
+    cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
+    cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
+
+    // setup angular distribution
+    if (alstep==0) nsteps = 1;
+    else nsteps=1+(alphafi-alphain)/alstep;
+    alphad = alphain-alstep;
+    cout << " nsteps = " << nsteps << endl;
+    if((nsteps <= 0.) || (nsteps>101)) {
+        cout << "bad sequence, exit" << endl;
+        abort();
+    }
+
+    // save polar filename
+    title = "test.dat";
+    cout << "name of saved polar? = " << title << endl;
+
+    // loop over incidence angles
+    for (int nstep = 0; nstep < nsteps; nstep++) {
+        alphad = alphad + alstep;
+        alpha = degrad * alphad;
+        if (abs(alphad)>=91.0) {
+            cout << "alphad>91 deg, stop" << endl;
+            abort();
+        }
+        iter = 0;
+        cout << endl << " solution:" << endl;
+        cout << " alpha = " << alphad << " (degrees)" << endl;
+        if (ivis==0) {
+            cout << "do you want to introduce viscous effects?" << endl;
+            cout << "viscous/inviscid=1/0   choose ivis=" << endl;
+            //read(5, *) ivis
+            if (ivis!=0) {
+                ivis = 1;
+                vis = 1.;
+            }
+        } else {
+            ivis = 1;
+            vis = 1.;
+        }
+
+        // loop over relaxation steps
+        for (int it = 0; it < itx; ++it) {
+            //do 200 it = 1, itx
+            iter = iter + 1;
+
+            if (polarBool) {
+                // search for point on polar and polar coefficients
+                for (int j = 1; j < (jx - 1); ++j) {
+                    n = polar[j];
+                    atj = at[j];
+                    atj = atj + acwash * wcanar[j];
+                    mj = 1;
+                    prod = 1.57 - atj;
+
+                    // loop over wingspan mesh points
+                    for (int k = 1; k < (kx[n] - 1); ++k) {
+                        // kx is maximum number of polar values
+                        prod = prod * (inc[n][k] - atj);
+                        if (prod >= (-eps)) break;
+                        prod = 1.;
+                        mj = k;
+                    }
+
+                    a1[j] = (cx[n][mj + 1] - cx[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
+                    a0[j] = cx[n][mj] - a1[j] * inc[n][mj];
+                    b1[j] = (cz[n][mj + 1] - cz[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
+                    b0[j] = cz[n][mj] - b1[j] * inc[n][mj];
+                    c1[j] = (cq[n][mj + 1] - cq[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
+                    c0[j] = cq[n][mj] - c1[j] * inc[n][mj];
+                    cxj = a0[j] + a1[j] * atj;
+                    czj = b0[j] + b1[j] * atj;
+                    qj = c0[j] + c1[j] * atj;
+                    m[j] = mj;
+                    l[j] = czj;
+                    d[j] = vis * cxj;
+                    q[j] = qj;
+                }
+
+                m[0] = m[1];
+                l[0] = l[1] + (l[2] - l[1]) * (y[0] - y[1]) / (y[2] - y[1]);
+                d[0] = d[1] + (d[2] - d[1]) * (y[0] - y[1]) / (y[2] - y[1]);
+                m[jx] = m[jx - 1];
+                l[jx] = l[jx - 1] + (l[jx - 1] - l[jx - 2]) * (y[jx] - y[jx - 1])
+                                    / (y[jx - 1] - y[jx - 2]);
+                d[jx] = d[jx - 1] + (d[jx - 1] - d[jx - 2]) * (y[jx] - y[jx - 1])
+                                    / (y[jx - 1] - y[jx - 2]);
+            }
+
+
+
+            // fixed point iteration
+            g[0] = 0.;
+            g[jx] = 0.;
+            dgx = 0.;
+            jdx = 0;
+
+            for (int j = 0; j < (jx - 1); ++j) {
+                //do 12 j = 2, jx - 1
+                sum = 0.;
+
+                for (int k = 0; k < (jx - 1); ++k) {
+                    //do 11 k = 1, jx - 1
+                    // downwash for non - straight lifting line
+                    // trailed vorticity
+                    phi0 = copysign(1.0, y[j] - eps) * atan((xacm[j] - xiac[k]) / (y[j] - eta[k]));
+                    sum = sum + (g[k + 1] - g[k]) * (1.0 - sin(phi0)) / (y[j] - eta[k]);
+
+                    // downwash due to lifting line
+                    if (((k + 1) != j) && (k < (jx - 1))) {
+                        dwkj = -g[k + 1] * ((xiac[k + 1] - xiac[k]) * (y[j] - y[k + 1])
+                                - (xacm[j] - xacm[k + 1]) * (eta[k + 1] - eta[k]))
+                               / pow((pow((xacm[j] - xacm[k + 1]),2) + pow((y[j] - y[k + 1]),2) + 10.0 * (eta[k + 1] - eta[k])), 1.5);
+                        sum = sum + dwkj;
+                        //endif
+                    }
+                    //11 continue
+                }
+
+                wj = -sum / (4. * pi);
+                atj = alpha + atan2(wj, 1.);
+                atj = atj + acwash * wcanar[j];
+                attj = atj + t[j];
+                czj = b0[j] + b1[j] * attj;
+                if (polarBool) {
+                    reg = 0.;
+                    if (m[j] >= mxtrm[n]) {
+                        reg = -c[j] * b1[j]
+                              * (1. / (y[j] - eta[j - 1]) - 1. / (y[j] - eta[j]))
+                              / (16. * pi * (1.0 + wj * wj));
+                        if (reg < eps) reg = 0.;
+                        //endif
+                    }
+                    //endif
+                }
+
+                dg[j] = (0.5 * c[j] * czj - g[j]
+                        + (avis + reg) * (g[j + 1] - 2. * g[j] + g[j - 1]))
+                                / (1. + c[j] * b1[j] * (1. / (y[j] - eta[j - 1]) - 1. / (y[j] - eta[j]))
+                                / (8. * pi * (1.0 + wj * wj)) + 2. * (avis + reg));
+                w[j] = wj;
+                at[j] = attj;
+
+                if (abs(y[j]) <= rf) {
+                    dg[j] = g[j - 1] + 2.0 * rf * sin(3.0 * alpha) / 3.0 * ((1.0 - pow((y[j] / rf),2))
+                            / (1.0 + pow((y[j] / rf),2)) - (1.0 - pow((y[j - 1] / rf),2))
+                            / (1.0 + pow((y[j - 1] / rf),2))) - g[j];
+                }
+
+                g[j] = g[j] + omega * dg[j];
+                if (abs(dgx) < abs(dg[j])) {
+                    dgx = dg[j];
+                    jdx = j;
+                }
+                //12 continue
+            }
+
+            if (iter == 1) res0 = dgx;
+            alogres = log10(abs(dgx / res0) + eps);
+            //write(31, *) iter, alogres
+            w[1] = w[2] + (w[3] - w[2]) * (y[1] - y[2]) / (y[3] - y[2]);
+            w[jx] = w[jx - 1] + (w[jx - 2] - w[jx - 1]) * (y[jx] - y[jx - 1]) / (y[jx - 2] - y[jx - 1]);
+            at[1] = at[2] + (at[3] - at[2]) * (y[1] - y[2]) / (y[3] - y[2]);
+            at[jx] = at[jx - 1] + (at[jx - 2] - at[jx - 1]) * (y[jx] - y[jx - 1]) / (y[jx - 2] - y[jx - 1]);
+            if (abs(dgx) < eps) break; // goto 300
+            cout << "it = " << it << " dgx = " << abs(dgx) << " eps = " << eps << endl;
+            //200 continue
+        }
+
+        // check if results converged
+        if (abs(dgx) > eps) {
+            cout << " NOT CONVERGED!!!!!" << endl;
+            abort();
+        }
+
+        // results
+        cout << "alphad=" << alphad << " deg" << endl;
+        cout << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
+        //cout << "m(j) = " << (m[j], j = 1, jx)
+        jx2 = jx / 2;
+        is = jx % 2; // mod(jx, 2);
+        si = is;
+        cl = 0.;
+        cm0 = 0.;
+        amdum = 0.;
+        xac = 0.;
+        cmac = 0.;
+        fz[1] = 0.;
+        fz[jx] = 0.;
+        cmf[1] = 0.;
+        cmf[2] = 0.;
+        cmf[jx] = 0.;
+        cmt[1] = 0.;
+        cmt[jx] = 0.;
+
+        // calculate bending moment
+        for (int j = 0; j < (jx - 1); ++j) {
+            //do 13 j = 2, jx - 1
+            cl = cl + g[j] * (eta[j] - eta[j - 1]);
+
+            // if polar is [off] on
+            if (!polarBool) {
+                at[j] = alpha + atan2(w[j], 1.) + t[j];
+                q[j] = c0[j] + c1[j] * at[j];
+                xac = xac + (xle[j] + 0.25 * c[j]) * c[j] * (eta[j] - eta[j - 1]);
+                cmac = cmac + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+
+                if (j == (jx2 + 1)) cmt[j] = -cmt[j - 1] + (1. - si) * pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+                else cmt[j] = cmt[j - 1] + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+            }
+            else {
+                amdum = amdum + c[j] * (eta[j] - eta[j - 1]);
+                xac = xac + xacm[j] * c[j] * (eta[j] - eta[j - 1]);
+                cmac = cmac + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+            }
+
+            if (j == (jx2 + 1)) {
+                fz[j] = -fz[j - 1] + (1. - si) * g[j] * (eta[j] - eta[j - 1]);
+                cmt[j] = -cmt[j - 1] + (1. - si) * pow(c[j],2)
+                          *(q[j] + (xacm[j + 1] - xacm[j]) * fz[j] / cav)
+                          *(eta[j] - eta[j - 1]);
+            }
+            else {
+                fz[j] = fz[j - 1] + g[j] * (eta[j] - eta[j - 1]);
+                cmt[j] = cmt[j - 1] + pow(c[j],2)
+                          * (q[j] + (xacm[j + 1] - xacm[j]) * fz[j] / cav)
+                          * (eta[j] - eta[j - 1]);
+            }
+
+            cmf[j + 1] = cmf[j] - fz[j] * (eta[j + 1] - eta[j]);
+            //13 continue
+        }
+
+        at[1] = at[2] + (at[3] - at[2]) * (y[1] - y[2]) / (y[3] - y[2]);
+        at[jx] = at[jx - 1] + (at[jx - 2] - at[jx - 1]) * (y[jx] - y[jx - 1]) / (y[jx - 2] - y[jx - 1]);
+        cl = 0.5 * arm * cl;
+        xac = xac / amdum;
+        cmac = cmac / (amdum * cav);
+        cm0 = cmac - xac * cl / cav;
+        xcp = xac - cav * cmac / cl;
+        cd0 = 0.;
+        sum = 0.;
+        sum0 = 0.;
+        sum1 = 0.;
+        sum2 = 0.;
+
+        // calculate drag
+        for (int j = 0; j < jx; ++j) {
+            //do 14 j = 1, jx
+            jm = j - 1;
+            if (j==1) jm = 1;
+            czj = b0[j] + b1[j] * at[j];
+            sum = sum + g[j] * w[j] * (eta[j] - eta[jm]);
+            if (!polarBool) {
+                rey = c[j] * Re;
+                if (rey < 1.0e5) rey = 1.0e5;
+                cd0 = 1.328 / sqrt(rey);
+                if (rey > 1.0e5) cd0 = .072 / pow(rey,.2);
+                cd0 = 2. * cd0;
+                sum0 = sum0 + cd0 * (eta[j] - eta[jm]);
+                sum1 = 0.;
+                sum2 = 0.;
+                l[j] = b0[j] + b1[j] * at[j];
+                d[j] = vis * cd0;
+            }
+            else {
+                sum0 = sum0 + c[j] * d[j] * (eta[j] - eta[jm]);
+                sum1 = 0.;
+                sum2 = 0.;
+            }
+            //14 continue
+        }
+
+        cdi = -0.5 * arm * sum;
+        cdv = vis * 0.25 * arm * (sum0 + sum1 + sum2);
+
+        if (abs(cdi) < eps) em = 1.0;
+        else em = cl * cl / (pi * arm * cdi);
+
+        cd = cdi + cdv;
+        // *****distributions
+        //write(6, 1004)
+
+        // write function for printing distributions to file -Cp 3/11/22
+        //do 15 j = 1, jx
+        //write(6, 1003) y(j), c(j), t(j), dem(j), g(j), w(j), l(j), d(j), polar(j)
+        //write(18, *) y(j), g(j), w(j)
+        //write(19, *) y(j), g(j)
+        //write(20, *) y(j), w(j)
+        //write(21, *) y(j), l(j)
+        //write(22, *) y(j), at(j)
+        //write(23, *) y(j), d(j)
+        //write(24, *) y(j), eta(j), c(j), t(j), dem(j), g(j), w(j)
+        //15 continue
+
+        // force and moment unit conversion
+        for (int j = 0; j < jx; ++j) {
+            //do 16 j = 1, jx
+            fz[j] = 0.5 * arm * fz[j];
+            cmf[j] = 0.5 * arm * cmf[j];
+            cmt[j] = 0.25 * arm * cmt[j] / cav;
+            //write(26, *) y(j), cmf(j)
+            //write(27, *) eta(j), fz(j)
+            //write(28, *) eta(j), cmt(j)
+            //16 continue
+        }
+
+        cout << " results:" << endl;
+        cout << right << setw(12) << " alpha = " << alphad << endl;
+        cout << right << setw(12) << " inviscid contribution, CDi = " << cdi << endl;
+        cout << right << setw(12) << " oswald efficiency e=" << em << endl;
+        cout << right << setw(12) << " viscous contribution: CDv = " << cdv << endl;
+        cout<< " Global results:  " << endl;
+        cout << right << setw(12) << "CD = " << cd << endl;
+        cout << right << setw(12) << " lift coefficient CL = " << cl << endl;
+        cout << right << setw(12) << " pitching moment coefficient CM,0 " << cm0 << endl;
+        cout << right << setw(12) << " CM,ac= " << cmac << endl;
+        cout << right << setw(12) << " aerodynamic center x,ac = " << xac << endl;
+        cout << right << setw(12) << " center of pressure x,cp = " << xcp << endl;
+        cout << right << setw(12) << " root bending moment coef. CM,x = " << -cmf[jx2 + 1] << endl;
+        cout << right << setw(12) << " root torsion moment coef. CM,y = " << - cmt[jx2 + 1] << endl;
+
+        dum = 0.;
+
+        //write(25, *) alphad, cl, cd, dum, cmac
+        //write(30, *) alphad, cl / cd
+        //cout << "at(j)=", (at(j), j = 1, jx)
+        y[47] = -0.11111;
+        xle[47] = 1.3;
+        y[48] = -0.11110;
+        xle[48] = cxm;
+        y[54] = 0.11110;
+        xle[54] = cxm;
+        y[55] = 0.11111;
+        xle[55] = 1.3;
+        //write(34,*)y(47),xle(47)
+        //write(34,*)y(48),xle(48)
+        //write(34,*)y(54),xle(54)
+        //write(34,*)y(55),xle(55)
+        //write(35,*)cd,cl
+    }
 }
 
 int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
@@ -372,6 +735,9 @@ void prandtline::readInputParams(int argc, char **argv) {
         else if (a.compare("VINF") == 0) Vinf = b;
         else if (a.compare("AMU") == 0) Amu = b;
         else if (a.compare("IPOLAR") == 0) { polarBool = true; }
+        else if (a.compare("ALPHAIN") == 0) alphain = b;
+        else if (a.compare("ALPHAFI") == 0) alphafi = b;
+        else if (a.compare("ALPHASTEP") == 0) alstep = b;
         else {
             cout << " command: " << a << " not known" << endl;
             abort();
@@ -598,7 +964,7 @@ void prandtline::printCalculations() {
     cout << right << setw(32) << " max number of iterations itx = " << left << setw(10) << itx << endl;
     cout << right << setw(32) << "                        omega = " << left << setw(10) << omega << endl;
     cout << right << setw(32) << "   viscosity coefficient avis = " << left << setw(10) << avis << endl;
-    cout << right << setw(32) << "main wing data:"
+    cout << right << setw(32) << "main wing data:" << endl;
     cout << right << setw(32) << "                  wing span B = " << left << setw(10) << B << " (m)" << endl;
     cout << right << setw(32) << "   maximum chord/fuselage Cx0 = " << left << setw(10) << Cx0 << " (m)" << endl;
     cout << right << setw(32) << "      a. c. sweep angle Lambd = " << left << setw(10) << Lambd << "(deg)" << endl;
@@ -608,13 +974,13 @@ void prandtline::printCalculations() {
     cout << right << setw(32) << "        wing setting angle tm = " << left << setw(10) << tm << " (rd) =" <<tmd<<" (deg)" << endl;
     cout << right << setw(32) << "             wing shape 0/1/2 = " << left << setw(10) << iwing << endl;
     cout << right << setw(32) << "    downwash of canard acwash = " << left << setw(10) << acwash << endl;
-    cout << right << setw(32) << "air data:"
+    cout << right << setw(32) << "air data:" << endl;
     cout << right << setw(32) << "              air density Rho = " << left << setw(10) << Rho << " (kg/m**3)" << endl;
     cout << right << setw(32) << "           wind velocity Vinf = " << left << setw(10) << Vinf << " (m/s)" << endl;
     cout << right << setw(32) << "        dynamic viscosity Amu = " << left << setw(10) << Amu << " (kg/(m*s))" << endl;
     cout << right << setw(32) << "        reference Reynolds Re = " << left << setw(10) << Re << endl;
     cout << "======================================" << endl;
-    cout << "calculated data:"
+    cout << "calculated data:" << endl;
     cout << right << setw(32) << "                 wing area am = " << left << setw(10) <<am<< " (ref. B**2/4)" << endl;
     cout << right << setw(32) << "        wing aspect ratio arm = " << left << setw(10) << arm << endl;
     cout << right << setw(32) << "average aerodynamic chord cav = " << left << setw(10) << cav << " (ref. B/2)" << endl;

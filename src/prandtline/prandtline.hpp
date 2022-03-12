@@ -17,6 +17,7 @@ public:
 
     //
     void setMesh();
+    void solveLiftingLine();
 
     // memory
     int** create_2d_int_array(int n1, int n2, int **array);
@@ -34,13 +35,14 @@ public:
 
 private:
     int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
-    int jx2,is,iwing,nsteps,ivis,nstep,iter,it,mj,jdx;
+    int jx2,is,iwing,nsteps,ivis,iter,it,mj,jdx;
     int itx;
     //parameter(jxx=201,lxx=101,nxx=10)
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
-    double B,cxm,dm,tmd,Rho,Vinf,Amu,alphad,tm,alpha,Re,amdum;
-    double cavdum,dtet,tetj,yj,etaj,etajm,am,cav,arm,alphain;
-    double alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
+    double B,cxm,dm,tmd,Rho,Vinf,Amu,tm,alpha,Re,amdum;
+    double cavdum,dtet,tetj,yj,etaj,etajm,am,cav,arm;
+    double alphain,alphafi,alstep,alphad;
+    double vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;
     double rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
