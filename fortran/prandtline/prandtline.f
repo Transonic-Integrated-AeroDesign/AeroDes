@@ -1,24 +1,24 @@
       program prandtline
-      implicit none
+c      implicit none
       integer jxx,lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx
       integer jx2,is,iwing,j,nsteps,ivis,nstep,iter,it,mj,jdx,jm
       integer itx
       parameter(jxx=201,lxx=101,nxx=10)
-      real eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis
-      real B,cxm,dm,tmd,Rho,Vinf,Amu,alphad,tm,alpha,Re,amdum
-      real cavdum,dtet,tetj,yj,etaj,etajm,am,cav,arm,alphain
-      real alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj
-      real reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2
-      real rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0
-      real Rf0,rf,phij
-      real c(jxx),g(jxx),dg(jxx),y(jxx),eta(jxx)
-      real w(jxx),t(jxx),dem(jxx)
-      real a0(jxx),a1(jxx),b0(jxx),b1(jxx),c0(jxx),c1(jxx)
-      real l(jxx),d(jxx),q(jxx),at(jxx)
-      real cx(lxx,nxx),cz(lxx,nxx),cq(lxx,nxx),inc(lxx,nxx)
-      real cmf(jxx),cmt(jxx),fz(jxx)
-      real xle(jxx),xte(jxx),wcanar(jxx),xacm(jxx)
-      real rbreak(nxx)
+      double precision eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis
+      double precision B,cxm,dm,tmd,Rho,Vinf,Amu,alphad,tm,alpha,Re,amdum
+      double precision cavdum,dtet,tetj,yj,etaj,etajm,am,cav,arm,alphain
+      double precision alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj
+      double precision reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2
+      double precision rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr
+      double precision Rf0,rf,phij,phi0,dwkj,Lambd,lamb
+      double precision c(jxx),g(jxx),dg(jxx),y(jxx),eta(jxx)
+      double precision w(jxx),t(jxx),dem(jxx)
+      double precision a0(jxx),a1(jxx),b0(jxx),b1(jxx),c0(jxx),c1(jxx)
+      double precision l(jxx),d(jxx),q(jxx),at(jxx)
+      double precision cx(lxx,nxx),cz(lxx,nxx),cq(lxx,nxx),inc(lxx,nxx)
+      double precision cmf(jxx),cmt(jxx),fz(jxx)
+      double precision xle(jxx),xte(jxx),wcanar(jxx),xacm(jxx),xiac(jxx)
+      double precision rbreak(nxx)
       integer m(jxx),polar(jxx)
       integer kx(nxx),kxtrm(lxx,nxx),mxtrm(nxx)
       character*4 bry(18)
@@ -47,6 +47,9 @@
       open(unit=30,file='prandtline.incld',form='formatted')
       open(unit=31,file='prandtline.itres',form='formatted')
       open(unit=32,file='canarwash.ylwl',form='formatted')
+      open(unit=33,file='prandtline.etaxiac',form='formatted')
+      open(unit=34,file='prandtline.yxfuse',form='formatted')
+      open(unit=35,file='prandtline.cdcl',form='formatted')
 c*****constants
       eps=1.e-7
       pi=2.*asin(1.)
@@ -121,7 +124,7 @@ c*****polar data
                kfirst=1
             endif
          endif
-         prod=sign(1.,dcz)
+         prod=sign(1.0D0,dcz)
          km=k
  1    continue
  2    continue
@@ -189,14 +192,13 @@ c*****read in data
          write(6,*)'jx=',jx,'>jxx=',jxx,', change dimension:exiting!'
          stop
       endif
-      jx2=jx/2
-      is=mod(jx,2)
-      si=is
       read(15,*)itx
       read(15,*)omega
       read(15,*)avis
       read(15,*)B
       read(15,*)Cx0
+      read(15,*)Lambd
+      read(15,*)Rstr0
       read(15,*)Rf0
       read(15,*)dm
       read(15,*)tmd
@@ -206,10 +208,12 @@ c*****read in data
       read(15,*)Rho
       read(15,*)Vinf
       read(15,*)Amu
+      cxm=2.0*Cx0/B
+      lamb=degrad*Lambd
+      rstr=2.0*Rstr0/B
+      rf=2.0*Rf0/B
       tm=degrad*tmd
       alpha=degrad*alphad
-      cxm=2.0*Cx0/B
-      rf=2.0*Rf0/B
 c*****initialization
 c     downwash due to canard on wing for Clc/(pi*arc)=0.1
       if(acwash.ne.0.0)then
@@ -218,8 +222,6 @@ c     downwash due to canard on wing for Clc/(pi*arc)=0.1
 c*****mesh, geometry and flow
       write(6,*)' '
       write(6,*)'******point distribution, geometry and flow:'
-c      write(6,*)'read prandtline.in file y/n=1/0 ?'
-c      read(5,*)inprandtl
       write(6,1002)
       amdum=0.
       cavdum=0.
@@ -251,19 +253,28 @@ c      read(5,*)inprandtl
 c*****elliptic wing
          if(iwing.eq.0)then
             c(j)=cxm*sin(tetj)
-            xle(j)=0.25*(cxm-c(j))
+            xacm(j)=0.25*cxm
+            xacm(j)=xacm(j)+tan(lamb)*abs(y(j))
+            xle(j)=xacm(j)-0.25*c(j)
             xte(j)=xle(j)+c(j)
+            if(j.ge.2)xiac(j-1)=0.5*(xacm(j)+xacm(j-1))
+            amdum=amdum+c(j)*(etaj-etajm)
+            cavdum=cavdum+c(j)**2*(etaj-etajm)
          endif
 c*****rectangular wing
          if(iwing.eq.1)then
             c(j)=cxm
             xle(j)=0.0
             xte(j)=cxm
+            xacm(j)=0.5*cxm
+            xiac(j)=0.5*cxm
+            amdum=amdum+c(j)*(etaj-etajm)
+            cavdum=cavdum+c(j)**2*(etaj-etajm)
          endif
 c******tailess configuration
          if(iwing.eq.2)then
             if(abs(yj).ge.rf)then
-               if(abs(yj).ge.0.3)then
+               if(abs(yj).ge.rstr)then
                   xle(j)=cxm+0.01589-0.468*(1.0-abs(yj))
                   xte(j)=cxm+0.1269-0.181*(1.0-abs(yj))
                else
@@ -272,22 +283,27 @@ c******tailess configuration
                endif
                c(j)=xte(j)-xle(j)
                xacm(j)=xle(j)+0.25*c(j)
+               if(j.ge.2)then
+                  xiac(j-1)=0.5*(xacm(j)+xacm(j-1))
+               endif
+               amdum=amdum+c(j)*(etaj-etajm)
+               cavdum=cavdum+c(j)**2*(etaj-etajm)
 	       a0(j)=0.
             else
+c     slender body treatment of fuselage
                phij=acos(yj/rf)
                xle(j)=rf*(1.0-sin(phij))
                xte(j)=cxm
                c(j)=xte(j)-xle(j)
-               xacm(j)=xacm(j-1)
+               xacm(j)=xacm(j-1)+0.033333*((yj/0.11111)**2
+     &              -(y(j-1)/0.11111)**2)
+               if(j.ge.2)then
+                  xiac(j-1)=0.5*(xacm(j)+xacm(j-1))
+               endif
                a0(j)=0.
             endif
          endif
-         amdum=amdum+c(j)*(etaj-etajm)
-         cavdum=cavdum+c(j)**2*(etaj-etajm)
-c         if(inprandtl.eq.1)then
-c            read(16,*)y(j),eta(j),c(j),t(j),dem(j),g(j),w(j)
-c            at(j)=alpha+atan2(w(j),1.)+t(j)
-c         endif
+
          if(ipolar.eq.1)then
             if(y(j).gt.rbreak(n)-eps)then
                write(6,*)'rbreak(n)=',rbreak(n)
@@ -296,14 +312,17 @@ c         endif
          else
             n=0
          endif
+
          polar(j)=n
          write(6,1003)y(j),eta(j),c(j),t(j),dem(j),g(j),w(j),at(j)
      &        ,polar(j)
          write(17,*)y(j),c(j),dem(j),t(j)
          write(29,*)y(j),xle(j),xte(j),xacm(j)
+         if(j.ge.2)write(33,*)eta(j-1),xiac(j-1)
  6    continue
       write(6,*)' '
       eta(jx)=eta(jx-1)
+      xiac(jx)=xiac(jx-1)
       am=amdum
       cav=cavdum/am
       arm=4./am
@@ -316,13 +335,14 @@ c         endif
       write(6,*)'   viscosity coefficient avis=',avis
       write(6,*)'main wing data:'
       write(6,*)'                  wing span B=',B,' (m)'
+      write(6,*)'   maximum chord/fuselage Cx0=',Cx0,' (m)'
+      write(6,*)'      a. c. sweep angle Lambd=',Lambd,'(deg)'
+      write(6,*)'    half span of strake Rstr0=',Rstr0,' (m)'
       write(6,*)'          fuselage radius Rf0=',Rf0,' (m)'
-      write(6,*)'            maximum chord cxm=',cxm,' (ref. B/2)'
-      write(6,*)'    dimensionless fuselage rf=',rf,' (ref. B/2)'
       write(6,*)'    relative camber height dm=',dm,' (ref. C)'
       write(6,*)'        wing setting angle tm=',tm,' (rd) ='
      &     ,tmd,' (deg)'
-      write(6,*)'         wing shape y/n(=1/0)=',iwing
+      write(6,*)'             wing shape 0/1/2=',iwing
       write(6,*)'    downwash of canard acwash=',acwash
       write(6,*)'air data:'
       write(6,*)'              air density Rho=',Rho,' (kg/m**3)'
@@ -424,17 +444,30 @@ c     fixed point iteration
       do 12 j=2,jx-1
          sum=0.
          do 11 k=1,jx-1
-            sum=sum+(g(k+1)-g(k))/(y(j)-eta(k))
+c     downwash for non-straight lifting line
+c     trailed vorticity
+            phi0=sign(1.0D0,y(j)-eps)
+     &           *atan((xacm(j)-xiac(k))/(y(j)-eta(k)))
+            sum=sum+(g(k+1)-g(k))*(1.0-sin(phi0))/(y(j)-eta(k))
+c            write(6,*)'xacm = ',xacm(j),' xiac = ',xiac(k)
+c            write(6,*)'y(j) = ',y(j),'eta(k) = ',eta(k)
+c            write(6,*)'r = ',(xacm(j)-xiac(k))/(y(j)-eta(k))
+c            write(6,*)'g(k+1) = ', g(k+1),' sum = ',sum,' phi0 = ',phi0
+c     downwash due to lifting line
+            if(k+1.ne.j.and.k.lt.jx-1)then
+               dwkj=-g(k+1)*((xiac(k+1)-xiac(k))*(y(j)-y(k+1))
+     &              -(xacm(j)-xacm(k+1))*(eta(k+1)-eta(k)))
+     &              /((xacm(j)-xacm(k+1))**2+(y(j)-y(k+1))**2
+     &              +10.0*(eta(k+1)-eta(k)))**1.5
+               sum=sum+dwkj
+            endif
  11      continue
          wj=-sum/(4.*pi)
-         atj=alpha+atan2(wj,1.)
-c         if(abs(y(j)).le.rf)then
-c            wj=-0.5*alpha
-c            atj=0.5*alpha
-c         endif
+         atj=alpha+datan2(wj,1.0D0)
          atj=atj+acwash*wcanar(j)
          attj=atj+t(j)
          czj=b0(j)+b1(j)*attj
+
          if(ipolar.eq.1)then
             reg=0.
             if(m(j).ge.mxtrm(n))then
@@ -451,7 +484,7 @@ c         endif
          w(j)=wj
          at(j)=attj
          if(abs(y(j)).le.rf)then
-           dg(j)=g(j-1)+2.0*rf*alpha*((1.0-(y(j)/rf)**2)
+           dg(j)=g(j-1)+2.0*rf*sin(3.0*alpha)/3.0*((1.0-(y(j)/rf)**2)
      &           /(1.0+(y(j)/rf)**2)-(1.0-(y(j-1)/rf)**2)
      &           /(1.0+(y(j-1)/rf)**2))-g(j)
          endif
@@ -462,7 +495,7 @@ c         endif
          endif
  12   continue
       if(iter.eq.1)res0=dgx
-      alogres=alog10(abs(dgx/res0)+eps)
+      alogres=dlog10(abs(dgx/res0)+eps)
       write(31,*)iter,alogres
       w(1)=w(2)
      &     +(w(3)-w(2))*(y(1)-y(2))/(y(3)-y(2))
@@ -480,8 +513,12 @@ c*****results
       write(6,*)'alphad=',alphad,' deg'
       write(6,*)'iter=',iter,' dgx=',dgx,' jdx=',jdx
       write(6,*)'m(j)=',(m(j),j=1,jx)
+      jx2=jx/2
+      is=mod(jx,2)
+      si=is
       cl=0.
       cm0=0.
+      amdum=0.
       xac=0.
       cmac=0.
       fz(1)=0.
@@ -494,7 +531,7 @@ c*****results
       do 13 j=2,jx-1
          cl=cl+g(j)*(eta(j)-eta(j-1))
          if(ipolar.ne.1)then
-            at(j)=alpha+atan2(w(j),1.)+t(j)
+            at(j)=alpha+atan2(w(j),1.0D0)+t(j)
             q(j)=c0(j)+c1(j)*at(j)
             xac=xac+(xle(j)+0.25*c(j))*c(j)*(eta(j)-eta(j-1))
             cmac=cmac+c(j)**2*q(j)*(eta(j)-eta(j-1))
@@ -504,25 +541,32 @@ c*****results
                cmt(j)=cmt(j-1)+c(j)**2*q(j)*(eta(j)-eta(j-1))
             endif
          else
-            xac=xac+(xle(j)+0.25*c(j))*c(j)*(eta(j)-eta(j-1))
+            amdum=amdum+c(j)*(eta(j)-eta(j-1))
+            xac=xac+xacm(j)*c(j)*(eta(j)-eta(j-1))
             cmac=cmac+c(j)**2*q(j)*(eta(j)-eta(j-1))
          endif
+
          if(j.eq.jx2+1)then
             fz(j)=-fz(j-1)+(1.-si)*g(j)*(eta(j)-eta(j-1))
-            cmt(j)=-cmt(j-1)+(1.-si)*c(j)**2*q(j)*(eta(j)-eta(j-1))
+            cmt(j)=-cmt(j-1)+(1.-si)*c(j)**2
+     &           *(q(j)+(xacm(j+1)-xacm(j))*fz(j)/cav)
+     &           *(eta(j)-eta(j-1))
          else
             fz(j)=fz(j-1)+g(j)*(eta(j)-eta(j-1))
-            cmt(j)=cmt(j-1)+c(j)**2*q(j)*(eta(j)-eta(j-1))
+            cmt(j)=cmt(j-1)+c(j)**2
+     &           *(q(j)+(xacm(j+1)-xacm(j))*fz(j)/cav)
+     &           *(eta(j)-eta(j-1))
          endif
          cmf(j+1)=cmf(j)-fz(j)*(eta(j+1)-eta(j))
  13   continue
+c**  why is this calculation repeated?
       at(1)=at(2)
      &     +(at(3)-at(2))*(y(1)-y(2))/(y(3)-y(2))
       at(jx)=at(jx-1)
      &     +(at(jx-2)-at(jx-1))*(y(jx)-y(jx-1))/(y(jx-2)-y(jx-1))
       cl=0.5*arm*cl
-      xac=xac/am
-      cmac=cmac/(am*cav)
+      xac=xac/amdum
+      cmac=cmac/(amdum*cav)
       cm0=cmac-xac*cl/cav
       xcp=xac-cav*cmac/cl
       cd0=0.
@@ -563,7 +607,7 @@ c*****results
 c*****distributions
       write(6,1004)
       do 15 j=1,jx
-         write(6,1003)y(j),c(j),t(j),dem(j),g(j),w(j),l(j),d(j),polar(j)
+         write(6,1003)y(j),c(j),t(j),dem(j),g(j),w(j),l(j),d(j),polar(j),j
          write(18,*)y(j),g(j),w(j)
          write(19,*)y(j),g(j)
          write(20,*)y(j),w(j)
@@ -584,6 +628,7 @@ c*****force and moment
       write(6,*)
       write(6,*)'********'
       write(6,*)'results:'
+      write(6,1012)alphad
       write(6,1005)cdi,em
       write(6,1006)cdv
       write(6,1007)cd,cl
@@ -597,6 +642,19 @@ c*****force and moment
       write(6,*)
       write(6,*)'at(j)=',(at(j),j=1,jx)
       write(6,*)
+      y(47)=-0.11111
+      xle(47)=1.3
+      y(48)=-0.11110
+      xle(48)=cxm
+      y(54)=0.11110
+      xle(54)=cxm
+      y(55)=0.11111
+      xle(55)=1.3
+      write(34,*)y(47),xle(47)
+      write(34,*)y(48),xle(48)
+      write(34,*)y(54),xle(54)
+      write(34,*)y(55),xle(55)
+      write(35,*)cd,cl
  400  continue
 c*****files
       write(6,*)'******data file:'
@@ -624,9 +682,9 @@ c*****files
  1001 format(1x,i4,4x,f8.4,4x,f8.4,4x,f8.4,4x,f8.4)
  1002 format(7x,'y(j)=',5x,'eta(j)=',7x,'c(j)=',7x,'t(j)='
      &     ,7x,'d(j)=',7x,'g(j)=',7x,'w(j)=',6x,'at(j)=',3x,'polar(j)=')
- 1003 format(8f12.4,i12)
+ 1003 format(8f12.6,i12)
  1004 format(7x,'y(j)=',7x,'c(j)=',7x,'t(j)=',7x,'d(j)=',7x,'g(j)=',
-     &     7x,'w(j)=',7x,'  Cl=',7x,'  Cd=',3x,'polar(j)=')
+     &     7x,'w(j)=',7x,'  Cl=',7x,'  Cd=',3x,'polar(j)=',3x,'j')
  1005 format(' inviscid contribution: CDi=',f10.6
      &     ,'    Oswald efficiency e=',f10.4)
  1006 format('  viscous contribution: CDv=',f10.6)
@@ -642,4 +700,5 @@ c*****files
      &     ,'  root torsion moment coef. CM,y=',f10.4)
  1011 format('                                      '
      &     ,'center of pressure x,cp=',f10.4)
+ 1012 format('             alpha: alphdad=',f10.6)
       end
