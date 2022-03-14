@@ -31,7 +31,8 @@ public:
     void readInputDownwash();
 
     void printInputParams();
-    void printCalculations();
+    void printGeomSummary();
+    void printXFoilMaxValues();
     void printDistributions();
 
 private:

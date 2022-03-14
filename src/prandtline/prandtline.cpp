@@ -48,10 +48,10 @@ prandtline::prandtline(int argc, char** argv) {
     cq  = (double **) malloc(sizeof(double *)*nxx);
     inc  = (double **) malloc(sizeof(double *)*nxx);
 
-    create_2d_double_array(lxx, nxx, cx);
-    create_2d_double_array(lxx, nxx, cz);
-    create_2d_double_array(lxx, nxx, cq);
-    create_2d_double_array(lxx, nxx, inc);
+    create_2d_double_array(nxx, lxx, cx);
+    create_2d_double_array(nxx, lxx, cz);
+    create_2d_double_array(nxx, lxx, cq);
+    create_2d_double_array(nxx, lxx, inc);
 
     cmf  = (double *) malloc(sizeof(double)*jxx);
     cmt  = (double *) malloc(sizeof(double)*jxx);
@@ -156,18 +156,18 @@ prandtline::~prandtline() {
 
 void prandtline::setMesh() {
     // set mesh, geometry, and flow
-    cout << "=========================================\n";
+    cout << endl << "=========================================\n";
     cout << "point distribution, geometry and flow:" << endl;
     cout << "=========================================\n";
-    cout << left << setw(12) << " y(j) "
-            << left << setw(12) << " eta(j) "
-            << left << setw(12) << " c(j) "
-            << left << setw(12) << " t(j) "
-            << left << setw(12) << " d(j) "
-            << left << setw(12) << " g(j) "
-            << left << setw(12) << " w(j) "
-            << left << setw(12) << " at(j) "
-            << left << setw(12) << " polar(j) " << endl;
+    cout << left << setw(16) << " y(j) "
+            << left << setw(16) << " eta(j) "
+            << left << setw(16) << " c(j) "
+            << left << setw(16) << " t(j) "
+            << left << setw(16) << " d(j) "
+            << left << setw(16) << " g(j) "
+            << left << setw(16) << " w(j) "
+            << left << setw(16) << " at(j) "
+            << left << setw(16) << " polar(j) " << endl;
 
     amdum=0.;
     cavdum=0.;
@@ -209,7 +209,7 @@ void prandtline::setMesh() {
             xacm[j] = xacm[j] + tan(lamb) * abs(y[j]);
             xle[j] = xacm[j] - 0.25 * c[j];
             xte[j] = xle[j] + c[j];
-            if (j>=2) xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
+            if (j>=1) xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
             amdum = amdum + c[j] * (etaj - etajm);
             cavdum = cavdum + pow(c[j],2) * (etaj - etajm);
         }
@@ -236,7 +236,7 @@ void prandtline::setMesh() {
                 }
                 c[j] = xte[j] - xle[j];
                 xacm[j] = xle[j] + 0.25 * c[j];
-                if (j>=2) {
+                if (j>=1) {
                     xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
                 }
                 amdum = amdum + c[j] * (etaj - etajm);
@@ -250,9 +250,7 @@ void prandtline::setMesh() {
                 xte[j] = cxm;
                 c[j] = xte[j] - xle[j];
                 xacm[j] = xacm[j - 1] + 0.033333 * (pow((yj / 0.11111),2) -pow((y[j - 1]/0.11111),2));
-                if (j>=2) {
-                    xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
-                }
+                if (j>=1) { xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]); }
                 a0[j] = 0.;
             }
         }
@@ -260,7 +258,7 @@ void prandtline::setMesh() {
         // if polar is [on] off
         if (polarBool) {
             if (y[j]>(rbreak[n]-eps)) {
-                cout << "rbreak(n) = " << rbreak[n] << endl;
+                //if(DBG) cout << "rbreak(n) = " << rbreak[n] << endl;
                 n = n + 1;
             }
         }
@@ -269,29 +267,30 @@ void prandtline::setMesh() {
         }
 
         polar[j] = n;
-        cout << std::setprecision(5);
-        cout << left << setw(12) << y[j]
-                << left << setw(12) << eta[j]
-                << left << setw(12) << c[j]
-                << left << setw(12) << t[j]
-                << left << setw(12) << dem[j]
-                << left << setw(12) << g[j]
-                << left << setw(12) << w[j]
-                << left << setw(12) << at[j]
-                << left << setw(12) << polar[j] << endl;
+        cout << std::setprecision(7);
+        cout << left << setw(16) << y[j]
+                << left << setw(16) << eta[j]
+                << left << setw(16) << c[j]
+                << left << setw(16) << t[j]
+                << left << setw(16) << dem[j]
+                << left << setw(16) << g[j]
+                << left << setw(16) << w[j]
+                << left << setw(16) << at[j]
+                << left << setw(16) << polar[j]  << j << endl;
 
         //write(17, *) y(j), c(j), dem(j), t(j)
         //write(29, *) y(j), xle(j), xte(j), xacm(j)
         //if (j>=2) write(33, *) eta(j - 1), xiac(j - 1)
     }
 
-    // geometry calculations & physics (move some
-    eta[jx] = eta[jx - 1];
-    xiac[jx] = xiac[jx - 1];
+    // geometric summary
     am=amdum;
     cav=cavdum/am;
     arm=4./am;
     Re=0.5*Rho*Vinf*B*cav/Amu;
+    int jmax = jx-1; // accounts for zeroth element
+    eta[jmax] = eta[jmax-1];
+    xiac[jmax] = xiac[jmax-1];
 }
 
 void prandtline::solveLiftingLine() {
@@ -403,7 +402,7 @@ void prandtline::solveLiftingLine() {
             jdx = 0;
 
             // downwash & gamma integral
-            for (j = 1; j < jx - 1; ++j) { // (jx - 1)
+            for (j = 1; j < jx - 1; ++j) {
                 //do 12 j = 2, jx - 1
                 sum = 0.;
 
@@ -412,9 +411,12 @@ void prandtline::solveLiftingLine() {
                     // (end at k-1 indice since we are performing forward derivative)
                     phi0 = copysign(1.0, y[j] - eps) * atan((xacm[j] - xiac[k]) / (y[j] - eta[k]));
                     sum = sum + (g[k + 1] - g[k]) * (1.0 - sin(phi0)) / (y[j] - eta[k]);
+                    cout << std::setprecision(10);
+                    //cout << "xacm = " << xacm[j] << " xiac = " << xiac[k] << " y = " << y[j] << " eta = " << eta[k] << " r = " << (xacm[j] - xiac[k]) / (y[j] - eta[k]) << endl;
+                    //cout << "j = " << j << " k = " << k << " g[k+1] = " << g[k+1] << " eta[k] = " << eta[k] << " sum = " << sum << " phi0 = " << phi0 << endl;
 
                     // downwash due to lifting line
-                    if (((k + 1) != j) && (k < (jx - 1))) {
+                    if (((k + 1) != j) && (k < jx - 1)) {
                         dwkj = -g[k + 1] * ((xiac[k + 1] - xiac[k]) * (y[j] - y[k + 1])
                                             - (xacm[j] - xacm[k + 1]) * (eta[k + 1] - eta[k]))
                                / pow((pow((xacm[j] - xacm[k + 1]), 2) + pow((y[j] - y[k + 1]), 2) +
@@ -462,7 +464,6 @@ void prandtline::solveLiftingLine() {
                     dgx = dg[j];
                     jdx = j;
                 }
-
             }
             // boundary conditions
             w[0] = w[1] + (w[2] - w[1]) * (y[0] - y[1]) / (y[2] - y[1]);
@@ -472,21 +473,22 @@ void prandtline::solveLiftingLine() {
 
             if (iter == 1) res0 = dgx;
             alogres = log10(abs(dgx / res0) + eps);
+            //cout << "it = " << it << " dgx = " << abs(dgx) << " eps = " << eps << endl;
 
             if (abs(dgx) < eps) break; // goto 300
-            cout << std::setprecision(6);
-            cout << "it = " << it << " dgx = " << abs(dgx) << " eps = " << eps << endl;
         }
 
         // check if results converged
+        cout << std::setprecision(6);
+        cout << "it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
         if (abs(dgx) > eps) {
             cout << " NOT CONVERGED!" << endl;
             abort();
         }
 
         // results
-        jx2 = jx / 2;
-        is = jx % 2;
+        jx2 = (jx / 2) - 1;
+        is = jx % 2 - 1;
         si = is;
         cl = 0.;
         cm0 = 0.;
@@ -502,7 +504,7 @@ void prandtline::solveLiftingLine() {
         cmt[jx-1] = 0.;
 
         // calculate bending moment
-        for (int j = 0; j < (jx - 1); ++j) {
+        for (j = 1; j < (jx - 1); ++j) {
             //do 13 j = 2, jx - 1
             cl = cl + g[j] * (eta[j] - eta[j - 1]);
 
@@ -553,10 +555,10 @@ void prandtline::solveLiftingLine() {
         sum2 = 0.;
 
         // calculate drag
-        for (int j = 0; j < jx; ++j) {
+        for (j = 0; j < jx; ++j) {
             //do 14 j = 1, jx
             jm = j - 1;
-            if (j==1) jm = 1;
+            if (j==0) jm = 0;
             czj = b0[j] + b1[j] * at[j];
             sum = sum + g[j] * w[j] * (eta[j] - eta[jm]);
             if (!polarBool) {
@@ -767,31 +769,25 @@ void prandtline::readInputPolar(std::string filename) {
     // polar data
     if(polarBool==false) {
         cout << " exiting polar is [off]" << endl;
-        exit(1); // exit function
+        return;
     }
 
-    //read(13,*)nx
-    cout << "\n" << endl;
-    cout << "=================" << endl;
-    cout << "profile polar:" << nx << endl;
-    //nx = 0;
-    //cout << " nx= " << nx << " number of polars to be read" // this is undetermined
-    //if(nx >= nxx) {
-    //    cout << "!! nx > nxx !!" << endl;
-    //    cout << "TOO MANY POLARS: EXITING!" << endl;
-    //    abort();
-    //} // not needed
+    //if(DBG) cout << endl << "=================" << endl;
+    //if(DBG) cout << "profile polar:" << nx << endl;
 
-    //for (int i = 0; i < 1; ++i) {   // fix this to work with combined file later... -Cp 3/09/22
-    // read file
     double c1, c2, c3, c4, c5;
-    int c, cm;
+    int kdum = 0, km, kp;
     std::string line;
 
     int i = nx;
+    if(nx >= nxx) {
+        cout << "!! nx > nxx !!" << endl;
+        cout << "TOO MANY POLARS: EXITING!" << endl;
+        abort();
+    }
+
     prod = 1.;
     kfirst = 0;     // start flag for reading polar
-    c = 0;
     for (int j = 0; j < lxx; ++j) {
         //do 1 k = 1, lxx
         std::getline(polarfile, line);
@@ -801,37 +797,44 @@ void prandtline::readInputPolar(std::string filename) {
         iss >> c1 >> c2 >> c3 >> c4 >> c5;
         issl >> c1;
 
-        kdum = j;
-
         // read [alpha] [CL] [CD] [CDp] [CM]
         if (!polarfile.eof() && !iss.fail()) {
-            //cout << "nx = " << nx << " c = " << c << " c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << " c4 = " << c4 << " c5 = " << c5 << endl;
-            inc[i][c] = c1;
-            cz[i][c] = c2;
-            cx[i][c] = c3;
+            kp = kdum + 1;
+            if(kdum > 0) km = kdum - 1;
+            /*if(DBG) cout << "nx = "
+                    << left << setw(12) << i << " j = "
+                    << left << setw(12) << kdum << " c1 = "
+                    << left << setw(12) << c1 << " c2 = "
+                    << left << setw(12) << c2 << " c3 = "
+                    << left << setw(12) << c3 << " c4 = "
+                    << left << setw(12) << c4 << " c5 = "
+                    << left << setw(12) << c5 << endl;*/
+            inc[i][kdum] = c1;
+            cz[i][kdum] = c2;
+            cx[i][kdum] = c3;
             dum = c4;
-            cq[i][c] = c5;
-            kx[i] = c;
+            cq[i][kdum] = c5;
+            kx[i] = kp;
 
             // extrema values
             kxtrm[i][j] = 0;
-            if (c>0) {
-                cm = c-1;
-                dcz = cz[i][c] - cz[i][cm];
+            if (kdum>0) {
+                km = kdum-1;
+                dcz = cz[i][kdum] - cz[i][km];
                 prod = prod * dcz;
                 if (prod < (-eps)) {
-                    cout << "==================================" << endl;
-                    cout << "extrema of the cl(alpha) function:" << endl;
-                    cout << "kxtrm[" << i << "] = " << cm << " cz[i][kxtrm] = " << cz[i][cm] << endl;
-                    kxtrm[i][j] = cm;
+                    //if(DBG) cout << "==================================" << endl;
+                    //if(DBG) cout << "extrema of the cl(alpha) function:" << endl;
+                    //if(DBG) cout << "kxtrm[" << i << "] = " << km << " cz[i][kxtrm] = " << cz[i][km] << endl;
+                    kxtrm[i][j] = km;
                     if (kfirst <= 0) {
-                        mxtrm[i] = cm;   // index for first polar value
+                        mxtrm[i] = km;   // index for first polar value
                         kfirst = 1;
                     }
                 }
                 prod = copysign(1., dcz);
             }
-            c++;
+            kdum = kdum + 1;
         }
 
         // read [breakpoint]
@@ -867,7 +870,7 @@ void prandtline::readInputPolar(std::string filename) {
         jp = j + 1;
         if (jp > kx[i]) jp = kx[i];
         jm = j - 1;
-        if (jm < 0.0) jm = 1;
+        if (jm < 0.0) jm = 0;
         prod = 1.;
         if ((j > 0) && (j < kx[i])) {
             dcxm = ((cx[i][j] - cx[i][jm]) * (cz[i][jp] - cz[i][j]) * (cz[i][j] + cz[i][jp] - 2. * cz[i][jm]) -
@@ -957,8 +960,8 @@ void prandtline::printInputParams() {
     cout << right << setw(10) << "NPOLAR = " << nx << endl;
 }
 
-void prandtline::printCalculations() {
-    cout << "======================================" << endl;
+void prandtline::printGeomSummary() {
+    cout << endl << "======================================" << endl;
     cout << "numerical data:" << endl;
     cout << right << setw(32) << " number of points jx = " << left << setw(10) << jx << endl;
     cout << right << setw(32) << " max number of iterations itx = " << left << setw(10) << itx << endl;
@@ -986,6 +989,24 @@ void prandtline::printCalculations() {
     cout << right << setw(32) << "average aerodynamic chord cav = " << left << setw(10) << cav << " (ref. B/2)" << endl;
 }
 
+void prandtline::printXFoilMaxValues() {
+    cout << endl << "======================================" << endl;
+    cout << " profile data from Xfoil:" << endl;
+    cout << "======================================" << endl;
+    cout << " n " << " k " << " inc[n][k] " << " cz[n][k] " << " cx[k][n] " << " cq[n][k] " << endl;
+    for (int n = 0; n < nx; ++n) {
+        cout << endl;
+        for (int k = 0; k < kx[n]; ++k) {
+            cout << right << setw(12) << n
+                    << right << setw(12) << k
+                    << right << setw(12) << inc[n][k]
+                    << right << setw(12) << cz[n][k]
+                    << right << setw(12) << cx[n][k]
+                    << right << setw(12) << cq[n][k] << endl;
+        }
+    }
+}
+
 void prandtline::printDistributions() {
     cout << endl << right << setw(12) << " y(j) "
             << right << setw(12) << "c(j) "
@@ -998,7 +1019,7 @@ void prandtline::printDistributions() {
             << right << setw(12) << " polar(j) "
             << right << setw(12) << " j " << endl;
 
-    cout << std::setprecision(4);
+    cout << std::setprecision(5);
     for (int j = 0; j < jx; ++j) {
         cout << right << setw(12) << y[j]
                 << right << setw(12) << c[j]

@@ -34,10 +34,11 @@ int main(int argc, char** argv) {
     prants->readInputPolar("polarbl7.dat");
     prants->readInputPolar("polarbl8.dat");
     prants->readInputPolar("polarbl9.dat");
-
-    prants->printCalculations();
+    prants->printXFoilMaxValues();
 
     prants->setMesh();
+    prants->printGeomSummary();
+
     prants->solveLiftingLine();
     prants->printDistributions();
 
