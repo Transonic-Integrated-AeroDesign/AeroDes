@@ -1,71 +1,78 @@
-ITX         1001            # itx maximum number of iterations
-OMEGA       1.2		        # omega relaxation factor for Newton's Method
-EPSER       0.0000001	    # epser convergence tolerance
+ITX         1000		=itx maximum number of iterations
+OMEGA       1.2	    	=omega relaxation factor for Newton's Method
+EPSER       0.001		=epser convergence tolerance
 
-RHO         0.3637		    # rho density of air (kg/m**3)
-AMU         0.0000145	    # amu dynamic viscosity (N.s/m**2)
-MASS        70000.0	        # mass of airplane and cargo (kg)
-XCG         11.77		    # xcg location of center of gravity from the nose tip (m)
-STATMARG    -0.10		    # statmarg static margin (ref cam) (if <0, not used to place xcg)
+RHO         0.4135		=rho density of air (kg/m**3)
+AMU         0.0000145	=amu dynamic viscosity (N.s/m**2)
+MASS        63445.5		=mass of airplane and cargo (kg)
+XCG         27.114		=xcg location of center of gravity from the nose tip (m)
+STATMARG    -0.10		=statmarg static margin (ref cam) (if <0, not used to place xcg)
 
-BM          36.0		    # bm main wing span (m)
-CXM         20.0		    # cxm root chord of main wing (m)
-CAM         8.428		    # cam aerodynamic chord (m)
-AM          176.9		    # am wing area (m**2)
-XACM        12.77		    # xacm location of aerodynamic center of main wing (m)
-DM          0.01	        # dm relative camber of main wing
-EM          0.9		        # em efficiency coefficient of main wing
-ACW         -1.7		    # acw influence of canard on wing
-dCldAlfaInd 0.0		        # dCldalind influence of canard on wing lift
-TFD         0.0		        # tfd flat deflection (deg) flap?
-dClmdtf     0.371		    # dClmdtf empennage sensitivity on lift
-dCmmdtf     -0.343		    # dCmmdtf empennage sensitivity on pitching moment
-dCdtf0      0.01014		    # dCdtf0 flap influence on Cd independent of alfa
-dCdtf1      0.001257     	# dCdtf1 flap influence on Cd linear in alfa
-dCdtf2      0.00033		    # dCdtf2 flap influence on Cd quadratic in alfa
+BM          36.0		=bm main wing span (m)
+CXM         8	    	=cxm root chord of main wing (m)
+CAM         6.5 		=cam aerodynamic chord (m)
+AM          143.72		=am wing area (m**2)
+XACM        32  		=xacm location of aerodynamic center of main wing (m)
+DM          0.01        =dm relative camber of main wing
+EM          0.9		    =em efficiency coefficient of main wing
+ACW         6.5		    =acw influence of canard on wing
+dCldAlfaInd 0.0		    =dCldalind influence of canard on wing lift
+TFD         0.0		    =tfd flap deflection (deg)
+dClmdtf     0.371		=dClmdtf empennage sensitivity on lift
+dCmmdtf     -0.343		=dCmmdtf empennage sensitivity on pitching moment
+dCdtf0      0.01014		=dCdtf0 flap influence on Cd independent of alfa
+dCdtf1      0.001257    =dCdtf1 flap influence on Cd linear in alfa
+dCdtf2      0.00033		=dCdtf2 flap influence on Cd quadratic in alfa
 
-LF          20.0		    # lf length of fuselage (m)
-RF          2.0		        # rf radius of fuselage (m)
+LF          39.0		=lf length of fuselage (m)
+RF          2.0		    =rf radius of fuselage (m)
 
-BC          10.0		    # bc canar span (m)
-CXC         4.0		        # cxc root chord of canard (m)
-CAC         2.896		    #cac mean aerodynamic chord of canard (m)
-AC          19.2		    # ac canard planform area (m**2)(for 2 canards)
-XACC        2.0		        # xacc location of aerodynamic center of canard (m)
-DC          0.0		        # dc relative camber of canard
-EC          0.9		        # ec efficiency coefficient of canard
-AWC         -0.3		    # awc influence of wing on canard
-TCD         0.0		        # tcd canard setting angle (deg)
+BC          18          =bc canar span (m)
+CXC         2.5		    =cxc root chord of canard (m)
+CAC         2.5		    =cac mean aerodynamic chord of canard (m)
+AC          45.0 		=ac canard planform area (m**2)(for 2 canards)
+XACC        9.75		=xacc location of aerodynamic center of canard (m)
+DC          0.0 		=dc relative camber of canard
+EC          0.9		    =ec efficiency coefficient of canard
+AWC         -0.3		=awc influence of wing on canard
+TCD         0.0		    =tcd canard setting angle (deg)
 
-CdBRAKE     0.0		        # Cdbrake airbrake drag coefficient
+CdBRAKE     0.0		    =Cdbrake airbrake drag coefficient
 
-RAV         3.0		        # rav rudder average chord (m)
-RUH         4.0		        # ruh rudder height (m)
+RAV         3.0		    =rav rudder average chord (m)
+RUH         4.0		    =ruh rudder height (m)
 
-ZENG        -1.0		    # zeng z-coordinate of engine (m)
-DNA         1.75		    # dna diameter of nacelle (m)
-LNA         4.0		        # lna length of nacelle (m)
-HPOWER      7200.0		    # hpower (hp)
-PCENT       18.0		    # Pcent percent of engine power available
-NDAT        10		        # ndat number of propeller data
+ZENG        -1.65		=zeng z-coordinate of engine (m)
+DNA         2.157		=dna diameter of nacelle (m)
+LNA         4.0		    =lna length of nacelle (m)
+HPOWER      7200.0		=hpower (hp)
+PCENT       18.0		=Pcent percent of engine power available
+NDAT        10		    =ndat number of propeller data
 ENGPERF
     Leap10CFMTurboreactor
-    vr(i) (m/s)      tr(i) (N)
-    1.00000000       246840.844
-    2.00000000       246387.266
-    5.00000000       245026.516
-    10.0000000       242758.969
-    20.0000000       238226.719
-    50.0000000       224683.766
-    100.000000       202531.281
-    200.000000       161783.672
-    233.000000       149909.734
-    400.000000       103994.477
+   vr(i) (m/s)      tr(i) (N)
+   1.00000000       246840.844
+   2.00000000       246387.266
+   5.00000000       245026.516
+   10.0000000       242758.969
+   20.0000000       238226.719
+   50.0000000       224683.766
+   100.000000       202531.281
+   200.000000       161783.672
+   233.000000       149909.734
+   400.000000       103994.477
 ENDPERF
 
-ALEQ        0.01425		    # aleq equilibrium incidence (rd)
-UEQ         233.0		    # Ueq equilibrium velocity (m/s)
-BETAQ       0.0		        # beteq equilibrium descent angle (rd)
-CLEQ        0.397		    # Cleq equilibrium lift coefficient
-CDEQ        0.01338		    # Cdeq equilibrium drag coefficient
-CMAC        0.04411		    # Cmac equilibrium moment at aerodynamic center
+#ALEQ    0.0196718	    =aleq equilibrium incidence (rd)
+#UEQ     348.121		    =Ueq equilibrium velocity (m/s)
+#BETAQ   -0.017325       =beteq equilibrium descent angle (rd)
+#CLEQ    0.131627	    =Cleq equilibrium lift coefficient
+#CDEQ    0.00783183	    =Cdeq equilibrium drag coefficient
+#CMAC    0.0026479	    =Cmac equilibrium moment at aerodynamic center
+
+ALEQ    0.01425		    =aleq equilibrium incidence (rd)
+UEQ     254.63		    =Ueq equilibrium velocity (m/s)
+BETAQ   0.0		        =beteq equilibrium descent angle (rd)
+CLEQ    0.397		    =Cleq equilibrium lift coefficient
+CDEQ    0.01338		    =Cdeq equilibrium drag coefficient
+CMAC    0.04411		    =Cmac equilibrium moment at aerodynamic center

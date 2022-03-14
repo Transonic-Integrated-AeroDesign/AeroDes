@@ -191,7 +191,7 @@ void canareq::linearModel() {
     Cleq=Cl0+dClda*aleq;
     Cweq=Cleq;
     if(Cleq <= 0.) {
-        cout << "################# no linear solution with Cleq<0" << endl;
+        cout << endl << "no linear solution with Cleq<0" << endl << endl;
         abort();
     }
 
@@ -250,15 +250,15 @@ void canareq::linearModel() {
 
     cout << "\n";
     cout << std::setprecision(6);
-    cout << "****************************" << endl;
+    cout << "===========================*" << endl;
     cout << " \033[1;42m Linear model results:\033[0m" << endl;
-    cout << "****************************" << endl;
+    cout << "============================" << endl;
     cout << "m = " << m << endl;
     cout << "aleq = " << left << setw(10) << aleq << " Ueq  = " << left << setw(10) << Ueq << " beteq = " << left << setw(10) <<  beteq << endl;
     cout << "Cleq = " << left << setw(10) << Cleq << " Cdeq = " << left << setw(10) << Cdeq << " Cteq = " << left << setw(10) <<  Cteq << " CM,ac = " << left << setw(10) << Cmac << endl;
-    cout << "*****************non-linear equations residuals from linear solution:" << endl;
+    cout << " non-linear equations residuals from linear solution:" << endl;
     cout << "equ1 = " << left << setw(10) << bb[0] << "equ2 = " << left << setw(10) << bb[1] << " equ3 = " << left << setw(10) << bb[2] << endl;
-    cout << "*****given best design parameters:" << endl;
+    cout << " given best design parameters:" << endl;
     cout << "aleq = " << left << setw(10) << aleqB << " Ueq  = " << left << setw(10) << UeqB << " beteq = " << left << setw(10) <<  beteqB << endl;
     cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl;
 
@@ -273,11 +273,11 @@ void canareq::linearModel() {
 
 void canareq::nonlinearModel() {
     cout << "\n";
-    cout << "********************************************" << endl;
+    cout << "============================================" << endl;
     cout << " \033[1;42m Non-linear model results:\033[0m" << endl;
-    cout << "********************************************" << endl;
+    cout << "============================================" << endl;
 
-    // *****read canar setting angle tcd (deg)
+    // read canar setting angle tcd (deg)
     //tcd = 5;
     tcd = tcd0;
     cout << "canar tcd = " << tcd << " flap tfd = " << tfd << endl;
@@ -311,16 +311,17 @@ void canareq::nonlinearModel() {
     Cmcg=Cmeq+xcg*Cweq*cos(aleq+beteq)/lref;
 
     //     aerodynamic center moment coefficient from design data:
-    cout << "********************************************" << endl;
+    cout << "============================================" << endl;
     cout << "xcg, xac (xcg calculated or given):" << endl;
     cout << "center of gravity:       xcg = " << xcg << " (m)" << endl;
     cout << "aerodynamic center:      xac = " << xac << " (m)" << endl;
     cout << "static-margin = " << amarg << "% (reference lref = " << lref << " [m])" << endl;
 
-    // *****equilibrium
+    // equilibrium
     //     alpha at equilibrium, lift and moment
     iter=1;
-    // *****iterations
+
+    // iterations
     for (int i = 0; i < itx; ++i) {
         // engine operating point
         dTdv = thrust(ndat, Ueq);
@@ -586,14 +587,14 @@ void canareq::nonlinearModel() {
     //*****non-linear equations residuals
     if(inewton==0) {
         cout << std::setprecision(3);
-        cout <<"*****************************" << endl;
+        cout <<"=============================" << endl;
         cout << "relaxation:" << endl;
         cout << left << setw(10) << "daleq = " << left << setw(10) << daleq << " dUeq=" << left << setw(10) << dUeq << " dbeteq = " << left << setw(10) << dbeteq << endl;
         cout << left << setw(10) << " equ1 = " << left << setw(10) << bb[1] << " equ2=" << left << setw(10) << bb[2] << "  equ3 = " << left << setw(10) << bb[3] << endl;
     }
     else if(inewton==1) {
         cout << std::setprecision(3);
-        cout <<"*****************************" << endl;
+        cout <<"=============================" << endl;
         cout << "Newton:" << endl;
         cout << left << setw(10) << "  det = " << left << setw(10) << det << endl;
         cout << left << setw(10) << "daleq = " << left << setw(10) << bb[1] << " dUeq = " << left << setw(10) << bb[2] << " dbeteq = " << left << setw(10) << bb[3] << endl;
@@ -621,7 +622,7 @@ void canareq::nonlinearModel() {
     reyc=reyeq*cac/cam;
     tr0=rcor*(T+dTdv*Ueq);
 
-    cout <<"*****************************" << endl;
+    cout <<"=============================" << endl;
     cout <<"        canard setting angle = " << tc << " (rd) = " << tcd << " (deg)" << endl;
     if(it >= itx) {
         cout << "equilibrium solution:" << endl;
@@ -848,7 +849,7 @@ void canareq::readPolarDat() {
 
     if (DBG) {
         cout << "\n\n";
-        cout << "*********extrema of the Cl(alpha) function:" << endl;
+        cout << " extrema of the Cl(alpha) function:" << endl;
         cout << left << setw(10) << " inc ";
         cout << left << setw(10) << " cz ";
         cout << left << setw(10) << " cx ";
@@ -1081,21 +1082,21 @@ void canareq::mainwingModel() {
 
 int canareq::printInputParams() {
     // print to screen
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout <<  "convergence parameters:" << endl;
     cout << right << setw(32) <<  "                        itx = " << itx << "\n";
     cout << right << setw(32) <<  "                      omega = " << omega << "\n";
     cout << right << setw(32) <<  "convergence tolerance epser = " << epser << "\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << "air parameters:" << endl;
     cout << right << setw(32) << "                     density = " << rho <<  " (kg/m**3)\n";
     cout << right << setw(32) << "               dynamic visc. = " << amu <<  " (m**2/s)\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << "gravity data:" << endl;
     cout << right << setw(32) << "                        mass = " << mass <<  " (kg) =  " << amlb <<  " (lb)\n";
     cout << right << setw(32) << "              location of CG = " << xcg <<  " (m)\n";
     cout << right << setw(32) << "               static margin = " << statmarg <<  " (if <0, not used to place xcg)\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << "wing data:" << endl;
     cout << right << setw(32) << "                        span = " << bm <<  " (m)\n";
     cout << right << setw(32) << "          root chord of wing = " << cxm <<  " (m)\n";
@@ -1113,12 +1114,12 @@ int canareq::printInputParams() {
     cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf0 << "\n";
     cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf1 << "\n";
     cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf2 << "\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << "fuselage data:        " << endl;
     cout << right << setw(32) << "                     length = " << lf <<  " (m)\n";
     cout << right << setw(32) << "                      radius = " << rf <<  " (m)\n";
     cout << right << setw(32) << "        fuselage missed area = " << af <<  " (m**2)\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << "canard data:" << endl;
     cout << right << setw(32) << "                 canard span = " << bc <<  " (m)\n";
     cout << right << setw(32) << "           canard root chord = " << cxc <<  " (m)\n";
@@ -1130,19 +1131,19 @@ int canareq::printInputParams() {
     cout << right << setw(32) << "           canard efficiency = " << ec << "\n";
     cout << right << setw(32) << " influence of wing on canard = " << awc << "\n";
     cout << right << setw(32) << "        canard setting angle = " << tcd <<  " (deg)\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << right << setw(32) << "           airbrake: CDbrake = " << Cdbrake << "\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << "rudder data:" << endl;
     cout << right << setw(32) << "        rudder average chord = " << rav <<  " (m)\n";
     cout << right << setw(32) << "               rudder height = " << ruh <<  " (m)\n";
     cout << right << setw(32) << "                 rudder area = " << ar <<  " (m**2)\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << "reference data:" << endl;
     cout << right << setw(32) << "                 ref. length = " << lref <<  " (m)\n";
     cout << right << setw(32) << "                   ref. area = " << aref <<  " (m**2)\n";
     cout << right << setw(32) << "   reference Reynolds number = " << Ref <<  "\n";
-    cout << "***********************\n";
+    cout << "=================================\n";
     cout << right << setw(32) << " propulsion system reference = " << prop <<  "\n";
     cout << right << setw(32) << "      z-coordinate of engine = " << zeng <<  " (m)\n";
     cout << right << setw(32) << "         diameter of nacelle = " << dna <<  " (m)\n";
@@ -1162,7 +1163,7 @@ int canareq::printInputParams() {
         cout << left << setw(8) << vr[i];
         cout << tr[i];
     }
-    cout << "\n***********************\n";
+    cout << "=================================\n";
     cout << "best equilibrium data:" << endl;
     cout << right << setw(32) << " aleq = " << aleqB <<  "\n";
     cout << right << setw(32) << " ueq = " << UeqB <<  "\n";
@@ -1175,7 +1176,9 @@ int canareq::printInputParams() {
 
 int canareq::printPolarDat() {
     cout << "\n\n";
-    cout << "*************wing polar (profile data from Xfoil):\n";
+    cout << "=================================\n";
+    cout << " wing polar (profile data from Xfoil):\n";
+    cout << "=================================\n";
     cout << left << setw(16) << " i ";
     cout << left << setw(16) << " Cx ";
     cout << left << setw(16) << " Cz ";
@@ -1193,31 +1196,31 @@ int canareq::printPolarDat() {
 }
 
 void canareq::printGlobalCoefs() {
-    //cout << "\n******extrema pointer:" << endl;
+    //cout << endl << "extrema pointer:" << endl;
     //for (int j = 0; j < kx; ++j) {
     //    cout << "kxtrm(" << j << ") = " << kxtrm[j] << endl;
     //}
 
-    //*****global coefficients
+    // global coefficients
     cout << std::setprecision(8);
     cout << "\n";
-    cout << "**********************************************"<< endl;
+    cout << "=============================================="<< endl;
     cout << "zero incidence aerodynamic coefficients" << endl;
     cout << " k0 = " << k0<< endl;
-    cout << "**************" << endl;
-    cout << "lift:" << endl;
+    cout << "==============" << endl;
+    cout << " lift:" << endl;
     cout << " wing:     dCldam0 = " << left << setw(15) << dCldam0 << left << setw(15) << " Clm00 = " << Clm00 << endl;
     cout << "canar:     dCldac0 = " << left << setw(15) << dCldac0 << left << setw(15) << " Clc00 = " << Clc00 << endl;
     cout << "total:       dClda = " << left << setw(15) << dClda   << left << setw(15) << " Cl0 = " << Cl0 << endl;
-    cout << "*****moment at xac:" << endl;
+    cout << " moment at xac:" << endl;
     cout << " wing:   dCmacdam0 = " << left << setw(15) << dCmacdam0 << left << setw(15) << " Cmacm00 = " << Cmacm00 << endl;
     cout << "canar:   dCmacdac0 = " << left << setw(15) << dCmacdac0 << left << setw(15) << " Cmacc00 = " << Cmacc00 << endl;
     cout << "total:     dCmacda = " << left << setw(15) << dCmacda << left << setw(15) << " Cmac0   = " << Cmac0 << endl;
-    cout << "*****moment at xcg:" << endl;
+    cout << " moment at xcg:" << endl;
     cout << " wing:     dCmdam0 = " << left << setw(15) << dCmdam0 << left << setw(15) << " Cmm00 = " << Cmm00 << endl;
     cout << "canar:     dCmdac0 = " << left << setw(15) << dCmdac0 << left << setw(15) << " Cmc00 = " << Cmc00 << endl;
     cout << "total:       dCmda = " << left << setw(15) << dCmda << left << setw(15) << " Cm0   = " << Cm0 << endl;
-    cout << "**estimate aerodynamic center location:" << endl;
+    cout << " estimate aerodynamic center location:" << endl;
     cout << "           xac (m) = " << left << setw(15) << xac << left << setw(15) << "  xcg (m) = " << xcg << endl;
 }
 
@@ -1263,7 +1266,7 @@ int canareq::outputPolarCdClCq() {
     }
     file.close();
     //file << "\n" << title << "\n";
-    //file << "*************wing polar (profile data from Xfoil):";
+    //file << "=============wing polar (profile data from Xfoil):";
     return 1;
 }
 
@@ -1278,24 +1281,24 @@ int canareq::outputEqList(){
         return 0;
     }
     file << std::setprecision(8);
-    file << "**********************************************" << endl;
+    file << "==============================================" << endl;
     file << "zero incidence aerodynamic coefficients at k0=" << k0 << endl;
-    file << "**************lift:" << endl;
+    file << "==============lift:" << endl;
     file << " wing:     dCldam0 = " << left << setw(10) << dCldam0 << "   Clm00 = " << Clm00 << endl;
     file << "canar:     dCldac0 = " << left << setw(10) << dCldac0 << "   Clc00 = " << Clc00 << endl;
     file << "total:       dClda = " << left << setw(10) << dClda   << "     Cl0 = " << Cl0 << endl;
-    file << "*****moment at xac:" << endl;
+    file << "=====moment at xac:" << endl;
     file << " wing:   dCmacdam0 = " << left << setw(10) << dCmacdam0 << " Cmacm00 = " << Cmacm00 << endl;
     file << "canar:   dCmacdac0 = " << left << setw(10) << dCmacdac0 << " Cmacc00 = " << Cmacc00 << endl;
     file << "total:     dCmacda = " << left << setw(10) << dCmacda << "   Cmac0 = " << Cmac0 << endl;
-    file << "*****moment at xcg:" << endl;
+    file << "=====moment at xcg:" << endl;
     file << " wing:     dCmdam0 = " << left << setw(10) << dCmdam0 << "   Cmm00 = " << Cmm00 << endl;
     file << "canar:     dCmdac0 = " << left << setw(10) << dCmdac0 << "   Cmc00 = " << Cmc00 << endl;
     file << "total:       dCmda = " << left << setw(10) << dCmda << "     Cm0 = " << Cm0 << endl;
-    file << "**estimate aerodynamic center location:" << endl;
+    file << "==estimate aerodynamic center location:" << endl;
     file << "               xac = " << left << setw(10) << xac << " (m)  xcg = " << xcg << " (m)" << endl;
 
-    file << "\n**********************************************" << endl;
+    file << "\n==============================================" << endl;
     file << " aleq = " << aleq << " Ueq = " << Ueq << "beteq=" << beteq << endl;
     file << " Cleq = " << Cleq << " Cdeq = " << Cdeq << " Cteq = " << Cteq << " CM,ac=" << Cmac << endl;
 
