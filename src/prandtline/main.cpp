@@ -35,8 +35,11 @@ int main(int argc, char** argv) {
     prants->readInputPolar("polarbl8.dat");
     prants->readInputPolar("polarbl9.dat");
 
+    prants->printCalculations();
+
     prants->setMesh();
     prants->solveLiftingLine();
+    prants->printDistributions();
 
     delete prants;
 }

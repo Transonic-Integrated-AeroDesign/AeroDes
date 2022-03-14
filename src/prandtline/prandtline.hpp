@@ -32,6 +32,7 @@ public:
 
     void printInputParams();
     void printCalculations();
+    void printDistributions();
 
 private:
     int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
