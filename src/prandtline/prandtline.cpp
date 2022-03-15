@@ -88,13 +88,13 @@ prandtline::prandtline(int argc, char** argv) {
         if (!strcmp(argv[iarg],"-in")){
             inputBool=true;
             inputFlag=iarg+1;
-            filenameInputData = argv[inputFlag];
+            filenameInputData = std::string(argv[inputFlag]);
             iarg+=2;
         }
-        if (!strcmp(argv[iarg],"-bl")){
+        else if (!strcmp(argv[iarg],"-bl")){
             polarBool=true;
             inputFlag=iarg+1;
-            filenameInputData = argv[inputFlag];
+            filenameInputPolar = argv[inputFlag];
             iarg+=2;
         }
     }
@@ -159,15 +159,15 @@ void prandtline::setMesh() {
     cout << endl << "=========================================\n";
     cout << "point distribution, geometry and flow:" << endl;
     cout << "=========================================\n";
-    cout << left << setw(16) << " y(j) "
-            << left << setw(16) << " eta(j) "
-            << left << setw(16) << " c(j) "
-            << left << setw(16) << " t(j) "
-            << left << setw(16) << " d(j) "
-            << left << setw(16) << " g(j) "
-            << left << setw(16) << " w(j) "
-            << left << setw(16) << " at(j) "
-            << left << setw(16) << " polar(j) " << endl;
+    cout << left << setw(16) << "y(j) "
+            << left << setw(16) << "eta(j) "
+            << left << setw(16) << "c(j) "
+            << left << setw(16) << "t(j) "
+            << left << setw(16) << "d(j) "
+            << left << setw(16) << "g(j) "
+            << left << setw(16) << "w(j) "
+            << left << setw(16) << "at(j) "
+            << left << setw(16) << "polar(j) " << endl;
 
     amdum=0.;
     cavdum=0.;
@@ -993,7 +993,12 @@ void prandtline::printXFoilMaxValues() {
     cout << endl << "======================================" << endl;
     cout << " profile data from Xfoil:" << endl;
     cout << "======================================" << endl;
-    cout << " n " << " k " << " inc[n][k] " << " cz[n][k] " << " cx[k][n] " << " cq[n][k] " << endl;
+    cout << right << setw(12) << " n"
+            << right << setw(12) << " k"
+            << right << setw(12) << " inc[n][k]"
+            << right << setw(12) << " cz[n][k]"
+            << right << setw(12) << " cx[k][n]"
+            << right << setw(12) << " cq[n][k]";
     for (int n = 0; n < nx; ++n) {
         cout << endl;
         for (int k = 0; k < kx[n]; ++k) {
@@ -1008,18 +1013,18 @@ void prandtline::printXFoilMaxValues() {
 }
 
 void prandtline::printDistributions() {
-    cout << endl << right << setw(12) << " y(j) "
-            << right << setw(12) << "c(j) "
-            << right << setw(12) << " t(j) "
-            << right << setw(12) << " d(j) "
-            << right << setw(18) << " g(j) "
-            << right << setw(12) << " w(j) "
-            << right << setw(12) << " Cl "
-            << right << setw(12) << " Cd "
-            << right << setw(12) << " polar(j) "
-            << right << setw(12) << " j " << endl;
+    cout << endl << right << setw(12) << " y(j)"
+            << right << setw(12) << "c(j)"
+            << right << setw(12) << " t(j)"
+            << right << setw(12) << " d(j)"
+            << right << setw(18) << " g(j)"
+            << right << setw(12) << " w(j)"
+            << right << setw(12) << " Cl"
+            << right << setw(12) << " Cd"
+            << right << setw(12) << " polar(j)"
+            << right << setw(12) << " j" << endl;
 
-    cout << std::setprecision(5);
+    cout << std::setprecision(6);
     for (int j = 0; j < jx; ++j) {
         cout << right << setw(12) << y[j]
                 << right << setw(12) << c[j]

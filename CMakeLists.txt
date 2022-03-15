@@ -16,7 +16,7 @@ add_executable(cfmactu
         src/propulsion/cfmactu.hpp
         src/propulsion/main.cpp)
 
-add_executable(prandtline
+add_executable(prandtl
         src/prandtline/prandtline.cpp
         src/prandtline/prandtline.hpp
         src/prandtline/main.cpp)
