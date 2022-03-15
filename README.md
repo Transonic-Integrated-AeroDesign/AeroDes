@@ -1,5 +1,8 @@
 # AeroDesign
 
+* [Build](## Build Instructions)
+* [Executables](## Executables)
+
 ## Build Instructions
 
 Shown below are the two steps required to compile this code.
