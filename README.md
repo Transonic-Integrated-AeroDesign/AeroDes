@@ -2,12 +2,16 @@
 
 ## Build Instructions
 
+Shown below are the two steps required to compile this code.
+
 ```
 cmake .
 make
 ```
 
-## executables
+## Executables
+
+Here are the executables for various design tasks. Each will of course require their own input parameters found in the examples directory.
 
 ```
 canareq
