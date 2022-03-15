@@ -1,4 +1,4 @@
-# AeroDes
+# AeroDesign
 
 ## Build Instructions
 
