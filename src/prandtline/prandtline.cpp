@@ -15,8 +15,8 @@ using namespace std; // g++ prandtline.cpp -c
 
 prandtline::prandtline(int argc, char** argv) {
     jxx = 201;
-    lxx = 101;
-    nxx = 10;
+    lxx = 101;  // n discrete wing-span points
+    nxx = 10;   // n polars
     nx = 0;
 
     // initialize arrays
@@ -648,7 +648,7 @@ int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
     // create a n1 x n2 matrix
     int n=0;
     int *data = (int *) malloc(n1*n2*sizeof(int));
-    for (int i=0; i<n2; i++) {
+    for (int i=0; i<n1; i++) {
         array[i] = &data[n];
         n += n2;
     }
@@ -659,7 +659,7 @@ double **prandtline::create_2d_double_array(int n1, int n2, double **array) {
     // create a n1 x n2 matrix
     int n=0;
     double *data = (double *) malloc(n1*n2*sizeof(double));
-    for (int i=0; i<n2; i++) {
+    for (int i=0; i<n1; i++) {
         array[i] = &data[n];
         n += n2;
     }
