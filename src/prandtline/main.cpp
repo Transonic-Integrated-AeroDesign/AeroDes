@@ -22,7 +22,7 @@ using namespace std;
 int main(int argc, char** argv) {
     prandtline *prants = new prandtline();
 
-    prants->input(argc, argv);
+    prants->cmdInput(argc, argv);
     prants->readInputParams();
     prants->printInputParams();
 

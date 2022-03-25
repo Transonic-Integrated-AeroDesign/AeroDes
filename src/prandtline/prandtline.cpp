@@ -74,7 +74,13 @@ prandtline::prandtline() {
 
     create_2d_int_array(lxx, nxx, kxtrm);
 
-    //
+    // results array
+    alphares  = (double *) malloc(sizeof(double)*lxx);
+    czres  = (double *) malloc(sizeof(double)*lxx);
+    cxres  = (double *) malloc(sizeof(double)*lxx);
+    cqres  = (double *) malloc(sizeof(double)*lxx);
+
+    // filenames
     filenameInputData = "prandtline.data";
     inputBool = false;
 
@@ -136,12 +142,18 @@ prandtline::~prandtline() {
     free(kx);
     delete_2d_int_array(kxtrm);
     free(mxtrm);
+
+    // free results memory
+    free(alphares);
+    free(czres);
+    free(cxres);
+    free(cqres);
 }
 
 
 
 void prandtline::setMesh() {
-    // set mesh, geometry, and flow
+    // set mesh, geometry, and flow along wing-span
     cout << endl << "=========================================\n";
     cout << "point distribution, geometry and flow:" << endl;
     cout << "=========================================\n";
@@ -295,8 +307,10 @@ void prandtline::solveLiftingLine() {
     else nsteps=1+(alphafi-alphain)/alstep;
     alphad = alphain-alstep;
     cout << " nsteps = " << nsteps << endl;
-    if((nsteps <= 0.) || (nsteps>101)) {
-        cout << "bad sequence, exit" << endl;
+    if((nsteps <= 0.) || (nsteps>lxx)) {
+        cout << " Error in solveLiftingLine()" << endl;
+        cout << " (bad sequence, exit)" << endl;
+        cout << " (more steps than memory allocated by lxx)" << endl;
         abort();
     }
 
@@ -601,6 +615,7 @@ void prandtline::solveLiftingLine() {
             //16 continue
         }
 
+        // print results
         cout << " results:" << endl;
         cout << right << setw(38) << " alpha = " << alphad << endl;
         cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
@@ -617,7 +632,12 @@ void prandtline::solveLiftingLine() {
         cout << right << setw(38) << " root torsion moment coef. CM,y = " << - cmt[jx2 + 1] << endl;
         cout << right << setw(38) << " ivis = " << ivis << endl;
 
+        // results
+        alphares[nstep] = alphad;
+        czres[nstep] = cl;
+        cxres[nstep] = cd;
         dum = 0.;
+        cqres[nstep] = cmac;
     }
     // set breakpoints in y-distribution
     y[46] = -0.11111;
@@ -662,7 +682,7 @@ void prandtline::delete_2d_double_array(double **array) {
     free(array);
 }
 
-void prandtline::input(int argc, char** argv) {
+void prandtline::cmdInput(int argc, char** argv) {
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
         if (!strcmp(argv[iarg],"-in")){

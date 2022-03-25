@@ -17,7 +17,7 @@ public:
     ~prandtline();
 
     // inputs
-    void input(int argc, char** argv);
+    void cmdInput(int argc, char** argv);
     void readInputParams();
     void readInputPolar(std::string);
     void readInputDownwash();
@@ -62,6 +62,7 @@ private:
     double *rbreak;
     int *m, *polar;
     int *kx, **kxtrm, *mxtrm;
+    double *alphares, *czres, *cxres, dumres, *cqres;
     std::string bry;
     std::string title;
     std::string typcode;
