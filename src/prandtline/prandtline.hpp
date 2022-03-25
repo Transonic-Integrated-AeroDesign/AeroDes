@@ -12,10 +12,17 @@
 
 class prandtline{
 public:
-    prandtline(int argc, char** argv);
+    prandtline();
+    //prandtline(int argc, char** argv);
     ~prandtline();
 
-    //
+    // inputs
+    void input(int argc, char** argv);
+    void readInputParams();
+    void readInputPolar(std::string);
+    void readInputDownwash();
+
+    // specific
     void setMesh();
     void solveLiftingLine();
 
@@ -26,10 +33,7 @@ public:
     void delete_2d_int_array(int **array);
     void delete_2d_double_array(double **array);
 
-    void readInputParams(int argc, char** argv);
-    void readInputPolar(std::string);
-    void readInputDownwash();
-
+    // prints
     void printInputParams();
     void printGeomSummary();
     void printXFoilMaxValues();

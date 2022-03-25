@@ -13,7 +13,7 @@
 
 using namespace std; // g++ prandtline.cpp -c
 
-prandtline::prandtline(int argc, char** argv) {
+prandtline::prandtline() {
     jxx = 201;
     lxx = 101;  // n discrete wing-span points
     nxx = 10;   // n polars
@@ -83,22 +83,6 @@ prandtline::prandtline(int argc, char** argv) {
 
     filenameInputDownwash = "canarwash.ylwl";
 
-    // input commandline
-    for (int iarg = 0; iarg<argc ; ++iarg) {
-        if (!strcmp(argv[iarg],"-in")){
-            inputBool=true;
-            inputFlag=iarg+1;
-            filenameInputData = std::string(argv[inputFlag]);
-            iarg+=2;
-        }
-        else if (!strcmp(argv[iarg],"-bl")){
-            polarBool=true;
-            inputFlag=iarg+1;
-            filenameInputPolar = argv[inputFlag];
-            iarg+=2;
-        }
-    }
-
     // *****constants
     eps=1.e-7;
     pi=2.*asin(1.);
@@ -153,6 +137,8 @@ prandtline::~prandtline() {
     delete_2d_int_array(kxtrm);
     free(mxtrm);
 }
+
+
 
 void prandtline::setMesh() {
     // set mesh, geometry, and flow
@@ -676,7 +662,25 @@ void prandtline::delete_2d_double_array(double **array) {
     free(array);
 }
 
-void prandtline::readInputParams(int argc, char **argv) {
+void prandtline::input(int argc, char** argv) {
+    // parse commandline input
+    for (int iarg = 0; iarg<argc ; ++iarg) {
+        if (!strcmp(argv[iarg],"-in")){
+            inputBool=true;
+            inputFlag=iarg+1;
+            filenameInputData = std::string(argv[inputFlag]);
+            iarg+=2;
+        }
+        else if (!strcmp(argv[iarg],"-bl")){
+            polarBool=true;
+            inputFlag=iarg+1;
+            filenameInputPolar = argv[inputFlag];
+            iarg+=2;
+        }
+    }
+}
+
+void prandtline::readInputParams() {
     // open input file
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {

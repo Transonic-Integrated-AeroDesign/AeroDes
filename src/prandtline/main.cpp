@@ -20,9 +20,10 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    prandtline *prants = new prandtline(argc, argv);
+    prandtline *prants = new prandtline();
 
-    prants->readInputParams(argc, argv);
+    prants->input(argc, argv);
+    prants->readInputParams();
     prants->printInputParams();
 
     prants->readInputPolar("polarbl1.dat");
