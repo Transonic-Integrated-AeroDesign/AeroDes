@@ -1,22 +1,25 @@
 cmake_minimum_required(VERSION 3.17)
-project(AeroDes)
 
-set(CMAKE_CXX_STANDARD 14)
+# set the project name and version
+project(aerolib VERSION 1.0.0 DESCRIPTION "open source aero design")
 
-include_directories(src/canareq)
-include_directories(src/propulsion)
+# specify the C++ standard
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_executable(canareq
-        src/canareq/canareq.cpp
-        src/canareq/canareq.hpp
-        src/canareq/main.cpp)
+# should we use our own math functions
+option(USE_PRANDTLINE "Use prandtline" ON)
 
-add_executable(cfmactu
-        src/propulsion/cfmactu.cpp
-        src/propulsion/cfmactu.hpp
-        src/propulsion/main.cpp)
+# add module libraries
+add_subdirectory(src)
 
-add_executable(prandtl
-        src/prandtline/prandtline.cpp
-        src/prandtline/prandtline.hpp
-        src/prandtline/main.cpp)
+# add the whole library
+#[[add_subdirectory(src)
+add_subdirectory(src/prandtline)
+add_subdirectory(src/canareq)
+add_subdirectory(src/propulsion)]]
+
+# does not function without pkgconfig
+#configure_file(aerolib.pc.in aerolib.pc @ONLY)
+#[[install(FILES ${CMAKE_BINARY_DIR}/aerolib.h
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)]]
