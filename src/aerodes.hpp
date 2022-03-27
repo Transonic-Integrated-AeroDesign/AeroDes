@@ -10,17 +10,15 @@
 #include <string>
 #include <math.h>
 
+#include "prandtline.hpp"
+#include "canareq.hpp"
+
 class aerodes{
     public:
+        prandtline* prants;
+        canareq* canary;
         aerodes(int argc, char** argv);
         ~aerodes();
-        
-        // memory
-        double* create_1d_double_array(int n1, double *array);
-        double** create_2d_double_array(int n1, int n2, double **array);
-        void delete_2d_double_array(double **array);
-    
-    private:
 };
 
 #endif
