@@ -10,11 +10,19 @@
 #include <string>
 #include <math.h>
 
-class canareq{
+//#include "../prandtline/prandtline.hpp"
+#include "prandtline.hpp"
+
+class canareq : private prandtline {
     public:
-        canareq(int argc, char** argv);
+        canareq();
         ~canareq();
-        
+
+        // file input
+        void cmdInput(int argc, char** argv);
+        void readInputParams();
+        void readPolarDat();
+
         // memory
         double* create_1d_double_array(int n1, double *array);
         double** create_2d_double_array(int n1, int n2, double **array);
@@ -27,9 +35,7 @@ class canareq{
         void nonlinearModel();
         void mainwingModel();
 
-        // file input
-        void readInputParams();
-        void readPolarDat();
+
 
         // screen output
         int printInputParams();
@@ -74,6 +80,10 @@ class canareq{
         //std::string title, prop;
         char title[38],prop[20]; // these are not large enough there will be issues w/ strings
         char nc[5],yw[5];
+
+        // input resulting polar from smoothpolar or prandtline
+        double *alphares, *czres, *cxres, *cqres;
+        int nsteps;
     
         std::string filenamePolarDat;   // input
         std::string filenamePolarPrandtline;

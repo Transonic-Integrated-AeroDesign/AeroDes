@@ -7,6 +7,8 @@
 #include <string>
 #include <math.h>   // pow
 
+//#include "../prandtline/prandtline.hpp"
+#include "prandtline.hpp"
 #include "canareq.hpp"
 
 /*
@@ -20,8 +22,9 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    canareq *canary = new canareq(argc, argv);
+    canareq *canary = new canareq();
 
+    canary->cmdInput(argc, argv);
     canary->readInputParams();
     canary->printInputParams();
 

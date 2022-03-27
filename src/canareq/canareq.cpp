@@ -16,7 +16,7 @@
 
 using namespace std; // g++ canareq.cpp -c
 
-canareq::canareq(int argc, char** argv) {
+canareq::canareq() {
     // storage
     int nrows=3; int ncols=3;
     aa = (double **) malloc(sizeof(double *)*nrows);
@@ -65,30 +65,8 @@ canareq::canareq(int argc, char** argv) {
     Cdeq0=0;
     Cmac0=0;
 
-    // commandline inputs
-    //tcd=0;
-    for (int iarg = 0; iarg<argc ; ++iarg) {
-        // commandline option: for input file
-        if (!strcmp(argv[iarg],"-in")){
-            inputBool=true;
-            inflag=iarg+1;
-            filenameEqData = argv[inflag];
-            iarg+=2;
-        }
-        // commandline option: for override of tcd setting angle
-        if (!strcmp(argv[iarg],"-tcd")) {
-            tcdBool=true;
-            tcdflag=iarg+1;
-            tcd0 = (double) atof(argv[tcdflag]);
-            iarg+=2;
-        }
-    }
-
-    // check for tcd
-    if (!tcdBool) {
-        cout << "specifiy -tcd" << endl;
-        abort();
-    }
+    inputBool = false;
+    tcdBool = false;
 }
 
 canareq::~canareq() {
@@ -691,6 +669,33 @@ void canareq::nonlinearModel() {
     cout << right << setw(32) << " drag Cdn = " << Cdneq << endl;
     cout << right << setw(32) << " Pcent = " << Pcent << endl;
     cout << right << setw(32) << " tr0 = " << tr0 << endl;
+    cout << right << setw(32) << " nsteps = " << nsteps << endl;
+}
+
+void canareq::cmdInput(int argc, char **argv) {
+    // commandline inputs
+    for (int iarg = 0; iarg<argc ; ++iarg) {
+        // commandline option: for input file
+        if (!strcmp(argv[iarg],"-in")){
+            inputBool=true;
+            inflag=iarg+1;
+            filenameEqData = argv[inflag];
+            iarg+=2;
+        }
+        // commandline option: for override of tcd setting angle
+        if (!strcmp(argv[iarg],"-tcd")) {
+            tcdBool=true;
+            tcdflag=iarg+1;
+            tcd0 = (double) atof(argv[tcdflag]);
+            iarg+=2;
+        }
+    }
+
+    // check for tcd
+    if (!tcdBool) {
+        cout << "specifiy -tcd" << endl;
+        abort();
+    }
 }
 
 void canareq::readInputParams() {
