@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
     wk->readInputParams();
     wk->printInputParams();
 
-    //wk->readInputPolar("polarbl.dat");
-    //wk->printXFoilMaxValues();
+    wk->readInputPolar("polarbl.dat");
+    wk->printXFoilValues();
 
     wk->setMesh();
     wk->printGeomSummary();

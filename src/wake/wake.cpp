@@ -11,7 +11,7 @@
 #include "wake.hpp"
 
 #ifndef DBG
-#define DBG 1
+#define DBG 0
 #endif
 
 using namespace std; // g++ wake.cpp -c
@@ -833,10 +833,13 @@ void wake::readInputPolar(std::string filename) {
     //  [breakpoint]
     //
 
+    cout << endl << "=========================================\n";
+    cout << " readInputPolar()" << endl;
+
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
-        cout << "\n\tCannot Read " << filename;
-        cout << " File - Error in: readInputPolar()" << endl;
+        cout << "\n\tCannot Find: " << filename;
+        cout << " File Error: readInputPolar()" << endl;
         abort();
     }
 
@@ -846,8 +849,12 @@ void wake::readInputPolar(std::string filename) {
         return;
     }
 
-    //if(DBG) cout << endl << "=================" << endl;
-    //if(DBG) cout << "profile polar:" << nx << endl;
+    if(DBG) cout << right << setw(12) << " n"
+         << right << setw(12) << " k"
+         << right << setw(12) << " inc[n][k]"
+         << right << setw(12) << " cz[n][k]"
+         << right << setw(12) << " cx[k][n]"
+         << right << setw(12) << " cq[n][k]";
 
     double c1, c2, c3, c4, c5;
     int kdum = 0, km, kp;
@@ -875,14 +882,13 @@ void wake::readInputPolar(std::string filename) {
         if (!polarfile.eof() && !iss.fail()) {
             kp = kdum + 1;
             if(kdum > 0) km = kdum - 1;
-            /*if(DBG) cout << "nx = "
-                    << left << setw(12) << i << " j = "
-                    << left << setw(12) << kdum << " c1 = "
-                    << left << setw(12) << c1 << " c2 = "
-                    << left << setw(12) << c2 << " c3 = "
-                    << left << setw(12) << c3 << " c4 = "
-                    << left << setw(12) << c4 << " c5 = "
-                    << left << setw(12) << c5 << endl;*/
+            if(DBG) cout << left << setw(12) << i
+                    << left << setw(12) << kdum
+                    << left << setw(12) << c1
+                    << left << setw(12) << c2
+                    << left << setw(12) << c3
+                    << left << setw(12) << c4
+                    << left << setw(12) << c5 << endl;
             inc[i][kdum] = c1;
             cz[i][kdum] = c2;
             cx[i][kdum] = c3;
@@ -965,8 +971,7 @@ void wake::readInputPolar(std::string filename) {
         //     << " cq[i][j] = " << cq[i][j] << endl;
     }
 
-    cout << "==================================" << endl;
-    cout << "extrema pointer + break point" << endl;
+    cout << endl << "extrema pointer + break point" << endl;
     cout << right << setw(12) << " mxtrm[" << i << "] = " << left << setw(12) << mxtrm[i] << " # index for extrema location" << endl;
     cout << right << setw(12) << " kx[ " << i << "] = " << left << setw(12) << kx[i] << " # maximum number of incidence angles for particular polar" << endl;
     cout << right << setw(12) << " rbreak[" << i << "] = " << left << setw(12) << rbreak[i] << " # break point location" << endl;
@@ -1091,14 +1096,14 @@ void wake::printGeomSummary() {
 
 void wake::printXFoilValues() {
     cout << endl << "======================================" << endl;
-    cout << " profile data from Xfoil:" << endl;
-    cout << "======================================" << endl;
+    cout << " printXFoilValues()" << endl;
+    if(DBG) cout << " (profile data from Xfoil)" << endl;
     cout << right << setw(12) << " n"
-            << right << setw(12) << " k"
-            << right << setw(12) << " inc[n][k]"
-            << right << setw(12) << " cz[n][k]"
-            << right << setw(12) << " cx[k][n]"
-            << right << setw(12) << " cq[n][k]";
+        << right << setw(12) << " k"
+        << right << setw(12) << " inc[n][k]"
+        << right << setw(12) << " cz[n][k]"
+        << right << setw(12) << " cx[k][n]"
+        << right << setw(12) << " cq[n][k]";
     for (int n = 0; n < nx; ++n) {
         cout << endl;
         for (int k = 0; k < kx[n]; ++k) {
