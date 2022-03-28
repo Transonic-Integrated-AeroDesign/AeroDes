@@ -8,15 +8,18 @@
 #include <string>
 #include <stdio.h>  // strcpy
 #include <math.h>   // copysign
-//#include <string.h>
 #include "wake.hpp"
+
+#ifndef DBG
+#define DBG 1
+#endif
 
 using namespace std; // g++ wake.cpp -c
 
 wake::wake() {
     // *****dimensionless variables
-    cout << "************************" << endl;
-    cout << " formula and associated variables:" << endl;
+    cout << endl << "=========================================\n";
+    cout << " wake()" << endl;
     cout << "                      Y=0.5*Bc0*y" << endl;
     cout << "                      C=0.5*Bc0*c" << endl;
     cout << "                      A=0.25*Bc0**2*ac" << endl;
@@ -97,10 +100,10 @@ wake::wake() {
     create_2d_int_array(lxx, nxx, kxtrm);
 
     // results array
-    alphares  = (double *) malloc(sizeof(double)*lxx);
-    czres  = (double *) malloc(sizeof(double)*lxx);
-    cxres  = (double *) malloc(sizeof(double)*lxx);
-    cqres  = (double *) malloc(sizeof(double)*lxx);
+    //alphares  = (double *) malloc(sizeof(double)*lxx);
+    //czres  = (double *) malloc(sizeof(double)*lxx);
+    //cxres  = (double *) malloc(sizeof(double)*lxx);
+    //cqres  = (double *) malloc(sizeof(double)*lxx);
 
     // filenames
     filenameInputData = "wake.data";
@@ -176,73 +179,89 @@ wake::~wake() {
 void wake::setMesh() {
     // set mesh, geometry, and flow along wing-span
     cout << endl << "=========================================\n";
-    cout << "point distribution, geometry and flow:" << endl;
-    cout << "=========================================\n";
-    cout << left << setw(16) << "y(j) "
-            << left << setw(16) << "eta(j) "
-            << left << setw(16) << "c(j) "
-            << left << setw(16) << "t(j) "
-            << left << setw(16) << "d(j) "
-            << left << setw(16) << "g(j) "
-            << left << setw(16) << "w(j) "
-            << left << setw(16) << "at(j) "
-            << left << setw(16) << "polar(j) " << endl;
+    cout << " setMesh()" << endl;
+    cout << " (point distribution, geometry and flow)" << endl;
 
-    amdum=0.;
-    cavdum=0.;
-    dtet=pi/(jx-1);
-    int n=0; // get main wing polar (index = 0)
+    if(DBG) {
+        cout << left << setw(16) << "y(j) "
+             << left << setw(16) << "eta(j) "
+             << left << setw(16) << "c(j) "
+             << left << setw(16) << "t(j) "
+             << left << setw(16) << "d(j) "
+             << left << setw(16) << "g(j) "
+             << left << setw(16) << "w(j) "
+             << left << setw(16) << "at(j) "
+             << left << setw(16) << "polar(j) " << endl;
+    }
 
-    for (int j = 0; j < jx; ++j) {
+    // init variables
+    acdum=0.;
+    cacdum=0.;
+    dtet=pi/(jxs2-1);
+    int n=0;
+
+    // discretize each point along wing-span
+    for (int j = 0; j < jxs2; ++j) {
         //do 6 j=1,jx
-        tetj = j * dtet; //(j - 1) * dtet;
-        yj = -cos(tetj);
-        y[j] = yj;
-        etaj = -cos(tetj + .5 * dtet);
-        eta[j] = etaj;
+        tetj=j*dtet;
+        yj=-1.0+(1.0-cos(tetj))*(1.0-rf)/2.0;
+        y[j]=yj;
+        //etaj=-cos(tetj + .5 * dtet);
+        //eta[j]=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0;
+        etaj=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0;
 
-        //
-        if (j==0) {
-            etajm = -1.;
-        } else {
-            etajm = eta[j - 1];
-        }
+        if (j==0) { etajm = -1.;}
+        else { etajm = eta[j - 1]; }
 
         // reached last point
-        if (j==jx) {
-            etaj = eta[j - 1];
-        }
-        dem[j] = dm;
-        t[j] = tm;
-        g[j] = 0.;
-        w[j] = 0.;
-        at[j] = 0.;
-        a0[j] = -pi * dm;
-        a1[j] = 0.;
-        b0[j] = 2. * pi * (2. * dem[j]);
-        b1[j] = 2. * pi;
-        // elliptic wing
+        if (j==jxs2) { etaj = eta[j - 1]; }
+        eta[j]=etaj;
+        dem[j]=dm;
+        t[j]=tc;
+        g[j]=0.0;
+        w[j]=0.0;
+        at[j]=0.0;
+        a0[j]=-pi*dm;
+        a1[j]=0.0;
+        b0[j]=2.0*pi*(2.0*dem[j]);
+        b1[j]=2.0* pi;
+        // elliptic canard
         if (iwing==0) {
-            c[j] = cxm * sin(tetj);
-            xacm[j] = 0.25 * cxm;
-            xacm[j] = xacm[j] + tan(lamb) * abs(y[j]);
-            xle[j] = xacm[j] - 0.25 * c[j];
-            xte[j] = xle[j] + c[j];
-            if (j>=1) xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
-            amdum = amdum + c[j] * (etaj - etajm);
-            cavdum = cavdum + pow(c[j],2) * (etaj - etajm);
+            c[j]=cxc*sin(tetj);
+            xacc[j]=0.25*cxc;
+            xacc[j]=xacc[j]+tan(lamb)*abs(y[j]);
+            xle[j]=xacc[j]-0.25*c[j];
+            xte[j]=xle[j]+c[j];
+            if (j>=1) xiac[j-1]=0.5*(xacc[j]+xacc[j-1]);
+            acdum=acdum+c[j]*(etaj - etajm);
+            cacdum=cacdum+pow(c[j],2)*(etaj-etajm);
         }
-        // rectangular wing
+        // rectangular canard
         if (iwing==1) {
-            c[j] = cxm;
-            xle[j] = 0.0;
-            xte[j] = cxm;
-            xacm[j] = 0.5 * cxm;
-            xiac[j] = 0.5 * cxm;
-            amdum = amdum + c[j] * (etaj - etajm);
-            cavdum = cavdum + pow(c[j],2) * (etaj - etajm);
+            c[j]=cxc;
+            xle[j]=0.0;
+            xte[j]=cxc;
+            xacc[j]=0.5*cxc;
+            xiac[j]=0.5*cxc;
+            acdum=acdum+c[j]*(etaj-etajm);
+            cacdum=cacdum+pow(c[j],2)*(etaj-etajm);
         }
-        // tailess configuration
+        // canard geometry
+        if(iwing==2) {
+            if (abs(yj)>=(rf-eps)) {
+                xle[j]=0.5115-0.466*(1.0-abs(y[j]));
+                xte[j]=0.7972-0.266*(1.0-abs(y[j]));
+                c[j]=xte[j]-xle[j];
+                xacc[j]=xle[j]+0.25*c[j];
+                if (j>=1) {
+                    xiac[j-1]=0.5*(xacc[j]+xacc[j-1]);
+                }
+                acdum=acdum+c[j]*(etaj-etajm);
+                cacdum=cacdum+pow(c[j],2)*(etaj - etajm);
+                a0[j]=0.0;
+            }
+        }
+    /*  // tailess configuration
         if (iwing==2) {
             if (abs(yj)>=rf) {
                 if(abs(yj)>=rstr) {
@@ -272,9 +291,9 @@ void wake::setMesh() {
                 if (j>=1) { xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]); }
                 a0[j] = 0.;
             }
-        }
+        }*/
 
-        // if polar is [on] off
+        // when polar is [on] off
         if (polarBool) {
             if (y[j]>(rbreak[n]-eps)) {
                 //if(DBG) cout << "rbreak(n) = " << rbreak[n] << endl;
@@ -286,33 +305,38 @@ void wake::setMesh() {
         }
 
         polar[j] = n;
-        cout << std::setprecision(7);
-        cout << left << setw(16) << y[j]
-                << left << setw(16) << eta[j]
-                << left << setw(16) << c[j]
-                << left << setw(16) << t[j]
-                << left << setw(16) << dem[j]
-                << left << setw(16) << g[j]
-                << left << setw(16) << w[j]
-                << left << setw(16) << at[j]
-                << left << setw(16) << polar[j]  << j << endl;
 
-        //write(17, *) y(j), c(j), dem(j), t(j)
-        //write(29, *) y(j), xle(j), xte(j), xacm(j)
-        //if (j>=2) write(33, *) eta(j - 1), xiac(j - 1)
+        if(DBG) {
+            cout << std::setprecision(7);
+            cout << left << setw(16) << y[j]
+                 << left << setw(16) << eta[j]
+                 << left << setw(16) << c[j]
+                 << left << setw(16) << t[j]
+                 << left << setw(16) << dem[j]
+                 << left << setw(16) << g[j]
+                 << left << setw(16) << w[j]
+                 << left << setw(16) << at[j]
+                 << left << setw(16) << polar[j] << j << endl;
+        }
+
+        // mirror values for right side canard surface area
+        y[jx+1-j]=-y[j];
+        eta[jx-j]=-eta[j];
     }
 
-    // geometric summary
-    am=amdum;
-    cav=cavdum/am;
-    arm=4./am;
-    Re=0.5*Rho*Vinf*B*cav/Amu;
-    int jmax = jx-1; // accounts for zeroth element
-    eta[jmax] = eta[jmax-1];
-    xiac[jmax] = xiac[jmax-1];
+    // geometric values
+    // summarized in printGeomSummary()
+    ac=acdum;
+    cac=cacdum/ac;
+    arc=0.5*pow(bc,2)/ac;
+    Re=Rho*Vinf*Cc0*cac/Amu;
+
+    //int jmax = jx-1; // accounts for zeroth element
+    //eta[jmax] = eta[jmax-1];
+    //xiac[jmax] = xiac[jmax-1];
 }
 
-void wake::solveLiftingLine() {
+/*void wake::solveLiftingLine() {
     int jp, jm;
     int n = 0;  // polar index
     //ivis=0;
@@ -669,7 +693,7 @@ void wake::solveLiftingLine() {
     xle[53] = cxm;
     y[54] = 0.11111;
     xle[54] = 1.3;
-}
+}*/
 
 int **wake::create_2d_int_array(int n1, int n2, int **array) {
     // create a n1 x n2 matrix
@@ -765,12 +789,9 @@ void wake::readInputParams() {
         else if (a.compare("DX0") == 0) Dx0 = b;
         else if (a.compare("STR") == 0) str = b;
         else if (a.compare("ZWAKE") == 0) zwake = b;
-        //else if (a.compare("ALPHAD") == 0) alphad = b;
-        //else if (a.compare("ACWASH") == 0) acwash = b;
         else if (a.compare("RHO") == 0) Rho = b;
         else if (a.compare("VINF") == 0) Vinf = b;
         else if (a.compare("AMU") == 0) Amu = b;
-
         else if (a.compare("IVIS") == 0) ivis = b;
         else if (a.compare("IPOLAR") == 0) { polarBool = true; }
         else if (a.compare("ALPHAIN") == 0) alphain = b;
@@ -783,22 +804,35 @@ void wake::readInputParams() {
         //if (a.compare("NPOLAR") == 0) { nx = b; }
     }
 
-    // initializations
-    bc=2.0
-    cxc=2.0*Cc0/Bc0
-    zcanar=2.0*Zc0/B
-    lamb=degrad*Lambd
-    rf=2.0*Rf0/Bc0
-    tc=degrad*tcd
-    lf=2.0*Lf0/Bc0
-    dxm=2.0*Dx0/Bc0
+    // initializations -move this to init() function later -cp 3/27/22
+    jx=2*jxs2;
+    bc=2.0;
+    cxc=2.0*Cc0/Bc0;
+    zcanar=2.0*Zc0/B;
+    lamb=degrad*Lambd;
+    rf=2.0*Rf0/Bc0;
+    tc=degrad*tcd;
+    lf=2.0*Lf0/Bc0;
+    dxm=2.0*Dx0/Bc0;
 
     // optional read-in files
-    if(acwash) readInputDownwash();
+    //if(acwash) readInputDownwash();
 }
 
 void wake::readInputPolar(std::string filename) {
-    // open input file
+    // read given input polar filename:
+    //
+    // input polars should be structured columnwise with a single breakpoint at the end.
+    // all header information is scraped out.
+    //
+    //  [alpha]  [cz]   [cx]    [dummyval]      [cq]
+    //    ...     ...    ...        ...         ...
+    //    ...     ...    ...        ...         ...
+    //
+    //    ...     ...    ...        ...         ...
+    //  [breakpoint]
+    //
+
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
         cout << "\n\tCannot Read " << filename;
@@ -978,55 +1012,81 @@ void wake::readInputDownwash() {
 }
 
 void wake::printInputParams() {
-    cout << endl << " printInputParams()" << endl;
-    cout << right << setw(10) << "ITX = " << itx << endl;
-    cout << right << setw(10) << "OMEGA = " << omega << endl;
-    cout << right << setw(10) << "AVIS = " << avis << endl;
-    cout << right << setw(10) << "B = " << B << endl;
-    cout << right << setw(10) << "Cx0 = " << Cx0 << endl;
-    cout << right << setw(10) << "LAMBD = " << Lambd << endl;
-    cout << right << setw(10) << "RSTR0 = " << Rstr0 << endl;
-    cout << right << setw(10) << "RF0 = " << Rf0 << endl;
-    cout << right << setw(10) << "DM = " << dm << endl;
-    cout << right << setw(10) << "TM = " << tmd << endl;
-    cout << right << setw(10) << "IWING = "<< iwing << endl;
-    cout << right << setw(10) << "ALPHAD = " << alphad << endl;
-    cout << right << setw(10) << "ACWASH = " << acwash << endl;
-    cout << right << setw(10) << "RHO = " << Rho << endl;
-    cout << right << setw(10) << "VINF = " << Vinf << endl;
-    cout << right << setw(10) << "AMU = " << Amu << endl;
-    cout << right << setw(10) << "IVIS = " << ivis << endl;
-    cout << right << setw(10) << "IPOLAR = " << polarBool << endl;
-    cout << right << setw(10) << "NPOLAR = " << nx << endl;
+    //
+    // print input parameters to screen
+    //
+    cout << endl << "=========================================\n";
+    cout << " printInputParams()" << endl;
+    cout << right << setw(20) << "ITX = " << itx << endl;
+    cout << right << setw(20) << "OMEGA = " <<  omega << endl;
+    cout << right << setw(20) << "AVIS = " <<  avis << endl;
+    cout << right << setw(20) << "BC0 = " <<  Bc0 << endl;
+    cout << right << setw(20) << "CC0 = " <<  Cc0 << endl;
+    cout << right << setw(20) << "ZC0 = " <<  Zc0 << endl;
+    cout << right << setw(20) << "ARCEFF = " <<  arceff << endl;
+    cout << right << setw(20) << "LAMBD = " <<  Lambd << endl;
+    cout << right << setw(20) << "RF0 = " <<  Rf0 << endl;
+    cout << right << setw(20) << "DM = " <<  dm << endl;
+    cout << right << setw(20) << "TCD = " <<  tcd << endl;
+    cout << right << setw(20) << "IWING = " <<  iwing << endl;
+    cout << right << setw(20) << "B = " <<  B << endl;
+    cout << right << setw(20) << "LF0 = " <<  Lf0 << endl;
+    cout << right << setw(20) << "DX0 = " <<  Dx0 << endl;
+    cout << right << setw(20) << "STR = " <<  str << endl;
+    cout << right << setw(20) << "ZWAKE = " <<  zwake << endl;
+    cout << right << setw(20) << "RHO = " <<  Rho << endl;
+    cout << right << setw(20) << "VINF = " <<  Vinf << endl;
+    cout << right << setw(20) << "AMU = " <<  Amu << endl;
+    cout << right << setw(20) << "IVIS = " <<  ivis << endl;
+    cout << right << setw(20) << "IPOLAR = " << polarBool << endl;
+    cout << right << setw(20) << "ALPHAIN = " <<  alphain << endl;
+    cout << right << setw(20) << "ALPHAFI = " <<  alphafi << endl;
+    cout << right << setw(20) << "ALPHASTEP = " <<  alstep << endl;
 }
 
 void wake::printGeomSummary() {
-    cout << endl << "======================================" << endl;
+    //
+    // print geometry summary
+    //
+    cout << endl << "=========================================\n";
+    cout << " printGeomSummary()" << endl;
+
+    cout << endl;
     cout << "numerical data:" << endl;
-    cout << right << setw(32) << " number of points jx = " << left << setw(10) << jx << endl;
+    cout << right << setw(32) << "          number of points jx = " << left << setw(10) << jx << endl;
     cout << right << setw(32) << " max number of iterations itx = " << left << setw(10) << itx << endl;
     cout << right << setw(32) << "                        omega = " << left << setw(10) << omega << endl;
     cout << right << setw(32) << "   viscosity coefficient avis = " << left << setw(10) << avis << endl;
-    cout << right << setw(32) << "main wing data:" << endl;
-    cout << right << setw(32) << "                  wing span B = " << left << setw(10) << B << " (m)" << endl;
-    cout << right << setw(32) << "   maximum chord/fuselage Cx0 = " << left << setw(10) << Cx0 << " (m)" << endl;
-    cout << right << setw(32) << "      a. c. sweep angle Lambd = " << left << setw(10) << Lambd << "(deg)" << endl;
-    cout << right << setw(32) << "    half span of strake Rstr0 = " << left << setw(10) << Rstr0 << " (m)" << endl;
+
+    cout << endl;
+    cout << "canard data:" << endl;
+    cout << right << setw(32) << "              canard span Bc0 = " << left << setw(10) << Bc0 << " (m)" << endl;
+    cout << right << setw(32) << "        canard root chord Cc0 = " << left << setw(10) << Cc0 << " (m)" << endl;
+    cout << right << setw(32) << "        canard z location Zc0 = " << left << setw(10) << Zc0 << " (m)" << endl;
+    cout << right << setw(32) << "   canard effective AR arceff = " << left << setw(10) << arceff << endl;
+    cout << right << setw(32) << "  0/1 a. c. sweep angle Lambd = " << left << setw(10) << Lambd << "(deg)" << endl;
     cout << right << setw(32) << "          fuselage radius Rf0 = " << left << setw(10) << Rf0 << " (m)" << endl;
     cout << right << setw(32) << "    relative camber height dm = " << left << setw(10) << dm << " (ref. C)" << endl;
-    cout << right << setw(32) << "        wing setting angle tm = " << left << setw(10) << tm << " (rd) =" <<tmd<<" (deg)" << endl;
-    cout << right << setw(32) << "             wing shape 0/1/2 = " << left << setw(10) << iwing << endl;
-    cout << right << setw(32) << "    downwash of canard acwash = " << left << setw(10) << acwash << endl;
-    cout << right << setw(32) << "air data:" << endl;
+    cout << right << setw(32) << "      canard setting angle tm = " << left << setw(10) << tc << " (rd) =" << tcd <<" (deg)" << endl;
+    cout << right << setw(32) << "           canard shape 0/1/2 = " << left << setw(10) << iwing << endl;
+    cout << right << setw(32) << "                  wing span B = " << B << " (m)" << endl;
+    cout << right << setw(32) << "          fuselage length Lf0 = " << Lf0 << " (m)" << endl;
+    cout << right << setw(32) << "    inital wake mesh step Dx0 = " << Dx0 << " (m)" << endl;
+    cout << right << setw(32) << "  wake stretch paprameter str = " << str << endl;
+    cout << right << setw(32) << " wake location wrt wing zwake = " << zwake << endl;
+
+    cout << endl;
+    cout<< "air data:" << endl;
     cout << right << setw(32) << "              air density Rho = " << left << setw(10) << Rho << " (kg/m**3)" << endl;
     cout << right << setw(32) << "           wind velocity Vinf = " << left << setw(10) << Vinf << " (m/s)" << endl;
     cout << right << setw(32) << "        dynamic viscosity Amu = " << left << setw(10) << Amu << " (kg/(m*s))" << endl;
     cout << right << setw(32) << "        reference Reynolds Re = " << left << setw(10) << Re << endl;
-    cout << "======================================" << endl;
+
+    cout << endl;
     cout << "calculated data:" << endl;
-    cout << right << setw(32) << "                 wing area am = " << left << setw(10) <<am<< " (ref. B**2/4)" << endl;
-    cout << right << setw(32) << "        wing aspect ratio arm = " << left << setw(10) << arm << endl;
-    cout << right << setw(32) << "average aerodynamic chord cav = " << left << setw(10) << cav << " (ref. B/2)" << endl;
+    cout << right << setw(32) << "               canard area am = " << left << setw(10) << ac << " (ref. Bc0**2/4)" << endl;
+    cout << right << setw(32) << "      canard aspect ratio arm = " << left << setw(10) << arc << endl;
+    cout << right << setw(32) << "average aerodynamic chord cac = " << left << setw(10) << cac << " (ref. Bc0/2)" << endl;
 }
 
 void wake::printXFoilValues() {

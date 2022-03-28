@@ -26,11 +26,11 @@ int main(int argc, char** argv) {
     wk->readInputParams();
     wk->printInputParams();
 
-    wk->readInputPolar("polarbl.dat");
+    //wk->readInputPolar("polarbl.dat");
     //wk->printXFoilMaxValues();
 
-    //wk->setMesh();
-    //wk->printGeomSummary();
+    wk->setMesh();
+    wk->printGeomSummary();
 
     //wk->solveLiftingLine();
     //wk->printDistributions();
