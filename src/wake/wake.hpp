@@ -41,7 +41,7 @@ public:
 
 private:
     int jxx,lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx;
-    int jx2,is,iwing,j,nsteps,ivis,nstep,iter,it,mj,jdx,jm;
+    int jx2,is,iwing,nsteps,ivis,nstep,iter,it,mj,jdx,jm;
     int itx,jxs2,jc,ixx,i,ix,ixw;
     //parameter(ixx=201,jxx=102,lxx=102,nxx=10)
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;

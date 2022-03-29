@@ -32,8 +32,8 @@ int main(int argc, char** argv) {
     wk->setMesh();
     wk->printGeomSummary();
 
-    //wk->solveLiftingLine();
-    //wk->printDistributions();
+    wk->solveLiftingLine();
+    wk->printDistributions();
 
     delete wk;
 }

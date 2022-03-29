@@ -177,7 +177,12 @@ wake::~wake() {
 }
 
 void wake::setMesh() {
+    //
     // set mesh, geometry, and flow along wing-span
+    //
+    // note: currently eta distribution differs in the 8'th decimal place from fortran version
+    //       this may in turn effect the resulting distributions. this is likely due to switching
+    //       to double precision instead of float. -cp 3/28/22
     cout << endl << "=========================================\n";
     cout << " setMesh()" << endl;
     cout << " (point distribution, geometry and flow)" << endl;
@@ -204,8 +209,11 @@ void wake::setMesh() {
     for (int j = 0; j < jxs2; ++j) {
         //do 6 j=1,jx
         tetj=j*dtet;
+
         yj=-1.0+(1.0-cos(tetj))*(1.0-rf)/2.0;
         y[j]=yj;
+        y[jx-j-1]=-y[j]; // mirror image value
+
         //etaj=-cos(tetj + .5 * dtet);
         //eta[j]=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0;
         etaj=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0;
@@ -215,7 +223,10 @@ void wake::setMesh() {
 
         // reached last point
         if (j==jxs2) { etaj = eta[j - 1]; }
+
         eta[j]=etaj;
+        eta[jx-j-1]=-eta[j-1]; // mirror image value
+
         dem[j]=dm;
         t[j]=tc;
         g[j]=0.0;
@@ -250,48 +261,27 @@ void wake::setMesh() {
         if(iwing==2) {
             if (abs(yj)>=(rf-eps)) {
                 xle[j]=0.5115-0.466*(1.0-abs(y[j]));
+                xle[jx-j-1]=xle[j]; // mirror image value
+
                 xte[j]=0.7972-0.266*(1.0-abs(y[j]));
+                xte[jx-j-1]=xte[j]; // mirror image value
+
                 c[j]=xte[j]-xle[j];
+                c[jx-j-1]=c[j];
+
                 xacc[j]=xle[j]+0.25*c[j];
+                xacc[jx-j-1]=xacc[j]; // mirror image value
+
                 if (j>=1) {
                     xiac[j-1]=0.5*(xacc[j]+xacc[j-1]);
+                    xiac[jx-j-1]=xiac[j-1]; // mirror image value
                 }
+
                 acdum=acdum+c[j]*(etaj-etajm);
                 cacdum=cacdum+pow(c[j],2)*(etaj - etajm);
                 a0[j]=0.0;
             }
         }
-    /*  // tailess configuration
-        if (iwing==2) {
-            if (abs(yj)>=rf) {
-                if(abs(yj)>=rstr) {
-                    xle[j] = cxm + 0.01589 - 0.468 * (1.0 - abs(yj));
-                    xte[j] = cxm + 0.1269 - 0.181 * (1.0 - abs(yj));
-                }
-                else {
-                    xle[j] = cxm - 0.31111 - 1.0 * (0.3 - abs(yj));
-                    xte[j] = cxm;
-                }
-                c[j] = xte[j] - xle[j];
-                xacm[j] = xle[j] + 0.25 * c[j];
-                if (j>=1) {
-                    xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]);
-                }
-                amdum = amdum + c[j] * (etaj - etajm);
-                cavdum = cavdum + pow(c[j],2) * (etaj - etajm);
-                a0[j] = 0.;
-            }
-            else {
-                // slender body treatment of fuselage
-                phij = acos(yj / rf);
-                xle[j] = rf * (1.0 - sin(phij));
-                xte[j] = cxm;
-                c[j] = xte[j] - xle[j];
-                xacm[j] = xacm[j - 1] + 0.033333 * (pow((yj / 0.11111),2) -pow((y[j - 1]/0.11111),2));
-                if (j>=1) { xiac[j - 1] = 0.5 * (xacm[j] + xacm[j - 1]); }
-                a0[j] = 0.;
-            }
-        }*/
 
         // when polar is [on] off
         if (polarBool) {
@@ -300,9 +290,7 @@ void wake::setMesh() {
                 n = n + 1;
             }
         }
-        else {
-            n = 0;
-        }
+        else { n = 0; }
 
         polar[j] = n;
 
@@ -320,8 +308,35 @@ void wake::setMesh() {
         }
 
         // mirror values for right side canard surface area
-        y[jx+1-j]=-y[j];
-        eta[jx-j]=-eta[j];
+        //y[jx+1-j]=-y[j];
+        //eta[jx-j]=-eta[j];
+    }
+
+    // middle condition
+    //eta[jxs2]=eta[jxs2-1];
+    xiac[jxs2-1]=xiac[jxs2-2];
+
+    // end condition
+    eta[jx-1]=eta[jx-2];
+
+    /*int j=0;
+    for (int jc = 0; jc<jxs2 ; ++jc) {
+        //do 61 jc=1,jxs2
+        j = jxs2 + jc;
+        xle[j] = xle[jxs2-jc];
+        xte[j] = xte[jxs2-jc];
+        c[j]=c[jxs2-jc];
+        xacc[j]=xle[j]+0.25*c[j];
+        if (j>=jxs2+1) xiac[j-1]=0.5*(xacc[j]+xacc[j-1]);
+        //write(29, *) y(j), xle(j), xte(j), xacc(j)
+        //if (j>=jxs2+2)write(33, *) eta(j - 1), xiac(j - 1)
+        //61   continue
+    }*/
+    //xiac[jx]=xiac[jx-1];
+
+    cout << std::setprecision(10);
+    for (int i1 = 0; i1 < jx; ++i1) {
+        cout << "i1 = " << i1 << " xiac = " << xiac[i1] << " xacc = " << xacc[i1] << " xte = " << xte[i1] << " xle = " << xle[i1] << " y = " << y[i1] << " eta = " << eta[i1] << endl;
     }
 
     // geometric values
@@ -336,18 +351,22 @@ void wake::setMesh() {
     //xiac[jmax] = xiac[jmax-1];
 }
 
-/*void wake::solveLiftingLine() {
-    int jp, jm;
-    int n = 0;  // polar index
-    //ivis=0;
-    //vis=0.;
+void wake::solveLiftingLine() {
+    //
+    // iterative solver for gamma and downwash distribtions.
+    //
 
-    cout << endl << endl << "solveLiftingLine() " << endl;
-    cout << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
+    int jp, jm;
+    int jxs2m, jxm;
+    int n = 0;  // polar index
+
+    cout << endl << "=========================================\n";
+    cout << "solveLiftingLine() " << endl;
+    cout << endl << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
     cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
     cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
 
-    // setup angular distribution
+    // setup angular step
     if (alstep==0) nsteps = 1;
     else nsteps=1+(alphafi-alphain)/alstep;
     alphad = alphain-alstep;
@@ -373,7 +392,7 @@ void wake::setMesh() {
         }
         iter = 0;
         cout << endl << " solution:" << endl;
-        cout << " alpha = " << alphad << " (degrees)" << endl;
+        cout << "\t alpha = " << alphad << " (degrees)" << endl;
         if (ivis == 0) {
             cout << "do you want to introduce viscous effects?" << endl;
             cout << "viscous/inviscid=1/0   choose ivis=" << endl;
@@ -395,13 +414,13 @@ void wake::setMesh() {
             iter = iter + 1;
 
             if (polarBool) {
-                // search for point on polar and polar coefficients
-                for (j = 1; j < (jx - 1); ++j) {
-                    n = polar[j];
-                    atj = at[j];
-                    atj = atj + acwash * wcanar[j];
-                    mj = 1;
-                    prod = 1.57 - atj;
+                // intermediate point solutions
+                for (j = 1; j < (jxs2 - 1); ++j) {
+                    n=polar[j];
+                    atj=at[j];
+                    //atj=atj + acwash * wcanar[j];
+                    mj=1;
+                    prod=1.57-atj;
 
                     // loop over wingspan mesh points
                     for (int k = 1; k < (kx[n] - 1); ++k) {
@@ -412,257 +431,275 @@ void wake::setMesh() {
                         mj = k;
                     }
 
-                    a1[j] = (cx[n][mj + 1] - cx[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
-                    a0[j] = cx[n][mj] - a1[j] * inc[n][mj];
-                    b1[j] = (cz[n][mj + 1] - cz[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
-                    b0[j] = cz[n][mj] - b1[j] * inc[n][mj];
-                    c1[j] = (cq[n][mj + 1] - cq[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
-                    c0[j] = cq[n][mj] - c1[j] * inc[n][mj];
-                    cxj = a0[j] + a1[j] * atj;
-                    czj = b0[j] + b1[j] * atj;
-                    qj = c0[j] + c1[j] * atj;
-                    m[j] = mj;
-                    l[j] = czj;
-                    d[j] = vis * cxj;
-                    q[j] = qj;
+                    a1[j]=(cx[n][mj+1]-cx[n][mj]) / (inc[n][mj+1]-inc[n][mj]);
+                    a0[j]=cx[n][mj]-a1[j]*inc[n][mj];
+                    b1[j]=(cz[n][mj+1]-cz[n][mj]) / (inc[n][mj+1]-inc[n][mj]);
+                    b0[j]=cz[n][mj]-b1[j]*inc[n][mj];
+                    c1[j]=(cq[n][mj+1]-cq[n][mj]) / (inc[n][mj+1]-inc[n][mj]);
+                    c0[j]=cq[n][mj]-c1[j]*inc[n][mj];
+                    cxj=a0[j]+a1[j]*atj;
+                    czj=b0[j]+b1[j]*atj;
+                    qj=c0[j]+c1[j]*atj;
+                    m[j]=mj;
+                    l[j]=czj;
+                    d[j]=vis*cxj;
+                    q[j]=qj;
+
+                    // mirror edge
+                    l[jx-j-1]=l[j];
+                    d[jx-j-1]=d[j];
+                    q[jx-j-1]=q[j];
                 }
 
-                // boundary conditions
-                m[0] = m[1];
-                l[0] = l[1] + (l[2] - l[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-                d[0] = d[1] + (d[2] - d[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-                m[j] = m[j - 1];
-                l[j] = l[j - 1] + (l[j - 1] - l[j - 2]) * (y[j] - y[j - 1])
-                                  / (y[j - 1] - y[j - 2]);
-                d[j] = d[j - 1] + (d[j - 1] - d[j - 2]) * (y[j] - y[j - 1])
-                                  / (y[j - 1] - y[j - 2]);
+                // first edge boundary conditions
+                m[0]=m[1];
+                l[0]=l[1]+(l[2]-l[1])*(y[0]-y[1]) / (y[2]-y[1]);
+                d[0]=d[1]+(d[2]-d[1])*(y[0]-y[1]) / (y[2]-y[1]);
+                q[0]=q[1]+(q[2]-q[1])*(y[0]-y[1])/(y[2]-y[1]);
+
+                // middle edge boundary conditions
+                jxs2m = jxs2-1;
+                jxm = jx-1;
+                m[jxs2-1]=m[jxs2-2];
+                l[jxs2-1]=l[jxs2-2]+(l[jxs2-2]-l[jxs2-3])*(y[jxs2-1]-y[jxs2-2])
+                                  / (y[jx-2]-y[jx-3]);
+                d[jxs2m] = d[jxs2m-1]+(d[jxs2m-1]-d[jxs2m-2])*(y[jxm]-y[jxm-1])
+                                  / (y[jxm-1]-y[jxm-2]);
+                q[jxs2m]=q[jxs2m-1]+(q[jxs2m-1]-q[jxs2m-2])*(y[jxm]-y[jxm-1])
+                        /(y[jxm-1]-y[jxm-2]);
+
+                // middle edge boundary conditions + 1
+                l[jxs2]=l[jxs2-1];
+                d[jxs2]=d[jxs2-1];
+                q[jxs2]=q[jxs2-1];
+
+                // end edge boundary conditions
+                l[jx-1]=l[0];
+                d[jx-1]=d[0];
+                q[jx-1]=q[0];
             }
-
-
 
             // fixed point iteration
             g[0] = 0.;
-            g[jx - 1] = 0.; // the last element in vectors is jx-1
-            dgx = 0.;
-            jdx = 0;
+            g[jxs2-1] = 0.; // the last element in vectors is jx-1
+            dgx=0.;
+            jdx=0;
 
             // downwash & gamma integral
-            for (j = 1; j < jx - 1; ++j) {
+            for (j = 1; j < jxs2-1; ++j) {
                 //do 12 j = 2, jx - 1
                 sum = 0.;
 
-                for (int k = 0; k < jx - 1; ++k) {
+                for (int k = 0; k < jx-1; ++k) {
                     // downwash for non-straight lifting line, trailed vorticity
                     // (end at k-1 indice since we are performing forward derivative)
-                    phi0 = copysign(1.0, y[j] - eps) * atan((xacm[j] - xiac[k]) / (y[j] - eta[k]));
-                    sum = sum + (g[k + 1] - g[k]) * (1.0 - sin(phi0)) / (y[j] - eta[k]);
-                    cout << std::setprecision(10);
-                    //cout << "xacm = " << xacm[j] << " xiac = " << xiac[k] << " y = " << y[j] << " eta = " << eta[k] << " r = " << (xacm[j] - xiac[k]) / (y[j] - eta[k]) << endl;
-                    //cout << "j = " << j << " k = " << k << " g[k+1] = " << g[k+1] << " eta[k] = " << eta[k] << " sum = " << sum << " phi0 = " << phi0 << endl;
+                    if(k!=jxs2-1) {
+                        phi0 = copysign(1.0, y[j] - eps) * atan((xacc[j] - xiac[k]) / (y[j] - eta[k]));
+                        sum = sum + (g[k + 1] - g[k]) * (1.0 - sin(phi0)) / (y[j] - eta[k]);
+                        //cout << std::setprecision(10);
+                        //cout << "j = " << j << " k = " << k << " g[k+1] = " << g[k+1] << " eta[k] = " << eta[k] << " sum = " << sum << " phi0 = " << phi0 << endl;
 
-                    // downwash due to lifting line
-                    if (((k + 1) != j) && (k < jx - 1)) {
-                        dwkj = -g[k + 1] * ((xiac[k + 1] - xiac[k]) * (y[j] - y[k + 1])
-                                            - (xacm[j] - xacm[k + 1]) * (eta[k + 1] - eta[k]))
-                               / pow((pow((xacm[j] - xacm[k + 1]), 2) + pow((y[j] - y[k + 1]), 2) +
-                                      10.0 * (eta[k + 1] - eta[k])), 1.5);
-                        sum = sum + dwkj;
-                        //endif
+                        // downwash due to lifting line
+                        if (((k + 1) != j) && (k < jx - 1)) {
+                            dwkj = -g[k + 1] * ((xiac[k + 1] - xiac[k]) * (y[j] - y[k + 1])
+                                                - (xacc[j] - xacc[k + 1]) * (eta[k + 1] - eta[k]))
+                                   / pow((pow((xacc[j] - xacc[k + 1]), 2) + pow((y[j] - y[k + 1]), 2) +
+                                          10.0 * (eta[k + 1] - eta[k])), 1.5);
+                            sum = sum + dwkj;}
                     }
-                    //11 continue
                 }
 
-                wj = -sum / (4. * pi);
-                atj = alpha + atan2(wj, 1.);
-                atj = atj + acwash * wcanar[j];
-                attj = atj + t[j];
-                czj = b0[j] + b1[j] * attj;
+                wj=-sum / (4.*pi);
+                atj=alpha+atan2(wj,1.);
+                //atj=atj + acwash*wcanar[j];
+                attj=atj+t[j];
+                czj=b0[j]+b1[j]*attj;
 
                 if (polarBool) {
                     reg = 0.;
                     if (m[j] >= mxtrm[n]) {
-                        reg = -c[j] * b1[j]
-                              * (1. / (y[j] - eta[j - 1]) - 1. / (y[j] - eta[j]))
-                              / (16. * pi * (1.0 + wj * wj));
-                        if (reg < eps) reg = 0.;
-                        //endif
+                        reg=-c[j]*b1[j]
+                              * (1./(y[j]-eta[j-1])-1. / (y[j]-eta[j]))
+                              / (16.*pi*(1.0+wj*wj));
+                        if (reg<eps) reg=0.;
                     }
-                    //endif
                 }
 
-                dg[j] = (0.5 * c[j] * czj - g[j]
-                         + (avis + reg) * (g[j + 1] - 2. * g[j] + g[j - 1]))
-                        / (1. + c[j] * b1[j] * (1. / (y[j] - eta[j - 1]) - 1. / (y[j] - eta[j]))
-                                / (8. * pi * (1.0 + wj * wj)) + 2. * (avis + reg));
-                w[j] = wj;
-                at[j] = attj;
+                dg[j]=(0.5*c[j]*czj-g[j]
+                         +(avis+reg)*(g[j+1]-2.*g[j]+g[j-1]))
+                        / (1.+c[j]*b1[j]*(1./(y[j]-eta[j-1])-1./(y[j]-eta[j]))
+                                / (8.*pi*(1.0+wj*wj))+2.*(avis+reg));
+                w[j]=wj;
+                at[j]=attj;
 
-                if (abs(y[j]) <= rf) {
-                    dg[j] = g[j - 1] + 2.0 * rf * sin(3.0 * alpha) / 3.0 * ((1.0 - pow((y[j] / rf), 2))
-                                                                            / (1.0 + pow((y[j] / rf), 2)) -
-                                                                            (1.0 - pow((y[j - 1] / rf), 2))
-                                                                            / (1.0 + pow((y[j - 1] / rf), 2))) - g[j];
+                if (abs(y[j])<=rf) {
+                    dg[j]=g[j-1]+2.0*rf*sin(3.0*alpha) / 3.0*((1.0-pow((y[j] / rf), 2))
+                            / (1.0+pow((y[j] / rf), 2)) -
+                            (1.0-pow((y[j-1] / rf), 2))
+                            / (1.0+pow((y[j-1] / rf), 2)))-g[j];
                 }
 
-                g[j] = g[j] + omega * dg[j];
+                g[j]=g[j]+omega*dg[j];
+
+                // stop criteria
                 if (abs(dgx) < abs(dg[j])) {
                     dgx = dg[j];
                     jdx = j;
                 }
+
+                // mirror side
+                g[jx-j-1]=g[j];
+                w[jx-j-1]=w[j];
+                at[jx-j-1]=at[j];
             }
-            // boundary conditions
-            w[0] = w[1] + (w[2] - w[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-            w[j] = w[j - 1] + (w[j - 2] - w[j - 1]) * (y[j] - y[j - 1]) / (y[j - 2] - y[j - 1]);
-            at[0] = at[1] + (at[2] - at[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-            at[j] = at[j - 1] + (at[j - 2] - at[j - 1]) * (y[j] - y[j - 1]) / (y[j - 2] - y[j - 1]);
 
-            if (iter == 1) res0 = dgx;
+            // first edge boundary conditions
+            w[0]=w[1]+(w[2]-w[1])*(y[0]-y[1]) / (y[2]-y[1]);
+            at[0]=at[1]+(at[2]-at[1])*(y[0]-y[1]) / (y[2]-y[1]);
+
+            // final edge boundary condition
+            g[jx-1]=0.0;
+            w[jx-1]=w[0];
+
+            // middle edge boundary condition
+            w[jxs2-1]=w[jxs2-2]+(w[jxs2-3]-w[jxs2-2])*(y[jxs2-1]-y[jxs2-2]) / (y[jxs2-3] - y[jxs2-2]);
+            w[jxs2]=w[jxs2-1];
+
+            //at[jxs2]=at[jxs2-1]+(at[jxs2-2]-at[jxs2-1])*(y[jxs2]-y[jxs2-1]) / (y[jxs2-2]-y[j-1]);
+            //at[jxs2+1]=at[jxs2];
+            //at[jx]=at[0];
+
+            if (iter == 0) res0 = dgx;
             alogres = log10(abs(dgx / res0) + eps);
-            //cout << "it = " << it << " dgx = " << abs(dgx) << " eps = " << eps << endl;
-
+            //cout << endl << "================================================" << endl;
+            //cout << "it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
             if (abs(dgx) < eps) break; // goto 300
         }
 
         // check if results converged
         cout << std::setprecision(6);
-        cout << "it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
         if (abs(dgx) > eps) {
             cout << " NOT CONVERGED!" << endl;
             abort();
         }
 
-        // results
-        jx2 = (jx / 2) - 1;
-        is = jx % 2 - 1;
-        si = is;
-        cl = 0.;
-        cm0 = 0.;
-        amdum = 0.;
-        xac = 0.;
-        cmac = 0.;
-        fz[0] = 0.;
-        fz[jx-1] = 0.;
-        cmf[0] = 0.;
-        cmf[1] = 0.;
-        cmf[jx-1] = 0.;
-        cmt[0] = 0.;
-        cmt[jx-1] = 0.;
+        // resulting cl, cd, cq calculations
+        cl=0.;
+        cm0=0.;
+        xac=0.;
+        cmac=0.;
+        fz[0]=0.;
+        cmf[0]=0.;
+        cmf[1]=0.;
+        cmt[0]=0.;
 
-        // calculate bending moment
-        for (j = 1; j < (jx - 1); ++j) {
+        // calculate bending moment & lift
+        for (j = 1; j < (jxs2 - 1); ++j) {
             //do 13 j = 2, jx - 1
-            cl = cl + g[j] * (eta[j] - eta[j - 1]);
+            cl=cl+g[j]*(eta[j]-eta[j-1]);
 
             // if polar is [off] on
             if (!polarBool) {
-                at[j] = alpha + atan2(w[j], 1.) + t[j];
-                q[j] = c0[j] + c1[j] * at[j];
-                xac = xac + (xle[j] + 0.25 * c[j]) * c[j] * (eta[j] - eta[j - 1]);
-                cmac = cmac + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+                at[j]=alpha+atan2(w[j], 1.)+t[j];
+                q[j]=c0[j]+c1[j]*at[j];
+                xac=xac+xacc[j]*c[j]*(eta[j]-eta[j-1]);
+                cmac=cmac+pow(c[j],2)*q[j]*(eta[j]-eta[j-1]);
+                cmt[j]=cmt[j-1]+pow(c[j],2)*q[j]*(eta[j]-eta[j-1]);
 
-                if (j == (jx2 + 1)) cmt[j] = -cmt[j - 1] + (1. - si) * pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
-                else cmt[j] = cmt[j - 1] + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
-            }
-            else {
-                amdum = amdum + c[j] * (eta[j] - eta[j - 1]);
-                xac = xac + xacm[j] * c[j] * (eta[j] - eta[j - 1]);
-                cmac = cmac + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
-            }
-
-            if (j == (jx2 + 1)) {
-                fz[j] = -fz[j - 1] + (1. - si) * g[j] * (eta[j] - eta[j - 1]);
-                cmt[j] = -cmt[j - 1] + (1. - si) * pow(c[j],2)
-                          *(q[j] + (xacm[j + 1] - xacm[j]) * fz[j] / cav)
-                          *(eta[j] - eta[j - 1]);
-            }
-            else {
-                fz[j] = fz[j - 1] + g[j] * (eta[j] - eta[j - 1]);
-                cmt[j] = cmt[j - 1] + pow(c[j],2)
-                          * (q[j] + (xacm[j + 1] - xacm[j]) * fz[j] / cav)
-                          * (eta[j] - eta[j - 1]);
+                //if (j == (jx2 + 1)) cmt[j] = -cmt[j - 1] + (1. - si) * pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+                //else cmt[j] = cmt[j - 1] + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+            } else {
+                //amdum = amdum + c[j] * (eta[j] - eta[j - 1]);
+                xac=xac+xacc[j]*c[j]*(eta[j]-eta[j-1]);
+                cmac=cmac+pow(c[j],2)*q[j]*(eta[j]-eta[j-1]);
             }
 
-            cmf[j + 1] = cmf[j] - fz[j] * (eta[j + 1] - eta[j]);
+            fz[j]=fz[j-1]+g[j]*(eta[j]-eta[j-1]);
+            cmt[j]=cmt[j-1]+pow(c[j],2)
+                              *(q[j]+(xacc[j+1]-xacc[j])*fz[j]/cac)
+                              *(eta[j]-eta[j-1]);
+            cmf[j+1]=cmf[j]-fz[j]*(eta[j+1]-eta[j]);
+            cout << "cmt = " << cmt[j] << " cmf = " << cmf[j] << " j = " << j << endl;
             //13 continue
         }
 
-        //at[0] = at[1] + (at[2] - at[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-        //at[jx] = at[jx - 1] + (at[jx - 2] - at[jx - 1]) * (y[jx] - y[jx - 1]) / (y[jx - 2] - y[jx - 1]);
-        cl = 0.5 * arm * cl;
-        xac = xac / amdum;
-        cmac = cmac / (amdum * cav);
-        cm0 = cmac - xac * cl / cav;
-        xcp = xac - cav * cmac / cl;
-        cd0 = 0.;
-        sum = 0.;
-        sum0 = 0.;
-        sum1 = 0.;
-        sum2 = 0.;
+        // end points
+        fz[jxs2-1]=fz[jxs2-2]
+                      +(fz[jxs2-3]-fz[jxs2-2])*(y[jxs2-1]-y[jxs2-2])
+                      /(y[jxs2-3]-y[jxs2-2]);
+        cmt[jxs2-1]=cmt[jxs2-2]
+                       +(cmt[jxs2-3]-cmt[jxs2-2])*(y[jxs2-1]-y[jxs2-2])
+                       /(y[jxs2-3]-y[jxs2-2]);
 
-        // calculate drag
-        for (j = 0; j < jx; ++j) {
-            //do 14 j = 1, jx
-            jm = j - 1;
-            if (j==0) jm = 0;
-            czj = b0[j] + b1[j] * at[j];
-            sum = sum + g[j] * w[j] * (eta[j] - eta[jm]);
+        cl=0.5*arc*cl;
+
+        if(alphad == 0.0) {
+            cl0 = cl + eps;
+        }
+        if(alphad==1.0) {
+            cl1 = cl;
+        }
+
+        xac=xac/ac;
+        cmac=cmac/(ac*cac);
+        cm0=cmac-xac*cl/cac;
+        xcp=xac-cac*cmac/cl;
+        cd0=0.;
+        sum=0.;
+        sum0=0.;
+        sum1=0.;
+        sum2=0.;
+
+        // main integral summation
+        for (j = 0; j<jxs2; ++j) {
+            //do 14 j=1,jxs2
+            jm=j-1;
+            if (j==0)jm = 1;
+            czj=b0[j]+b1[j]*at[j];
+            sum=sum+g[j]*w[j]*(eta[j]-eta[jm]);
             if (!polarBool) {
-                rey = c[j] * Re;
+                rey=c[j]*Re;
                 if (rey < 1.0e5) rey = 1.0e5;
-                cd0 = 1.328 / sqrt(rey);
-                if (rey > 1.0e5) cd0 = .072 / pow(rey,.2);
-                cd0 = 2. * cd0;
-                sum0 = sum0 + cd0 * (eta[j] - eta[jm]);
-                sum1 = 0.;
-                sum2 = 0.;
-                l[j] = b0[j] + b1[j] * at[j];
-                d[j] = vis * cd0;
-            }
-            else {
-                sum0 = sum0 + c[j] * d[j] * (eta[j] - eta[jm]);
-                sum1 = 0.;
-                sum2 = 0.;
+                cd0=1.328/sqrt(rey);
+                if (rey > 1.0e5) cd0=.072/pow(rey,0.2);
+                cd0=2.*cd0;
+                sum0=sum0+cd0*(eta[j]-eta[jm]);
+                sum1=0.;
+                sum2= 0.;
+                l[j]=b0[j]+b1[j]*at[j];
+                d[j]=vis*cd0;
+            } else {
+                sum0=sum0+c[j]*d[j]*(eta[j]-eta[jm]);
+                sum1=0.;
+                sum2=0.;
             }
             //14 continue
         }
 
-        cdi = -0.5 * arm * sum;
-        cdv = vis * 0.25 * arm * (sum0 + sum1 + sum2);
-
-        if (abs(cdi) < eps) em = 1.0;
-        else em = cl * cl / (pi * arm * cdi);
-
-        cd = cdi + cdv;
-        // *****distributions
-        //write(6, 1004)
-
-        // write function for printing distributions to file -Cp 3/11/22
-        //do 15 j = 1, jx
-        //write(6, 1003) y(j), c(j), t(j), dem(j), g(j), w(j), l(j), d(j), polar(j)
-        //write(18, *) y(j), g(j), w(j)
-        //write(19, *) y(j), g(j)
-        //write(20, *) y(j), w(j)
-        //write(21, *) y(j), l(j)
-        //write(22, *) y(j), at(j)
-        //write(23, *) y(j), d(j)
-        //write(24, *) y(j), eta(j), c(j), t(j), dem(j), g(j), w(j)
-        //15 continue
+        cdi=-0.5*arc*sum;
+        cdv=vis*0.25*arc*(sum0+sum1+sum2);
+        if(abs(cdi) < eps) {
+            em= 1.0;
+        } else {
+            em=cl*cl / (pi*arc*cdi);
+        }
+        cd=cdi+cdv;
 
         // force and moment unit conversion
-        for (int j = 0; j < jx; ++j) {
-            //do 16 j = 1, jx
-            fz[j] = 0.5 * arm * fz[j];
-            cmf[j] = 0.5 * arm * cmf[j];
-            cmt[j] = 0.25 * arm * cmt[j] / cav;
-            //write(26, *) y(j), cmf(j)
-            //write(27, *) eta(j), fz(j)
-            //write(28, *) eta(j), cmt(j)
-            //16 continue
+        for (j = 0; j<jxs2; ++j) {
+            //do 16 j=1,jxs2
+            fz[j]=0.5*arc*fz[j];
+            cmf[j]=0.5*arc*cmf[j];
+            cmt[j]=0.25*arc*cmt[j] / cac;
+            //write(26, *)y(j), cmf(j)
+            //write(27, *)eta(j), fz(j)
+            //write(28, *)eta(j), cmt(j)
+            //16   continue
         }
-
         // print results
-        cout << " results:" << endl;
-        cout << right << setw(38) << " alpha = " << alphad << endl;
+        cout << endl << " results:" << endl;
+        cout << right << setw(38) << " alpha = " << alphad << " (deg) " << endl;
+        cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
         cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
         cout << right << setw(38) << " oswald efficiency e = " << em << endl;
         cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
@@ -673,27 +710,27 @@ void wake::setMesh() {
         cout << right << setw(38) << " CM,ac = " << cmac << endl;
         cout << right << setw(38) << " aerodynamic center x,ac = " << xac << endl;
         cout << right << setw(38) << " center of pressure x,cp = " << xcp << endl;
-        cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jx2 + 1] << endl;
-        cout << right << setw(38) << " root torsion moment coef. CM,y = " << - cmt[jx2 + 1] << endl;
+        cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jxs2-1] << endl; // *
+        cout << right << setw(38) << " root torsion moment coef. CM,y = " << -cmt[jxs2-1] << endl;    // *
         cout << right << setw(38) << " ivis = " << ivis << endl;
 
         // results
-        alphares[nstep] = alphad;
-        czres[nstep] = cl;
-        cxres[nstep] = cd;
-        dum = 0.;
-        cqres[nstep] = cmac;
+        //alphares[nstep] = alphad;
+        //czres[nstep] = cl;
+        //cxres[nstep] = cd;
+        //dum = 0.;
+        //cqres[nstep] = cmac;
     }
     // set breakpoints in y-distribution
     y[46] = -0.11111;
     xle[46] = 1.3;
     y[47] = -0.11110;
-    xle[47] = cxm;
+    xle[47] = cxc;
     y[53] = 0.11110;
-    xle[53] = cxm;
+    xle[53] = cxc;
     y[54] = 0.11111;
     xle[54] = 1.3;
-}*/
+}
 
 int **wake::create_2d_int_array(int n1, int n2, int **array) {
     // create a n1 x n2 matrix
@@ -1118,6 +1155,9 @@ void wake::printXFoilValues() {
 }
 
 void wake::printDistributions() {
+    cout << endl << "=========================================\n";
+    cout << " printDistributions()" << endl;
+
     cout << endl << right << setw(12) << " y(j)"
             << right << setw(12) << "c(j)"
             << right << setw(12) << " t(j)"
