@@ -84,6 +84,7 @@ wake::wake() {
     xiac  = (double *) malloc(sizeof(double)*jxx);
     xacw  = (double *) malloc(sizeof(double)*jxx);
 
+    // canard geometry
     xc = (double *) malloc(sizeof(double)*ixx);
     zc = (double *) malloc(sizeof(double)*ixx);
 
@@ -159,6 +160,9 @@ wake::~wake() {
     free(xacc);
     free(xiac);
     free(xacw);
+
+    free(xc);
+    free(zc);
 
     free(rbreak);
 
@@ -730,6 +734,143 @@ void wake::solveLiftingLine() {
     xle[53] = cxc;
     y[54] = 0.11111;
     xle[54] = 1.3;
+
+    // check that AReff has sufficient information
+    cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
+    if(alstep < eps) {
+        cout << "not enough info to calculate arceff and dClcda0" << endl;
+    }
+    else {
+        dClcda0=180.* (cl1-cl0) / pi;
+        arceff=2.*dClcda0 / (2.*pi-dClcda0);
+        cout << endl << " arceff = " << arceff << " dClcda0 = " << dClcda0 << endl;
+    }
+}
+
+void wake::integrate_canard() {
+    //
+    // calcluate the lift of the canard profile
+    //
+    // note: readInputCanardGeom() must be executed first
+    // fortran version outputs to "canarwake.xz"
+
+    cout << endl << "=========================================\n";
+    cout << " integrate_canard()" << endl;
+
+    // integration of wake trajectory in canard coordinates (ref Bc0/2)
+    ixw=1+log(1.0+(str-1.0)*(lf/dxm)) / log(str);
+    cout << " ix = " << ix << " ixw = " << ixw << endl;
+
+    //
+    for (int i = 0; i < ix; ++i) {
+        xc[i]=0.055555+0.2*xc[i];
+        zc[i]=0.2*zc[i];
+    }
+
+    xcim=0.0;
+    zcim=0.0;
+    dtet=pi/(jxs2-1);
+
+    for (int i = ix; i<ix+ixw; ++i) {
+        //do 21 i = ix + 1, ix + ixw
+        xi=dxm*(1.0-pow(str,(i-ix))) / (1.0-str);
+        sum = 0.;
+        for (int j = 0; j < jxs2-1; ++j) {
+            tetj=(j-1)*dtet;
+            sum=sum+dtet / sqrt(1.+pow((cos(tetj) / xi),2));
+        }
+        //cout << " sum = " << sum << endl;
+        xc[i]=xi;
+        sum=alpha+tc-cl / (pi*arceff)*(1.0+sum / pi);
+        zc[i]=zcim+sum*(xc[i] - xcim);
+        xcim=xc[i];
+        zcim=zc[i];
+        // transfer to airplane coordinates(ref B / 2)
+        //21 continue
+    }
+
+    for (int i = 0; i<ix; ++i) {
+        //do 22 i=1,ix
+        zc[i] = zcanar + zc[i];
+        //write(36,*)xc(i),zc(i)
+        zc[i] = zc[i] - zcanar;
+        //22   continue
+    }
+
+    for (int i = ix; i<ix+ixw; ++i) {
+        //do 23 i=ix+1,ix+ixw
+        xc[i]=xc[ix]+Bc0*xc[i] / B;
+        zc[i]=zcanar+Bc0*zc[i] / B;
+        //write(36,*)xc(i),zc(i) // output to canarwake.xz
+        //23   continue
+    }
+}
+
+void wake::integrate_wing() {
+    //
+    // integrate downwash profile on wing
+    //
+    // note: readInputWingGeom() must be executed first
+    // fortran version outputs to "canarwash.ylwl"
+
+    jx=101;
+    dtet=pi/(jx-1);
+
+    for (int j=0; j<jx; ++j) {
+        //do 25 j=1,jx
+
+        tetj=(j)*dtet;
+        yj=-B*cos(tetj) / Bc0;
+        sum = 0.;
+
+        for (int k = 0; k<jx-1 ; ++k) {
+            //do 24 k = 1, jx - 1
+            if (k != jx) {
+                //goto 24
+                phi0=copysign(1.0, yj-eps)
+                     *atan((xacw[j]-xiac[k]) / sqrt(pow(zwake,2)+pow((yj-eta[k]),2)));
+
+                phi0=0.;
+                sum=sum+(g[k+1]-g[k])*(1.0-sin(phi0))
+                        *(yj-eta[k]) / (pow(zwake,2) + pow((yj-eta[k]),2));
+            }
+            //24 continue
+        }
+        wj=-sum / (2.*pi);
+        //write(32, *) yj, wj // output to canarwash.ylwl
+        //25   continue
+    }
+
+    // output to "canaredge.xy"
+    double dum;
+
+    //     point A
+    dum=-1.;
+    acdum=0.5115;
+    //     point C
+    cacdum=0.7972;
+    //write(37,*)dum,acdum
+    //write(37,*)dum,cacdum
+    //     point D
+    dum=-0.2857;
+    cacdum=0.6072;
+
+    //     point B
+    acdum=0.1786;
+    //write(37,*)dum,cacdum
+    //write(37,*)dum,acdum
+    //write(37,*)-dum,acdum
+    //write(37,*)-dum,cacdum
+    dum=0.2857;
+    acdum=0.1786;
+    cacdum=0.6072;
+    //write(37,*)dum,acdum
+    //write(37,*)dum,cacdum
+    dum=1.;
+    acdum=0.5115;
+    cacdum=0.7972;
+    //write(37,*)dum,cacdum
+    //write(37,*)dum,acdum
 }
 
 int **wake::create_2d_int_array(int n1, int n2, int **array) {
@@ -783,7 +924,13 @@ void wake::cmdInput(int argc, char** argv) {
 }
 
 void wake::readInputParams() {
+    //
     // open input file
+    // add the ability to read any input filename -cp 3/29/22
+
+    cout << endl << "=========================================\n";
+    cout << " readInputParams()" << endl;
+
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
         cout << "\n\tCannot Read " << filenameInputData;
@@ -893,7 +1040,7 @@ void wake::readInputPolar(std::string filename) {
          << right << setw(12) << " cx[k][n]"
          << right << setw(12) << " cq[n][k]";
 
-    double c1, c2, c3, c4, c5;
+    double c1, c2, c3, c4, c5, dum;
     int kdum = 0, km, kp;
     std::string line;
 
@@ -1027,10 +1174,10 @@ void wake::readInputDownwash() {
         abort();
     }
 
-    // read file
-    double c1, c2;
+    double c1, c2, dum;
     std::string line;
 
+    // read file
     for (int j = 0; j < lxx; ++j) {
         //do 1 k = 1, lxx
         std::getline(inputfile, line);
@@ -1051,6 +1198,109 @@ void wake::readInputDownwash() {
     }
 
     // unit 32 -> canarwash.ylwl
+}
+
+void wake::readInputCanardGeom(std::string filename) {
+    //
+    // read in canard profile (usually filename = "geocanard.xzmses")
+    //
+    // the file should be structured in this fashion.
+    //
+    //  [xc]  [zc]
+    //   ...   ...
+    //   ...   ...
+    //
+    //   ...   ...
+    //
+
+    cout << endl << "=========================================\n";
+    cout << " readInputCanardGeom()" << endl;
+
+    // open input file
+    ifstream inputfile(filename);
+    if (!inputfile.is_open()) {
+        cout << "\n\tCannot Read: " << filename << endl;
+        cout << " File Error in: readInputCanardGeom()" << endl;
+        abort();
+    }
+
+    double c1, c2;
+    std::string line;
+
+    // read file
+    for (int i = 0; i < ixx; ++i) {
+        //do 17 i = 1, ixx
+        //read(12, *, end = 18) xc(i), zc(i)
+        //ix = i;
+        //17 continue
+
+        std::getline(inputfile, line);
+        if (line.empty()) continue; // check for blank line
+        std::istringstream iss(line);
+        iss >> c1 >> c2;
+
+        // fill xc[i] and zc[i] vectors
+        if (!iss.fail()) {
+            //cout << "wcanar[j] = " << c2 << endl;
+            xc[i] = c1;
+            zc[i] = c2;
+        } else if (inputfile.eof()==1) {
+            // end of file
+            break;
+        }
+
+        ix=i; // element counter
+    }
+}
+
+void wake::readInputWingGeom(std::string filename) {
+    //
+    // read in wing profile (usually filename = "wing.yxlexte")
+    //
+    // the file should be structured in this fashion.
+    //
+    //  [?]  [?]   [?]    [xacw]
+    //  ...  ...   ...     ...
+    //  ...  ...   ...     ...
+    //
+    //  ...  ...   ...     ...
+    //
+
+    cout << endl << "=========================================\n";
+    cout << " readInputWingGeom()" << endl;
+
+    // open input file
+    ifstream inputfile(filename);
+    if (!inputfile.is_open()) {
+        cout << "\n\tCannot Read: " << filename << endl;
+        cout << " File Error in: readInputCanardGeom()" << endl;
+        abort();
+    }
+
+    double c1, c2, c3, c4, dum;
+    std::string line;
+
+    // read file
+    for (int i = 0; i < ixx; ++i) {
+        //read(11, *) dum, dum, dum, xacw(j);
+
+        std::getline(inputfile, line);
+        if (line.empty()) continue; // check for blank line
+        std::istringstream iss(line);
+        iss >> c1 >> c2 >> c3 >> c4;
+
+        // fill xacw[i] vector
+        if (!iss.fail()) {
+            //cout << "wcanar[j] = " << c2 << endl;
+            dum=c1;
+            dum=c2;
+            dum=c3;
+            xacw[i]=c4;
+        } else if (inputfile.eof()==1) {
+            // end of file
+            break;
+        }
+    }
 }
 
 void wake::printInputParams() {
@@ -1181,5 +1431,21 @@ void wake::printDistributions() {
                 << right << setw(12) << d[j]
                 << right << setw(12) << polar[j]
                 << right << setw(12) << j << endl;
+    }
+}
+
+void wake::printCanarWake() {
+    cout << endl << "=========================================\n";
+    cout << " printCanarWake()" << endl;
+
+    cout << endl << right << setw(12) << " xc(j)"
+         << right << setw(12) << " zc(j)"
+         << right << setw(12) << " j " << endl;
+
+    cout << std::setprecision(6);
+    for (int j = 0; j < ix+ixw; ++j) {
+        cout << right << setw(12) << xc[j]
+             << right << setw(12) << zc[j]
+             << right << setw(12) << j << endl;
     }
 }

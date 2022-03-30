@@ -35,5 +35,11 @@ int main(int argc, char** argv) {
     wk->solveLiftingLine();
     wk->printDistributions();
 
+    wk->readInputCanardGeom("geocanard.xzmses");
+    wk->integrate_canard();
+    wk->printCanarWake();
+
+    wk->readInputWingGeom("wing.yxlexte");
+
     delete wk;
 }

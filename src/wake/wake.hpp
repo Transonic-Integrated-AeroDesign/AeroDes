@@ -21,10 +21,18 @@ public:
     void readInputParams();
     void readInputPolar(std::string);
     void readInputDownwash();
+    void readInputCanardGeom(std::string);
+    void readInputWingGeom(std::string);
+
+    // outputs
+    void outputCanarLoad(std::string);
+    void outputWingLoad(std::string);
 
     // specific
     void setMesh();
     void solveLiftingLine();
+    void integrate_canard();
+    void integrate_wing();
 
     // memory
     int** create_2d_int_array(int n1, int n2, int **array);
@@ -38,18 +46,19 @@ public:
     void printGeomSummary();
     void printXFoilValues();
     void printDistributions();
+    void printCanarWake();
 
 private:
     int jxx,lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx;
     int jx2,is,iwing,nsteps,ivis,nstep,iter,it,mj,jdx,jm;
-    int itx,jxs2,jc,ixx,i,ix,ixw;
+    int itx,jxs2,jc,ixx,ix,ixw;
     //parameter(ixx=201,jxx=102,lxx=102,nxx=10)
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
     double B,cxc,dm,tcd,Rho,Vinf,Amu,alphad,tc,alpha,Re,acdum;
     double cacdum,dtet,tetj,yj,etaj,etajm,ac,cac,arc,alphain;
     double alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;
-    double rey,cdi,cdv,em,cd,dum,xcp,Bc0,bc,Cc0,cl0,cl1;
+    double rey,cdi,cdv,em,cd,xcp,Bc0,bc,Cc0,cl0,cl1;
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb,dClcda0,arceff;
     double Dx0,xi,str,dxm,Lf0,lf,Zc0,zcanar,xcim,zcim,zwake;
     double *c,*g,*dg,*y,*eta;
