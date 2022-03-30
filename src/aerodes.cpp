@@ -22,11 +22,13 @@ using namespace std;
 aerodes::aerodes(int argc, char** argv) {
     prants = new prandtline();
     canary = new canareq();
+    wk = new wake();
 }
 
 aerodes::~aerodes() {
     delete prants;
     delete canary;
+    delete wk;
 }
 
 /*
