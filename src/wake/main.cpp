@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 
     wk->readInputCanardGeom("geocanard.xzmses");
     wk->integrate_canard();
-    //wk->printCanarWake();
+    wk->printCanarWake();
 
     // output results to file
     wk->outputGammaDownwash("prandtline.ygw");

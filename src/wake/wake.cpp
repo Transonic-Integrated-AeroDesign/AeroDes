@@ -1348,7 +1348,7 @@ void wake::outputCanardWake(std::string filename) {
     //
 
     cout << endl << "=========================================\n";
-    cout << " outputCanard()" << endl;
+    cout << " outputCanardWake()" << endl;
 
     ofstream file;
 
@@ -1364,7 +1364,7 @@ void wake::outputCanardWake(std::string filename) {
 
     // write results to file
     file << std::setprecision(16);
-    for (int j = 0; j<jx; ++j) {
+    for (int j = 0; j<= ix+ixw; ++j) {
         file << left << setw(25) << xc[j]
              << left << setw(25) << zc[j]
              << left << setw(25) << j << endl;
