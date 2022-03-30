@@ -25,8 +25,9 @@ public:
     void readInputWingGeom(std::string);
 
     // outputs
-    void outputCanarLoad(std::string);
-    void outputWingLoad(std::string);
+    void outputGammaDownwash(std::string);
+    void outputCanardWake(std::string);
+    void outputWing(std::string);
 
     // specific
     void setMesh();
@@ -62,7 +63,7 @@ private:
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb,dClcda0,arceff;
     double Dx0,xi,str,dxm,Lf0,lf,Zc0,zcanar,xcim,zcim,zwake;
     double *c,*g,*dg,*y,*eta;
-    double *w,*t,*dem;
+    double *w,*t,*dem,*ww;
     double *a0,*a1,*b0,*b1,*c0,*c1;
     double *l,*d,*q,*at;
     //double cx(lxx,nxx),cz(lxx,nxx),cq(lxx,nxx),inc(lxx,nxx);

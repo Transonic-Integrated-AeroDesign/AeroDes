@@ -49,7 +49,7 @@ wake::wake() {
     w   = (double *) malloc(sizeof(double)*jxx);
     t   = (double *) malloc(sizeof(double)*jxx);
     dem = (double *) malloc(sizeof(double)*jxx);
-
+    ww  = (double *) malloc(sizeof(double)*jxx);
 
     a0  = (double *) malloc(sizeof(double)*jxx);
     a1  = (double *) malloc(sizeof(double)*jxx);
@@ -131,7 +131,7 @@ wake::~wake() {
     free(w);
     free(t);
     free(dem);
-
+    free(ww);
 
     free(a0);
     free(a1);
@@ -623,7 +623,7 @@ void wake::solveLiftingLine() {
                               *(q[j]+(xacc[j+1]-xacc[j])*fz[j]/cac)
                               *(eta[j]-eta[j-1]);
             cmf[j+1]=cmf[j]-fz[j]*(eta[j+1]-eta[j]);
-            cout << "cmt = " << cmt[j] << " cmf = " << cmf[j] << " j = " << j << endl;
+            //cout << "cmt = " << cmt[j] << " cmf = " << cmf[j] << " j = " << j << endl;
             //13 continue
         }
 
@@ -761,7 +761,7 @@ void wake::integrate_canard() {
     ixw=1+log(1.0+(str-1.0)*(lf/dxm)) / log(str);
     cout << " ix = " << ix << " ixw = " << ixw << endl;
 
-    //
+    // first section
     for (int i = 0; i < ix; ++i) {
         xc[i]=0.055555+0.2*xc[i];
         zc[i]=0.2*zc[i];
@@ -771,7 +771,8 @@ void wake::integrate_canard() {
     zcim=0.0;
     dtet=pi/(jxs2-1);
 
-    for (int i = ix; i<ix+ixw; ++i) {
+    // section section
+    for (int i = ix; i<=ix+ixw; ++i) {
         //do 21 i = ix + 1, ix + ixw
         xi=dxm*(1.0-pow(str,(i-ix))) / (1.0-str);
         sum = 0.;
@@ -789,19 +790,27 @@ void wake::integrate_canard() {
         //21 continue
     }
 
+    // first section
     for (int i = 0; i<ix; ++i) {
         //do 22 i=1,ix
-        zc[i] = zcanar + zc[i];
+        zc[i]=zcanar+zc[i];
         //write(36,*)xc(i),zc(i)
-        zc[i] = zc[i] - zcanar;
+        //cout << right << setw(12) << xc[i]
+        //     << right << setw(12) << zc[i]
+        //     << right << setw(12) << i << endl;
+        //zc[i]=zc[i]-zcanar; // (why is this here? 3/29/22)
         //22   continue
     }
 
-    for (int i = ix; i<ix+ixw; ++i) {
+    // second section
+    for (int i = ix; i<=ix+ixw; ++i) {
         //do 23 i=ix+1,ix+ixw
-        xc[i]=xc[ix]+Bc0*xc[i] / B;
+        xc[i]=xc[ix-1]+Bc0*xc[i] / B;
         zc[i]=zcanar+Bc0*zc[i] / B;
         //write(36,*)xc(i),zc(i) // output to canarwake.xz
+        //cout << right << setw(12) << xc[i]
+        //     << right << setw(12) << zc[i]
+        //     << right << setw(12) << i << endl;
         //23   continue
     }
 }
@@ -818,7 +827,6 @@ void wake::integrate_wing() {
 
     for (int j=0; j<jx; ++j) {
         //do 25 j=1,jx
-
         tetj=(j)*dtet;
         yj=-B*cos(tetj) / Bc0;
         sum = 0.;
@@ -837,6 +845,7 @@ void wake::integrate_wing() {
             //24 continue
         }
         wj=-sum / (2.*pi);
+        ww[j]=wj;
         //write(32, *) yj, wj // output to canarwash.ylwl
         //25   continue
     }
@@ -1303,6 +1312,66 @@ void wake::readInputWingGeom(std::string filename) {
     }
 }
 
+void wake::outputGammaDownwash(std::string filename) {
+    //
+    // output legacy 'prandtline.ygw' file
+    //
+
+    cout << endl << "=========================================\n";
+    cout << " outputGammaDownwash()" << endl;
+
+    ofstream file;
+
+    // open new file
+    file.open(filename, std::fstream::out);
+    if (!file.is_open()) {
+        printf("outputGammaDownwash(): Unable to open output file\n");
+        return;
+    }
+    file << left << setw(25) << "# y[i] ";
+    file << left << setw(25) << " g[i] ";
+    file << " w[j] \n";
+
+    // write results to file
+    file << std::setprecision(16);
+    for (int j = 0; j<jx; ++j) {
+        file << left << setw(25) << y[j]
+             << left << setw(25) << g[j]
+             << left << setw(25) << w[j] << endl;
+    }
+    file.close();
+}
+
+void wake::outputCanardWake(std::string filename) {
+    //
+    // output legacy 'canarwake.xz' file
+    //
+
+    cout << endl << "=========================================\n";
+    cout << " outputCanard()" << endl;
+
+    ofstream file;
+
+    // open new file
+    file.open(filename, std::fstream::out);
+    if (!file.is_open()) {
+        printf(" outputCanard(): Unable to open output file\n");
+        return;
+    }
+    file << left << setw(25) << "# xc[i] "
+         << left << setw(25) << "zc[i] "
+         << "j " << endl;
+
+    // write results to file
+    file << std::setprecision(16);
+    for (int j = 0; j<jx; ++j) {
+        file << left << setw(25) << xc[j]
+             << left << setw(25) << zc[j]
+             << left << setw(25) << j << endl;
+    }
+    file.close();
+}
+
 void wake::printInputParams() {
     //
     // print input parameters to screen
@@ -1443,7 +1512,7 @@ void wake::printCanarWake() {
          << right << setw(12) << " j " << endl;
 
     cout << std::setprecision(6);
-    for (int j = 0; j < ix+ixw; ++j) {
+    for (int j = 0; j <= ix+ixw; ++j) {
         cout << right << setw(12) << xc[j]
              << right << setw(12) << zc[j]
              << right << setw(12) << j << endl;

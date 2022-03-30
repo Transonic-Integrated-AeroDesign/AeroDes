@@ -27,17 +27,21 @@ int main(int argc, char** argv) {
     wk->printInputParams();
 
     wk->readInputPolar("polarbl.dat");
-    wk->printXFoilValues();
+    //wk->printXFoilValues();
 
     wk->setMesh();
-    wk->printGeomSummary();
+    //wk->printGeomSummary();
 
     wk->solveLiftingLine();
-    wk->printDistributions();
+    //wk->printDistributions();
 
     wk->readInputCanardGeom("geocanard.xzmses");
     wk->integrate_canard();
-    wk->printCanarWake();
+    //wk->printCanarWake();
+
+    // output results to file
+    wk->outputGammaDownwash("prandtline.ygw");
+    wk->outputCanardWake("canarwake.xz");
 
     wk->readInputWingGeom("wing.yxlexte");
 
