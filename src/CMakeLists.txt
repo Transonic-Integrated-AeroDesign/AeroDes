@@ -21,19 +21,8 @@ set_target_properties(aerolib PROPERTIES
         SOVERSION 1
         PUBLIC_HEADER "aerodes.hpp;prandtline/prandtline.hpp;canareq/canareq.hpp;wake/wake.hpp")
 
-#[[target_link_libraries(aerolib PUBLIC ${EXTRA_LIBS})]]
-
 # configure a header file to pass the version number only
-#configure_file(aerolib.pc.in aerolib.pc @ONLY)
-
 target_include_directories(aerolib PRIVATE .)
-#target_include_directories(aerolib PUBLIC_HEADER ${MyHeaders})
-#target_include_directories(aerolib PRIVATE src)
-
-# add the binary tree to the search path for include files
-# so that we will find TutorialConfig.h
-#target_include_directories(aerolib PUBLIC
-#        "${PROJECT_BINARY_DIR}")
 
 include_directories("${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_SOURCE_DIR}/src/prandtline"

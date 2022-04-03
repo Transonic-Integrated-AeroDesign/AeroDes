@@ -7,14 +7,22 @@ project(aerolib VERSION 1.0.0 DESCRIPTION "open source aero design")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# should we use our own math functions
-option(USE_PRANDTLINE "Use prandtline" ON)
+# should we use debug mode
+option(DBG_ENABLE "debug mode" OFF)
+
+#set(DBG_VALUE "0")
+if(DBG_ENABLE)
+    set(DBG_VALUE 1)
+endif()
+
+configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/wake/config.hpp" @ONLY)
 
 # add module libraries
 add_subdirectory(src)
+#add_subdirectory(src/wake)
 
 include_directories(src/prandtline)
-include_directories(src/wake)
+#include_directories(src/wake)
 
 # executables
 add_executable(prandtl
