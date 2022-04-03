@@ -915,7 +915,10 @@ void wake::delete_2d_double_array(double **array) {
 }
 
 void wake::cmdInput(int argc, char** argv) {
+    //
     // parse commandline input
+    //
+
     for (int iarg = 0; iarg<argc ; ++iarg) {
         if (!strcmp(argv[iarg],"-in")){
             inputBool=true;
@@ -930,6 +933,7 @@ void wake::cmdInput(int argc, char** argv) {
             iarg+=2;
         }
     }
+
 }
 
 void wake::readInputParams() {
@@ -943,7 +947,7 @@ void wake::readInputParams() {
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
         cout << "\n\tCannot Read " << filenameInputData;
-        cout << " File - Error in: readInputParams()" << endl;
+        cout << " File error in readInputParams()" << endl;
         abort();
     }
 

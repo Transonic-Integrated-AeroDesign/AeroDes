@@ -1,0 +1,1 @@
+#cmakedefine DBG @DBG_VALUE@

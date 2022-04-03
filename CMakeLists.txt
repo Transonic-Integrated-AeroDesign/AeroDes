@@ -10,7 +10,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # should we use debug mode
 option(DBG_ENABLE "debug mode" OFF)
 
-#set(DBG_VALUE "0")
 if(DBG_ENABLE)
     set(DBG_VALUE 1)
 endif()

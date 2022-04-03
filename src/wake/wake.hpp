@@ -10,6 +10,8 @@
 #include <string>
 #include <math.h>
 
+#include "config.hpp"
+
 class wake{
 public:
     wake();
