@@ -33,6 +33,7 @@ int main(int argc, char** argv) {
     //wk->printGeomSummary();
 
     wk->solveLiftingLine();
+    wk->printResults();
     //wk->printDistributions();
 
     wk->readInputCanardGeom("geocanard.xzmses");

@@ -21,7 +21,7 @@ add_subdirectory(src)
 #add_subdirectory(src/wake)
 
 include_directories(src/prandtline)
-#include_directories(src/wake)
+include_directories(src/wake)
 
 # executables
 add_executable(prandtl
@@ -29,15 +29,16 @@ add_executable(prandtl
         src/prandtline/prandtline.hpp
         src/prandtline/main.cpp)
 
-add_executable(canary
-        src/canareq/canareq.cpp
-        src/canareq/canareq.hpp
-        src/prandtline/prandtline.cpp
-        src/prandtline/prandtline.hpp
-        src/canareq/main.cpp)
-
 add_executable(wake
         src/wake/wake.cpp
         src/wake/wake.hpp
         src/wake/main.cpp)
 
+add_executable(canary
+        src/prandtline/prandtline.cpp
+        src/prandtline/prandtline.hpp
+        src/wake/wake.cpp
+        src/wake/wake.hpp
+        src/canareq/canareq.cpp
+        src/canareq/canareq.hpp
+        src/canareq/main.cpp)

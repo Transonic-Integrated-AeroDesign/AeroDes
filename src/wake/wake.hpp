@@ -48,6 +48,7 @@ public:
     void printInputParams();
     void printGeomSummary();
     void printXFoilValues();
+    void printResults();
     void printDistributions();
     void printCanarWake();
 

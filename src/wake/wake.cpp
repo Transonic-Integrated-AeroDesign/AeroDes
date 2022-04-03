@@ -17,23 +17,6 @@
 using namespace std; // g++ wake.cpp -c
 
 wake::wake() {
-    // *****dimensionless variables
-    cout << endl << "=========================================\n";
-    cout << " wake()" << endl;
-    cout << "                      Y=0.5*Bc0*y" << endl;
-    cout << "                      C=0.5*Bc0*c" << endl;
-    cout << "                      A=0.25*Bc0**2*ac" << endl;
-    cout << "                      D=C*d" << endl;
-    cout << "                      W=U*w" << endl;
-    cout << "                   GAMA=0.5*U*Bc0*g" << endl;
-    cout << "                   LIFT=0.5*RHO*U**2*A*Cl" << endl;
-    cout << "                   DRAG=0.5*RHO*U**2*A*Cd" << endl;
-    cout << "               MOMENT,0=0.5*RHO*U**2*A*Cac*Cm0" << endl;
-    cout << "               REYNOLDS=RHO*U*C/AMU" << endl;
-    cout << "                     Fz=0.5*RHO*U**2*A*fz" << endl;
-    cout << "                     Mf=0.25*RHO*U**2*A*Bc0*cmf" << endl;
-    cout << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl;
-
     ixx=201;
     jxx=102;
     lxx=102;
@@ -188,7 +171,7 @@ void wake::setMesh() {
     //       this may in turn effect the resulting distributions. this is likely due to switching
     //       to double precision instead of float. -cp 3/28/22
     cout << endl << "=========================================\n";
-    cout << " setMesh()" << endl;
+    cout << " wake::setMesh()" << endl;
     cout << " (point distribution, geometry and flow)" << endl;
 
     if(DBG) {
@@ -365,7 +348,7 @@ void wake::solveLiftingLine() {
     int n = 0;  // polar index
 
     cout << endl << "=========================================\n";
-    cout << "solveLiftingLine() " << endl;
+    cout << " wake::solveLiftingLine() " << endl;
     cout << endl << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
     cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
     cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
@@ -700,23 +683,6 @@ void wake::solveLiftingLine() {
             //write(28, *)eta(j), cmt(j)
             //16   continue
         }
-        // print results
-        cout << endl << " results:" << endl;
-        cout << right << setw(38) << " alpha = " << alphad << " (deg) " << endl;
-        cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
-        cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
-        cout << right << setw(38) << " oswald efficiency e = " << em << endl;
-        cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
-        cout<< " Global results:  " << endl;
-        cout << right << setw(38) << "CD = " << cd << endl;
-        cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
-        cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
-        cout << right << setw(38) << " CM,ac = " << cmac << endl;
-        cout << right << setw(38) << " aerodynamic center x,ac = " << xac << endl;
-        cout << right << setw(38) << " center of pressure x,cp = " << xcp << endl;
-        cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jxs2-1] << endl; // *
-        cout << right << setw(38) << " root torsion moment coef. CM,y = " << -cmt[jxs2-1] << endl;    // *
-        cout << right << setw(38) << " ivis = " << ivis << endl;
 
         // results
         //alphares[nstep] = alphad;
@@ -755,7 +721,7 @@ void wake::integrate_canard() {
     // fortran version outputs to "canarwake.xz"
 
     cout << endl << "=========================================\n";
-    cout << " integrate_canard()" << endl;
+    cout << " wake::integrate_canard()" << endl;
 
     // integration of wake trajectory in canard coordinates (ref Bc0/2)
     ixw=1+log(1.0+(str-1.0)*(lf/dxm)) / log(str);
@@ -942,7 +908,7 @@ void wake::readInputParams() {
     // add the ability to read any input filename -cp 3/29/22
 
     cout << endl << "=========================================\n";
-    cout << " readInputParams()" << endl;
+    cout << " wake::readInputParams()" << endl;
 
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -1031,7 +997,7 @@ void wake::readInputPolar(std::string filename) {
     //
 
     cout << endl << "=========================================\n";
-    cout << " readInputPolar()" << endl;
+    cout << " wake::readInputPolar()" << endl;
 
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
@@ -1168,22 +1134,31 @@ void wake::readInputPolar(std::string filename) {
         //     << " cq[i][j] = " << cq[i][j] << endl;
     }
 
-    cout << endl << "extrema pointer + break point" << endl;
-    cout << right << setw(12) << " mxtrm[" << i << "] = " << left << setw(12) << mxtrm[i] << " # index for extrema location" << endl;
-    cout << right << setw(12) << " kx[ " << i << "] = " << left << setw(12) << kx[i] << " # maximum number of incidence angles for particular polar" << endl;
-    cout << right << setw(12) << " rbreak[" << i << "] = " << left << setw(12) << rbreak[i] << " # break point location" << endl;
+    if (DBG) {
+        cout << endl << "extrema pointer + break point" << endl;
+        cout << right << setw(12) << " mxtrm[" << i << "] = " << left << setw(12) << mxtrm[i]
+             << " # index for extrema location" << endl;
+        cout << right << setw(12) << " kx[ " << i << "] = " << left << setw(12) << kx[i]
+             << " # maximum number of incidence angles for particular polar" << endl;
+        cout << right << setw(12) << " rbreak[" << i << "] = " << left << setw(12) << rbreak[i]
+             << " # break point location" << endl;
+    }
 
     nx++;
 }
 
 void wake::readInputDownwash() {
-    //     downwash due to canard on wing for Clc/(pi*arc)=0.1
-    cout << endl << " readInputDownwash()" << endl;
+    //
+    // downwash due to canard on wing for Clc/(pi*arc)=0.1
+    //
+
+    cout << endl << "=========================================\n";
+    cout << endl << " wake::readInputDownwash()" << endl;
     // open input file
     ifstream inputfile(filenameInputDownwash);
     if (!inputfile.is_open()) {
         cout << "\n\tCannot Read: " << filenameInputDownwash << endl;
-        cout << " File - Error in: readInputDownwash()" << endl;
+        cout << " File error in: readInputDownwash()" << endl;
         abort();
     }
 
@@ -1227,7 +1202,7 @@ void wake::readInputCanardGeom(std::string filename) {
     //
 
     cout << endl << "=========================================\n";
-    cout << " readInputCanardGeom()" << endl;
+    cout << " wake::readInputCanardGeom()" << endl;
 
     // open input file
     ifstream inputfile(filename);
@@ -1280,7 +1255,7 @@ void wake::readInputWingGeom(std::string filename) {
     //
 
     cout << endl << "=========================================\n";
-    cout << " readInputWingGeom()" << endl;
+    cout << " wake::readInputWingGeom()" << endl;
 
     // open input file
     ifstream inputfile(filename);
@@ -1322,7 +1297,7 @@ void wake::outputGammaDownwash(std::string filename) {
     //
 
     cout << endl << "=========================================\n";
-    cout << " outputGammaDownwash()" << endl;
+    cout << " wake::outputGammaDownwash()" << endl;
 
     ofstream file;
 
@@ -1352,7 +1327,7 @@ void wake::outputCanardWake(std::string filename) {
     //
 
     cout << endl << "=========================================\n";
-    cout << " outputCanardWake()" << endl;
+    cout << " wake::outputCanardWake()" << endl;
 
     ofstream file;
 
@@ -1381,7 +1356,7 @@ void wake::printInputParams() {
     // print input parameters to screen
     //
     cout << endl << "=========================================\n";
-    cout << " printInputParams()" << endl;
+    cout << " wake::printInputParams()" << endl;
     cout << right << setw(20) << "ITX = " << itx << endl;
     cout << right << setw(20) << "OMEGA = " <<  omega << endl;
     cout << right << setw(20) << "AVIS = " <<  avis << endl;
@@ -1414,7 +1389,7 @@ void wake::printGeomSummary() {
     // print geometry summary
     //
     cout << endl << "=========================================\n";
-    cout << " printGeomSummary()" << endl;
+    cout << " wake::printGeomSummary()" << endl;
 
     cout << endl;
     cout << "numerical data:" << endl;
@@ -1456,7 +1431,7 @@ void wake::printGeomSummary() {
 
 void wake::printXFoilValues() {
     cout << endl << "======================================" << endl;
-    cout << " printXFoilValues()" << endl;
+    cout << " wake::printXFoilValues()" << endl;
     if(DBG) cout << " (profile data from Xfoil)" << endl;
     cout << right << setw(12) << " n"
         << right << setw(12) << " k"
@@ -1475,6 +1450,47 @@ void wake::printXFoilValues() {
                     << right << setw(12) << cq[n][k] << endl;
         }
     }
+}
+
+void wake::printResults() {
+    //
+    // print results
+    //
+
+    // essential formula
+    cout << endl << "=========================================\n";
+    cout << " wake::printResults()" << endl << endl;
+    cout << "                      Y=0.5*Bc0*y" << endl;
+    cout << "                      C=0.5*Bc0*c" << endl;
+    cout << "                      A=0.25*Bc0**2*ac" << endl;
+    cout << "                      D=C*d" << endl;
+    cout << "                      W=U*w" << endl;
+    cout << "                   GAMA=0.5*U*Bc0*g" << endl;
+    cout << "                   LIFT=0.5*RHO*U**2*A*Cl" << endl;
+    cout << "                   DRAG=0.5*RHO*U**2*A*Cd" << endl;
+    cout << "               MOMENT,0=0.5*RHO*U**2*A*Cac*Cm0" << endl;
+    cout << "               REYNOLDS=RHO*U*C/AMU" << endl;
+    cout << "                     Fz=0.5*RHO*U**2*A*fz" << endl;
+    cout << "                     Mf=0.25*RHO*U**2*A*Bc0*cmf" << endl;
+    cout << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
+
+    // results
+    cout << endl << " results:" << endl;
+    cout << right << setw(38) << " alpha = " << alphad << " (deg) " << endl;
+    cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
+    cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
+    cout << right << setw(38) << " oswald efficiency e = " << em << endl;
+    cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
+    cout<< " Global results:  " << endl;
+    cout << right << setw(38) << "CD = " << cd << endl;
+    cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
+    cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
+    cout << right << setw(38) << " CM,ac = " << cmac << endl;
+    cout << right << setw(38) << " aerodynamic center x,ac = " << xac << endl;
+    cout << right << setw(38) << " center of pressure x,cp = " << xcp << endl;
+    cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jxs2-1] << endl; // *
+    cout << right << setw(38) << " root torsion moment coef. CM,y = " << -cmt[jxs2-1] << endl;    // *
+    cout << right << setw(38) << " ivis = " << ivis << endl;
 }
 
 void wake::printDistributions() {
