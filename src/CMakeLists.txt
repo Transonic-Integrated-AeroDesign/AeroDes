@@ -7,6 +7,7 @@ endif()
 
 add_library(aerolib SHARED
         aerodes.cpp
+        variables.hpp
         prandtline/prandtline.cpp
         canareq/canareq.cpp
         propulsion/cfmactu.cpp
@@ -19,7 +20,7 @@ set_target_properties(aerolib PROPERTIES SOVERSION 1)
 set_target_properties(aerolib PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION 1
-        PUBLIC_HEADER "aerodes.hpp;prandtline/prandtline.hpp;canareq/canareq.hpp;wake/wake.hpp;wake/config.hpp")
+        PUBLIC_HEADER "aerodes.hpp;prandtline/prandtline.hpp;canareq/canareq.hpp;wake/wake.hpp;wake/config.hpp;variables.hpp")
 
 # configure a header file to pass the version number only
 target_include_directories(aerolib PRIVATE .)

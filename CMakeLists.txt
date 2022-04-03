@@ -20,6 +20,7 @@ configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/wake/config.hpp" @ONLY)
 add_subdirectory(src)
 #add_subdirectory(src/wake)
 
+include_directories(src)                # for variables.hpp
 include_directories(src/prandtline)
 include_directories(src/wake)
 
@@ -27,16 +28,17 @@ include_directories(src/wake)
 add_executable(prandtl
         src/prandtline/prandtline.cpp
         src/prandtline/prandtline.hpp
+        src/variables.hpp
         src/prandtline/main.cpp)
 
 add_executable(wake
+        src/variables.hpp
         src/wake/wake.cpp
         src/wake/wake.hpp
         src/wake/main.cpp)
 
 add_executable(canary
-        src/prandtline/prandtline.cpp
-        src/prandtline/prandtline.hpp
+        src/variables.hpp
         src/wake/wake.cpp
         src/wake/wake.hpp
         src/canareq/canareq.cpp
