@@ -13,13 +13,24 @@ option(USE_PRANDTLINE "Use prandtline" ON)
 # add module libraries
 add_subdirectory(src)
 
-# add the whole library
-#[[add_subdirectory(src)
-add_subdirectory(src/prandtline)
-add_subdirectory(src/canareq)
-add_subdirectory(src/propulsion)]]
+include_directories(src/prandtline)
+include_directories(src/wake)
 
-# does not function without pkgconfig
-#configure_file(aerolib.pc.in aerolib.pc @ONLY)
-#[[install(FILES ${CMAKE_BINARY_DIR}/aerolib.h
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)]]
+# executables
+add_executable(prandtl
+        src/prandtline/prandtline.cpp
+        src/prandtline/prandtline.hpp
+        src/prandtline/main.cpp)
+
+add_executable(canary
+        src/canareq/canareq.cpp
+        src/canareq/canareq.hpp
+        src/prandtline/prandtline.cpp
+        src/prandtline/prandtline.hpp
+        src/canareq/main.cpp)
+
+add_executable(wake
+        src/wake/wake.cpp
+        src/wake/wake.hpp
+        src/wake/main.cpp)
+
