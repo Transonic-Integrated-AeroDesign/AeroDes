@@ -13,14 +13,17 @@
 #include "prandtline.hpp"
 #include "canareq.hpp"
 #include "wake.hpp"
+#include "variables.hpp"
 
 class aerodes{
-    public:
-        prandtline* prants;
-        canareq* canary;
-        wake* wk;
-        aerodes(int argc, char** argv);
-        ~aerodes();
+public:
+    variables* vars;
+    prandtline* prants;
+    canareq* canary;
+    wake* wk;
+    aerodes(int argc, char** argv);
+    ~aerodes();
+    void printTest();
 };
 
 #endif

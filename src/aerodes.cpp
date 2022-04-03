@@ -20,15 +20,24 @@ using namespace std;
 // g++ -o test aerodes.cpp
 
 aerodes::aerodes(int argc, char** argv) {
+    vars = new variables();
     prants = new prandtline();
-    canary = new canareq();
-    wk = new wake();
+    wk = new wake(vars);
+    canary = new canareq(vars);
 }
 
 aerodes::~aerodes() {
+    delete vars;
     delete prants;
     delete canary;
     delete wk;
+}
+
+void aerodes::printTest() {
+    std::cout << "wk->test = " << wk->iter << endl;
+    std::cout << "wk->test = " << wk->vars->iter << endl;
+    std::cout << "wk->test = " << canary->vars->iter << endl;
+    std::cout << "wk->test = " << canary->iter << endl;
 }
 
 /*
