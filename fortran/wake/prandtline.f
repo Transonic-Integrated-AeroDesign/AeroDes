@@ -730,12 +730,15 @@ c     transfer to airplane coordinates (ref B/2)
       do 22 i=1,ix
          zc(i)=zcanar+zc(i)
          write(36,*)xc(i),zc(i)
+         write(6,*)'xc = ',xc(i),' zc = ',zc(i),' i = ',i
          zc(i)=zc(i)-zcanar
+c         write(6,*)'xc = ',xc(i),' zc = ',zc(i),' i = ',i
  22   continue
       do 23 i=ix+1,ix+ixw
          xc(i)=xc(ix)+Bc0*xc(i)/B
          zc(i)=zcanar+Bc0*zc(i)/B
          write(36,*)xc(i),zc(i)
+         write(6,*)'xc = ',xc(i),' zc = ',zc(i),' i = ',i
  23   continue
 c     downwash on wing
       jx=101
