@@ -15,6 +15,7 @@ if(DBG_ENABLE)
 endif()
 
 configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/wake/config.hpp" @ONLY)
+configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/canareq/config.hpp" @ONLY)
 
 # add module libraries
 add_subdirectory(src)
