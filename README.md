@@ -1,7 +1,8 @@
 # AeroDesign
+The original version of this software was written by Dr. Jean-Jacques Chattot in Fortran.  This C++ implementation has been created with the permission of Dr. Chattot.
 
-The work done herein is based solely on the vortex sheet method outlined by Professor JJ. Chattot and Professor Hafez [1] of the University of California, Davis.
-Point of contact for questions should be directed to Carlos Pereyra.
+The work done herein is based solely on the lattice-vortex sheet method outlined by Professors JJ. Chattot and M. Hafez [1].
+The point of contact for questions should be directed to Carlos Pereyra.
 
 Follow the sections below for compiling and using this package.
 
@@ -10,7 +11,7 @@ Follow the sections below for compiling and using this package.
 * [References](#References)
 ## <a name="Build"></a> Build Instructions
 
-Shown below are the steps required to compile this code.
+Below are the steps required to compile this project.
 
 ```
 git clone https://github.com/carlos-pereyra/AeroDes
