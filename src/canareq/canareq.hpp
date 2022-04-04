@@ -45,8 +45,8 @@ public:
 
 
     // screen output
-    int printInputParams();
-    int printPolarDat();
+    void printInputParams();
+    int printInputPolar();
     void printGlobalCoefs();
 
     // file output

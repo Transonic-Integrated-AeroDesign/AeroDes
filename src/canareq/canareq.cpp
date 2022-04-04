@@ -1,11 +1,10 @@
 #include <cstdlib>
-#include <cstdio>
 #include <vector>
 #include <iostream> // std
 #include <iomanip>  // setw
-#include <string>
 #include <stdio.h>  // strcpy
-//#include <string.h>
+
+#include "config.hpp"
 #include "canareq.hpp"
 
 #ifndef DBG
@@ -248,15 +247,13 @@ void canareq::linearModel() {
 }
 
 void canareq::nonlinearModel() {
-    cout << "\n";
-    cout << "============================================" << endl;
-    cout << " \033[1;42m Non-linear model results:\033[0m" << endl;
-    cout << "============================================" << endl;
+    cout << endl << "=========================================" << endl;
+    cout << " canareq::nonlinearModel()" << endl;
 
     // read canar setting angle tcd (deg)
     //tcd = 5;
     tcd = tcd0;
-    cout << "canar tcd = " << tcd << " flap tfd = " << tfd << endl;
+    if (DBG) cout << "canar tcd = " << tcd << " flap tfd = " << tfd << endl;
     tc=degrad*tcd;
 
     // replace initial design parameters with ideal design parameters
@@ -285,13 +282,6 @@ void canareq::nonlinearModel() {
     Cweq=Cleq;
     Cmeq=Cmac-xac*Cleq*cos(aleq)/lref;
     Cmcg=Cmeq+xcg*Cweq*cos(aleq+beteq)/lref;
-
-    //     aerodynamic center moment coefficient from design data:
-    cout << "============================================" << endl;
-    cout << "xcg, xac (xcg calculated or given):" << endl;
-    cout << "center of gravity:       xcg = " << xcg << " (m)" << endl;
-    cout << "aerodynamic center:      xac = " << xac << " (m)" << endl;
-    cout << "static-margin = " << amarg << "% (reference lref = " << lref << " [m])" << endl;
 
     // equilibrium
     //     alpha at equilibrium, lift and moment
@@ -451,7 +441,7 @@ void canareq::nonlinearModel() {
             Cdf0 = .072 / pow(reyf,.2);
         }
         Cdfeq = Cdf0;
-        cout << " i = " << left << setw(10) << i << left << setw(10) << " reyf = " << reyf << " Cdf0 = " << Cdf0 << " reseq0 = " << reseq0 << endl;
+        if (DBG) cout << " i = " << left << setw(10) << i << left << setw(10) << " reyf = " << reyf << " Cdf0 = " << Cdf0 << " reseq0 = " << reseq0 << endl;
 
         // canard viscous drag
         reyc = reyeq * cac / cam;
@@ -560,7 +550,7 @@ void canareq::nonlinearModel() {
         }
     }
 
-    //*****non-linear equations residuals
+    // non-linear equations residuals
     if(inewton==0) {
         cout << std::setprecision(3);
         cout <<"=============================" << endl;
@@ -598,28 +588,36 @@ void canareq::nonlinearModel() {
     reyc=reyeq*cac/cam;
     tr0=rcor*(T+dTdv*Ueq);
 
-    cout <<"=============================" << endl;
-    cout <<"        canard setting angle = " << tc << " (rd) = " << tcd << " (deg)" << endl;
+    cout <<"        canard setting angle = " << tc << " (rd) = " << tcd << " (deg)" << endl << endl;
+
+    //     aerodynamic center moment coefficient from design data:
+    cout << "\033[1;42m design parameters: \033[0m" << endl;
+    cout << "xcg, xac (xcg calculated or given):" << endl;
+    cout << "center of gravity:       xcg = " << xcg << " (m)" << endl;
+    cout << "aerodynamic center:      xac = " << xac << " (m)" << endl;
+    cout << "static-margin = " << amarg << "% (reference lref = " << lref << " [m])" << endl << endl;
+
     if(it >= itx) {
-        cout << "equilibrium solution:" << endl;
+        cout << "\033[1;42m equilibrium solution: \033[0m" << endl;
         cout << "  iter = " << iter << endl;
         cout << " error = " << reseq << endl;
-        cout << "    nc = " << nc << endl;
+        cout << "    nc = " << nc << endl << endl;
     }
     else {
         if (aleq > inc[0]) {
-            cout << "equilibrium solution:" << endl;
+            cout << "\033[1;42m equilibrium solution: \033[0m" << endl;
             cout << right << setw(32) << " iter = " << iter << endl;
-            cout << right << setw(32) << " error = " << reseq << endl;
+            cout << right << setw(32) << " error = " << reseq << endl << endl;
         }
         else {
-            cout << "equilibrium solution:   " << endl;
+            cout << "\033[1;42m equilibrium solution: \033[0m" << endl;
             cout << right << setw(32) << " iter = " << iter << endl;
             cout << right << setw(32) << " error = " << reseq << endl;
-            cout << right << setw(32) << " yw = " << yw << endl;
+            cout << right << setw(32) << " yw = " << yw << endl << endl;
         }
     }
-    cout <<"global results:" << endl;
+
+    cout <<"\033[1;42m global results: \033[0m" << endl;
     cout << right << setw(32) << " (reference area = " << aref << " (m**2))" << endl;
     cout << right << setw(32) << " incidence = " << aleq << " (rd) = " << aleqd <<" (deg)" << endl;
     cout << right << setw(32) << " climb slope = " << beteq << " (rd) = " << beteqd<<" (deg)" << endl;
@@ -635,8 +633,9 @@ void canareq::nonlinearModel() {
     cout << right << setw(32) << " drag CD = " << Cdeq << endl;
     cout << right << setw(32) << " thrust coefficient CT = " << Cteq << endl;
     cout << right << setw(32) << " Cdbrake = " << Cdbrake << endl;
-    cout << right << setw(32) << " CL/CD = " << ClCdeq << endl;
-    cout <<"main wing:" << endl;
+    cout << right << setw(32) << " CL/CD = " << ClCdeq << endl << endl;
+
+    cout <<"\033[1;42m main wing: \033[0m" << endl;
     cout << right << setw(32) << "              (ref/wing area = " << am << " (m**2))" << endl;
     cout << right << setw(32) << "                    lift CLm = " << Clmeq << endl;
     cout << right << setw(32) << "                          Lm = " << winglift << " (N)" << endl;
@@ -644,24 +643,28 @@ void canareq::nonlinearModel() {
     cout << right << setw(32) << "               wing Reynolds = " << reym << endl;
     cout << right << setw(32) << " estimated induced drag CDim = " << Cdim << endl;
     cout << right << setw(32) << " drag CDm = " << Cdmeq << endl;
-    cout << right << setw(32) << " xcpm = " << xcpm <<" (m)" << endl;
-    cout << "canard:" << endl;
+    cout << right << setw(32) << " xcpm = " << xcpm <<" (m)" << endl << endl;
+
+    cout << "\033[1;42m canard: \033[0m" << endl;
     cout << right << setw(32) << " (ref/can. area = " << ac << " (m**2))" << endl;
     cout << right << setw(32) << "  lift CLc = " << Clceq << "    Lc=" << canarlift << " (N)" << endl;
     cout << right << setw(32) << " canard pitching moment CMacc = " << Cmacc << endl;
     cout << right << setw(32) << " canard Reynolds = " << reyc << endl;
     cout << right << setw(32) << " estimated induced drag CDic = " << Cdic << endl;
     cout << right << setw(32) << " drag CDc = " << Cdceq << endl;
-    cout << right << setw(32) << " xcpc = " << xcpc << " (m)" << endl;
-    cout <<"fuselage:" << endl;
+    cout << right << setw(32) << " xcpc = " << xcpc << " (m)" << endl << endl;
+
+    cout <<"\033[1;42m fuselage: \033[0m" << endl;
     cout << right << setw(32) << " (ref/fus. area = " << af << " (m**2))" << endl;
     cout << right << setw(32) << " fuselage Reynolds = " << reyf << endl;
-    cout << right << setw(32) << " drag CDf = " << Cdfeq << endl;
-    cout <<"rudder:" << endl;
+    cout << right << setw(32) << " drag CDf = " << Cdfeq << endl << endl;
+
+    cout <<"\033[1;42m rudder: \033[0m" << endl;
     cout << right << setw(32) << " (ref/rud. area = " << ac << " (m**2))" << endl;
     cout << right << setw(32) << " rudder Reynolds = " << reyr << endl;
-    cout << right << setw(32) << " drag Cdr = " << Cdreq << endl;
-    cout <<"nacelle:" << endl;
+    cout << right << setw(32) << " drag Cdr = " << Cdreq << endl << endl;
+
+    cout <<"\033[1;42m nacelle: \033[0m" << endl;
     cout << right << setw(32) << " (ref/wet. area = " << an << " (m**2))" << endl;
     cout << right << setw(32) << " nacelle Reynolds = " << reyn << endl;
     cout << right << setw(32) << " drag Cdn = " << Cdneq << endl;
@@ -903,7 +906,7 @@ void canareq::readInputPolar(std::string filename) {
 
         if (DBG) {
             cout << std::setprecision(6);
-            cout << "\n";
+            cout << endl;
             cout << left << setw(10) << a;
             cout << left << setw(10) << b;
             cout << left << setw(10) << c;
@@ -1103,102 +1106,99 @@ void canareq::mainwingModel() {
     Cmmeq=Cmeq;
 }
 
-int canareq::printInputParams() {
+void canareq::printInputParams() {
     // print to screen
-    cout << endl << "======================================" << endl;
-    cout << " canareq::printInputParams()" << endl << endl;
-    cout <<  "convergence parameters:" << endl;
-    cout << right << setw(32) <<  "                        itx = " << itx << "\n";
-    cout << right << setw(32) <<  "                      omega = " << omega << "\n";
-    cout << right << setw(32) <<  "convergence tolerance epser = " << epser << "\n";
-    cout << "=================================\n";
+    if (DBG) cout << endl << "======================================" << endl;
+    if (DBG) cout << " canareq::printInputParams()" << endl ;
+    cout << endl <<  "convergence parameters:" << endl;
+    cout << right << setw(32) <<  "                        itx = " << itx << endl;
+    cout << right << setw(32) <<  "                      omega = " << omega << endl;
+    cout << right << setw(32) <<  "convergence tolerance epser = " << epser << endl << endl;
+
     cout << "air parameters:" << endl;
-    cout << right << setw(32) << "                     density = " << rho <<  " (kg/m**3)\n";
-    cout << right << setw(32) << "               dynamic visc. = " << amu <<  " (m**2/s)\n";
-    cout << "=================================\n";
+    cout << right << setw(32) << "                     density = " << rho <<  " (kg/m**3)" << endl;
+    cout << right << setw(32) << "               dynamic visc. = " << amu <<  " (m**2/s)" << endl << endl;
+
     cout << "gravity data:" << endl;
-    cout << right << setw(32) << "                        mass = " << mass <<  " (kg) =  " << amlb <<  " (lb)\n";
-    cout << right << setw(32) << "              location of CG = " << xcg <<  " (m)\n";
-    cout << right << setw(32) << "               static margin = " << statmarg <<  " (if <0, not used to place xcg)\n";
-    cout << "=================================\n";
+    cout << right << setw(32) << "                        mass = " << mass <<  " (kg) =  " << amlb <<  " (lb)" << endl;
+    cout << right << setw(32) << "              location of CG = " << xcg <<  " (m)" << endl;
+    cout << right << setw(32) << "               static margin = " << statmarg <<  " (if <0, not used to place xcg)" << endl << endl;
+
     cout << "wing data:" << endl;
-    cout << right << setw(32) << "                        span = " << bm <<  " (m)\n";
-    cout << right << setw(32) << "          root chord of wing = " << cxm <<  " (m)\n";
-    cout << right << setw(32) << "               average chord = " << cam <<  " (m)\n";
-    cout << right << setw(32) << "                   wing area = " << am <<  " (m**2)\n";
-    cout << right << setw(32) << "  aerodynamic center of wing = " << xacm <<  " (m)\n";
-    cout << right << setw(32) << "     relative camber of wing = " << dm << "\n";
-    cout << right << setw(32) << "             wing efficiency = " << em << "\n";
-    cout << right << setw(32) << " influence fo canard on wing = " << acw << "\n";
-    cout << right << setw(32) << "           wing aspect ratio = " << arm << "\n";
-    cout << right << setw(32) << "influence of canar dCldalind = " << dCldalind << "\n";
-    cout << right << setw(32) << "          flap setting angle = " << tfd <<  " (deg)\n";
-    cout << right << setw(32) << "flap setting influence on Cl = " << dClmdtf << "\n";
-    cout << right << setw(32) << "flap setting influence on Cm = " << dCmmdtf << "\n";
-    cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf0 << "\n";
-    cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf1 << "\n";
-    cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf2 << "\n";
-    cout << "=================================\n";
-    cout << "fuselage data:        " << endl;
-    cout << right << setw(32) << "                     length = " << lf <<  " (m)\n";
-    cout << right << setw(32) << "                      radius = " << rf <<  " (m)\n";
-    cout << right << setw(32) << "        fuselage missed area = " << af <<  " (m**2)\n";
-    cout << "=================================\n";
+    cout << right << setw(32) << "                        span = " << bm <<  " (m)" << endl;
+    cout << right << setw(32) << "          root chord of wing = " << cxm <<  " (m)" << endl;
+    cout << right << setw(32) << "               average chord = " << cam <<  " (m)" << endl;
+    cout << right << setw(32) << "                   wing area = " << am <<  " (m**2)" << endl;
+    cout << right << setw(32) << "  aerodynamic center of wing = " << xacm <<  " (m)" << endl;
+    cout << right << setw(32) << "     relative camber of wing = " << dm << endl;
+    cout << right << setw(32) << "             wing efficiency = " << em << endl;
+    cout << right << setw(32) << " influence fo canard on wing = " << acw << endl;
+    cout << right << setw(32) << "           wing aspect ratio = " << arm << endl;
+    cout << right << setw(32) << "influence of canar dCldalind = " << dCldalind << endl;
+    cout << right << setw(32) << "          flap setting angle = " << tfd <<  " (deg)" << endl;
+    cout << right << setw(32) << "flap setting influence on Cl = " << dClmdtf << endl;
+    cout << right << setw(32) << "flap setting influence on Cm = " << dCmmdtf << endl;
+    cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf0 << endl;
+    cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf1 << endl;
+    cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf2 << endl << endl;
+
+    cout << "fuselage data:" << endl;
+    cout << right << setw(32) << "                     length = " << lf <<  " (m)" << endl;
+    cout << right << setw(32) << "                      radius = " << rf <<  " (m)" << endl;
+    cout << right << setw(32) << "        fuselage missed area = " << af <<  " (m**2)" << endl << endl;
+
     cout << "canard data:" << endl;
-    cout << right << setw(32) << "                 canard span = " << bc <<  " (m)\n";
-    cout << right << setw(32) << "           canard root chord = " << cxc <<  " (m)\n";
-    cout << right << setw(32) << "canar mean aerodynamic chord = " << cac <<  " (m)\n";
-    cout << right << setw(32) << "        canard planform area = " << ac <<  " (m**2)\n";
-    cout << right << setw(32) << "aerodynamic center of canard = " << xacc <<  " (m)\n";
-    cout << right << setw(32) << "   relative camber of canard = " << dc << "\n";
-    cout << right << setw(32) << "aspect ratio of single canar = " << arc << "\n";
-    cout << right << setw(32) << "           canard efficiency = " << ec << "\n";
-    cout << right << setw(32) << " influence of wing on canard = " << awc << "\n";
-    cout << right << setw(32) << "        canard setting angle = " << tcd <<  " (deg)\n";
-    cout << "=================================\n";
-    cout << right << setw(32) << "           airbrake: CDbrake = " << Cdbrake << "\n";
-    cout << "=================================\n";
+    cout << right << setw(32) << "                 canard span = " << bc <<  " (m)" << endl;
+    cout << right << setw(32) << "           canard root chord = " << cxc <<  " (m)" << endl;
+    cout << right << setw(32) << "canar mean aerodynamic chord = " << cac <<  " (m)" << endl;
+    cout << right << setw(32) << "        canard planform area = " << ac <<  " (m**2)" << endl;
+    cout << right << setw(32) << "aerodynamic center of canard = " << xacc <<  " (m)" << endl;
+    cout << right << setw(32) << "   relative camber of canard = " << dc << endl;
+    cout << right << setw(32) << "aspect ratio of single canar = " << arc << endl;
+    cout << right << setw(32) << "           canard efficiency = " << ec << endl;
+    cout << right << setw(32) << " influence of wing on canard = " << awc << endl;
+    cout << right << setw(32) << "        canard setting angle = " << tcd <<  " (deg)" << endl;
+    cout << right << setw(32) << "           airbrake: CDbrake = " << Cdbrake << endl << endl;
+
     cout << "rudder data:" << endl;
-    cout << right << setw(32) << "        rudder average chord = " << rav <<  " (m)\n";
-    cout << right << setw(32) << "               rudder height = " << ruh <<  " (m)\n";
-    cout << right << setw(32) << "                 rudder area = " << ar <<  " (m**2)\n";
-    cout << "=================================\n";
+    cout << right << setw(32) << "        rudder average chord = " << rav <<  " (m)" << endl;
+    cout << right << setw(32) << "               rudder height = " << ruh <<  " (m)" << endl;
+    cout << right << setw(32) << "                 rudder area = " << ar <<  " (m**2)" << endl << endl;
+
     cout << "reference data:" << endl;
-    cout << right << setw(32) << "                 ref. length = " << lref <<  " (m)\n";
-    cout << right << setw(32) << "                   ref. area = " << aref <<  " (m**2)\n";
-    cout << right << setw(32) << "   reference Reynolds number = " << Ref <<  "\n";
-    cout << "=================================\n";
-    cout << right << setw(32) << " propulsion system reference = " << prop <<  "\n";
-    cout << right << setw(32) << "      z-coordinate of engine = " << zeng <<  " (m)\n";
-    cout << right << setw(32) << "         diameter of nacelle = " << dna <<  " (m)\n";
-    cout << right << setw(32) << "           length of nacelle = " << lna <<  " (m)\n";
-    cout << right << setw(32) << "             static traction = " << tr0 <<  " (N)\n";
-    cout << right << setw(32) << "              traction slope = " << dtrdv <<  " (Ns/m)\n";
-    cout << right << setw(32) << "                engine power = " << hpokwatt <<  " (kW) = " << hpower <<  " (hp)\n";
-    cout << right << setw(32) << "percent of engine power avai = " << Pcent <<  "\n";
-    cout << right << setw(32) << "                        ndat = " << ndat <<  "\n";
+    cout << right << setw(32) << "                 ref. length = " << lref <<  " (m)" << endl;
+    cout << right << setw(32) << "                   ref. area = " << aref <<  " (m**2)" << endl;
+    cout << right << setw(32) << "   reference Reynolds number = " << Ref <<  endl;
+    cout << right << setw(32) << " propulsion system reference = " << prop <<  endl;
+    cout << right << setw(32) << "      z-coordinate of engine = " << zeng <<  " (m)" << endl;
+    cout << right << setw(32) << "         diameter of nacelle = " << dna <<  " (m)" << endl;
+    cout << right << setw(32) << "           length of nacelle = " << lna <<  " (m)" << endl;
+    cout << right << setw(32) << "             static traction = " << tr0 <<  " (N)" << endl;
+    cout << right << setw(32) << "              traction slope = " << dtrdv <<  " (Ns/m)" << endl;
+    cout << right << setw(32) << "                engine power = " << hpokwatt <<  " (kW) = " << hpower <<  " (hp)" << endl;
+    cout << right << setw(32) << "percent of engine power avai = " << Pcent <<  endl;
+    cout << right << setw(32) << "                        ndat = " << ndat <<  endl << endl;
     cout << " i  ";
     cout << " vr(i)  ";
     cout << " tr(i)";
     for(int i = 0; i < ndat; i++) {
         cout << std::setprecision(3);
-        cout << "\n";
+        cout << endl;
         cout << left << setw(8) << i;
         cout << left << setw(8) << vr[i];
         cout << tr[i];
     }
-    cout << "=================================\n";
-    cout << "best equilibrium data:" << endl;
-    cout << right << setw(32) << " aleq = " << aleqB <<  "\n";
-    cout << right << setw(32) << " ueq = " << UeqB <<  "\n";
-    cout << right << setw(32) << " beteq = " << beteqB <<  "\n";
-    cout << right << setw(32) << " cleq = " << CleqB <<  "\n";
-    cout << right << setw(32) << " cdeq = " << CdeqB <<  "\n";
-    cout << right << setw(32) << " cmac = " << CmacB <<  "\n";
-    return 1;
+
+    cout << endl << "best equilibrium data:" << endl;
+    cout << right << setw(32) << " aleq = " << aleqB <<  endl;
+    cout << right << setw(32) << " ueq = " << UeqB <<  endl;
+    cout << right << setw(32) << " beteq = " << beteqB <<  endl;
+    cout << right << setw(32) << " cleq = " << CleqB <<  endl;
+    cout << right << setw(32) << " cdeq = " << CdeqB <<  endl;
+    cout << right << setw(32) << " cmac = " << CmacB <<  endl << endl;
 }
 
-int canareq::printPolarDat() {
+int canareq::printInputPolar() {
     cout << "\n\n";
     cout << "=================================\n";
     cout << " wing polar (profile data from Xfoil):\n";
@@ -1227,7 +1227,7 @@ void canareq::printGlobalCoefs() {
 
     // global coefficients
     cout << std::setprecision(8);
-    cout << "\n";
+    cout << endl;
     cout << "=============================================="<< endl;
     cout << "zero incidence aerodynamic coefficients" << endl;
     cout << " k0 = " << k0<< endl;
@@ -1289,7 +1289,7 @@ int canareq::outputPolarCdClCq() {
         file << left << inc[k];
     }
     file.close();
-    //file << "\n" << title << "\n";
+    //file << endl << title << endl;
     //file << "=============wing polar (profile data from Xfoil):";
     return 1;
 }

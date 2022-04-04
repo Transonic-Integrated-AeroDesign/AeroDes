@@ -32,8 +32,8 @@ int main(int argc, char** argv) {
     canary->readInputParams();
     canary->printInputParams();
 
-    canary->readInputPolar("");
-    canary->printPolarDat();
+    canary->readInputPolar(""); // by default reads "canarpolar.dat" file
+    canary->printInputPolar();
     canary->printGlobalCoefs();
 
     canary->linearModel();
