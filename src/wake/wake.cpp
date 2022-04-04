@@ -16,12 +16,13 @@
 
 using namespace std; // g++ wake.cpp -c
 
-wake::wake() {
+wake::wake(variables *varshr) : vars(varshr) {
     ixx=201;
     jxx=102;
     lxx=102;
     nxx=10;
 
+    std::cout << " alphad = " << alphad << endl;
     // initialize arrays
     c   = (double *) malloc(sizeof(double)*jxx);
     g   = (double *) malloc(sizeof(double)*jxx);
@@ -1477,6 +1478,8 @@ void wake::printResults() {
     // results
     cout << endl << " results:" << endl;
     cout << right << setw(38) << " alpha = " << alphad << " (deg) " << endl;
+    vars->alphad = alphad;
+    vars->iter = iter;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
     cout << right << setw(38) << " oswald efficiency e = " << em << endl;

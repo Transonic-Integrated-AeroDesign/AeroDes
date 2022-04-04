@@ -7,6 +7,7 @@
 #include <string>
 #include <math.h>   // pow
 
+#include "variables.hpp"
 #include "wake.hpp"
 
 /*
@@ -20,7 +21,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    wake *wk = new wake();
+    variables *vars = new variables();
+    wake *wk = new wake(vars);
 
     wk->cmdInput(argc, argv);
     wk->readInputParams();
@@ -47,4 +49,5 @@ int main(int argc, char** argv) {
     wk->readInputWingGeom("wing.yxlexte");
 
     delete wk;
+    delete vars;
 }

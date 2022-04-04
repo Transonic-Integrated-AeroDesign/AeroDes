@@ -11,10 +11,13 @@
 #include <math.h>
 
 #include "config.hpp"
+#include "variables.hpp"
 
-class wake{
+class wake : public variables {
 public:
-    wake();
+    variables *vars;
+
+    wake(variables *);
     //wake(int argc, char** argv);
     ~wake();
 
@@ -54,11 +57,11 @@ public:
 
 private:
     int jxx,lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx;
-    int jx2,is,iwing,nsteps,ivis,nstep,iter,it,mj,jdx,jm;
+    int jx2,is,iwing,nsteps,ivis,nstep,it,mj,jdx,jm;
     int itx,jxs2,jc,ixx,ix,ixw;
     //parameter(ixx=201,jxx=102,lxx=102,nxx=10)
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
-    double B,cxc,dm,tcd,Rho,Vinf,Amu,alphad,tc,alpha,Re,acdum;
+    double B,cxc,dm,tcd,Rho,Vinf,Amu,tc,alpha,Re,acdum;
     double cacdum,dtet,tetj,yj,etaj,etajm,ac,cac,arc,alphain;
     double alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;
