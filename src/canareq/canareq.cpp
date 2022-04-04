@@ -3,8 +3,6 @@
 #include <vector>
 #include <iostream> // std
 #include <iomanip>  // setw
-#include <sstream>  // istream
-#include <fstream>  // fopen, ifstream
 #include <string>
 #include <stdio.h>  // strcpy
 //#include <string.h>
@@ -16,7 +14,7 @@
 
 using namespace std; // g++ canareq.cpp -c
 
-canareq::canareq() {
+canareq::canareq(variables *varshr) : vars(varshr) {
     // storage
     int nrows=3; int ncols=3;
     aa = (double **) malloc(sizeof(double *)*nrows);
@@ -33,7 +31,7 @@ canareq::canareq() {
     cq = (double *) malloc(sizeof(double)*lxx);
     inc = (double *) malloc(sizeof(double)*lxx);
     
-    filenamePolarDat = "canarpolar.dat";
+    filenameInputPolar = "canarpolar.dat";
     filenamePolarPrandtline = "canarpolar.prandtline";
     filenamePolarCdClCq = "canarpolar.cdclcq";
     filenameEqData = "canareq.data";
@@ -698,6 +696,11 @@ void canareq::cmdInput(int argc, char **argv) {
     }
 }
 
+void canareq::init() {
+    iter = vars->iter;
+    alphad = vars->alphad;
+}
+
 void canareq::readInputParams() {
     // open input file
     ifstream paramfile(filenameEqData);
@@ -839,30 +842,45 @@ void canareq::readInputParams() {
     paramfile.close();
 }
 
-void canareq::readPolarDat() {
-    // readPolarDat must be read after reading input parameters
-    double a, b, c, d, e;
-    std::string line;
-    
-    // open input file
-    ifstream polarfile(filenamePolarDat);
+void canareq::readInputPolar(std::string filename) {
+    // read given input polar filename:
+    //
+    // input polars should be structured columnwise with a single breakpoint at the end.
+    // all header information is scraped out.
+    //
+    //  [alpha]  [cz]   [cx]    [dummyval]      [cq]
+    //    ...     ...    ...        ...         ...
+    //    ...     ...    ...        ...         ...
+    //
+    //    ...     ...    ...        ...         ...
+    //  [breakpoint]
+    //
+
+    cout << endl << "=========================================\n";
+    cout << " canareq::readInputPolar()" << endl;
+
+    // polar data
+    polarBool = true;
+
+    if (filename.compare("")==0);
+    else filenameInputPolar = filename;
+
+    polarfile.open(filenameInputPolar);
     if (!polarfile.is_open()) {
-        cout << "\n\nCannot Read: " << filenamePolarDat << endl;
-        cout << " File - Error in: readPolarDat()" << endl;
+        cout << "\n\nCannot Read: \'" << filenameInputPolar
+             << "\' [file error in, canareq::readInputPolar()]" << endl;
         abort();
     }
 
-    if (DBG) {
-        cout << "\n\n";
-        cout << " extrema of the Cl(alpha) function:" << endl;
-        cout << left << setw(10) << " inc ";
-        cout << left << setw(10) << " cz ";
-        cout << left << setw(10) << " cx ";
-        cout << left << setw(10) << " dum ";
-        cout << left << setw(10) << " cq ";
-        cout << " i ";
-    }
+    if(DBG) cout << right << setw(12) << " n"
+                 << right << setw(12) << " k"
+                 << right << setw(12) << " inc[n][k]"
+                 << right << setw(12) << " cz[n][k]"
+                 << right << setw(12) << " cx[k][n]"
+                 << right << setw(12) << " cq[n][k]";
 
+    double a, b, c, d, e;
+    std::string line;
     // determine maximum number of polar points
     km=0; // index start
     prod=1.0;
@@ -877,7 +895,7 @@ void canareq::readPolarDat() {
         std::istringstream iss(line);
         //cout << "\nline: \'"<< line << "\'"<< endl;
         if(!(iss >> a >> b >> c >> d >> e)) break;  // break loop if end of file reached
-        inc[i] = a;
+        inc[i] = a; // change this to double array
         cz[i] = b;
         cx[i] = c;
         dum = d;
@@ -1087,7 +1105,8 @@ void canareq::mainwingModel() {
 
 int canareq::printInputParams() {
     // print to screen
-    cout << "=================================\n";
+    cout << endl << "======================================" << endl;
+    cout << " canareq::printInputParams()" << endl << endl;
     cout <<  "convergence parameters:" << endl;
     cout << right << setw(32) <<  "                        itx = " << itx << "\n";
     cout << right << setw(32) <<  "                      omega = " << omega << "\n";

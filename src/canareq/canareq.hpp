@@ -9,47 +9,54 @@
 #include <fstream>  // fopen
 #include <string>
 #include <math.h>
+#include <fstream>  // fopen, ifstream
+#include <sstream>  // istream
 
-//#include "../prandtline/prandtline.hpp"
-#include "prandtline.hpp"
+//#include "prandtline.hpp"
+#include "wake.hpp"
+#include "variables.hpp"
 
-class canareq : private prandtline {
-    public:
-        canareq();
-        ~canareq();
+//class canareq : protected variables {
+class canareq : public variables {
+public:
+    variables *vars;
 
-        // file input
-        void cmdInput(int argc, char** argv);
-        void readInputParams();
-        void readPolarDat();
+    canareq(variables *);
+    ~canareq();
 
-        // memory
-        double* create_1d_double_array(int n1, double *array);
-        double** create_2d_double_array(int n1, int n2, double **array);
-        void delete_2d_double_array(double **array);
-    
-        // subroutines
-        double thrust(int, double);
-        double mat3(double**, double*);
-        void linearModel(); // generate 'best' values
-        void nonlinearModel();
-        void mainwingModel();
+    // file input
+    void cmdInput(int argc, char** argv);
+    void init();
+    void readInputParams();
+    void readInputPolar(std::string);
+
+    // memory
+    double* create_1d_double_array(int n1, double *array);
+    double** create_2d_double_array(int n1, int n2, double **array);
+    void delete_2d_double_array(double **array);
+
+    // subroutines
+    double thrust(int, double);
+    double mat3(double**, double*);
+    void linearModel(); // generate 'best' values
+    void nonlinearModel();
+    void mainwingModel();
 
 
 
-        // screen output
-        int printInputParams();
-        int printPolarDat();
-        void printGlobalCoefs();
-    
-        // file output
-        int outputPolarPrandtline();
-        int outputPolarCdClCq();
-        int outputEqList(); // same as printGlobalCoefs()
+    // screen output
+    int printInputParams();
+    int printPolarDat();
+    void printGlobalCoefs();
+
+    // file output
+    int outputPolarPrandtline();
+    int outputPolarCdClCq();
+    int outputEqList(); // same as printGlobalCoefs()
     
     private:
         int n1, n2;
-        int lxx,ndatx,ndat,nal,itx,i,km,k,kx,kp,k0,m,iter,it;
+        int lxx,ndatx,ndat,nal,itx,i,km,k,kx,kp,k0,m,it;
         int inewton,imarg,itfd,nalmin,nalmax,n,incidence;
         //parameter(lxx=101,ndatx=21)
         int *kxtrm;
@@ -85,10 +92,10 @@ class canareq : private prandtline {
         double *alphares, *czres, *cxres, *cqres;
         int nsteps;
     
-        std::string filenamePolarDat;   // input
+        std::string filenameInputPolar; bool polarBool; std::ifstream polarfile; // input 2d xfoil solution
         std::string filenamePolarPrandtline;
         std::string filenamePolarCdClCq;
-        std::string filenameEqData; // input
+        std::string filenameEqData; bool inputBool; int inflag; // input parameters
         std::string filenameEqCdClCqm;
         std::string filenameEqItres;
         std::string filenameEqCdClCq;
@@ -101,7 +108,6 @@ class canareq : private prandtline {
         std::string filenameEqStab;
         std::string filenameEqDataOpt;
 
-        bool inputBool; int inflag;
         bool tcdBool; int tcdflag; double tcd0;
 };
 

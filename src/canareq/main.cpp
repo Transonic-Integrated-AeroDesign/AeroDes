@@ -8,7 +8,9 @@
 #include <math.h>   // pow
 
 //#include "../prandtline/prandtline.hpp"
-#include "prandtline.hpp"
+//#include "prandtline.hpp"
+#include "variables.hpp"
+#include "wake.hpp"
 #include "canareq.hpp"
 
 /*
@@ -22,13 +24,15 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    canareq *canary = new canareq();
+    variables *vars = new variables();
+    wake *wk = new wake(vars);
+    canareq *canary = new canareq(vars);
 
     canary->cmdInput(argc, argv);
     canary->readInputParams();
     canary->printInputParams();
 
-    canary->readPolarDat();
+    canary->readInputPolar("");
     canary->printPolarDat();
     canary->printGlobalCoefs();
 
@@ -36,4 +40,6 @@ int main(int argc, char** argv) {
     canary->nonlinearModel();
 
     delete canary;
+    delete wk;
+    delete vars;
 }
