@@ -81,7 +81,7 @@ canareq::~canareq() {
     free(cx);
     free(cz);
     free(cq);
-    free(inc);
+    if (inc!=NULL) free(inc);
 }
 
 double *canareq::create_1d_double_array(int n2, double *array) {
@@ -705,21 +705,19 @@ void canareq::cmdInput(int argc, char **argv) {
 
 void canareq::init() {
     alphad = vars->alphad;
-
     cout << "inc_of_alpha = " << vars->inc_of_alpha[0] << endl;
     cout << "inc_of_alpha = " << inc_of_alpha[0] << endl;
-    //= vars->inc_of_alpha;
-   /* al_of_alpha = vars->al_of_alpha;
-    cl_of_alpha = vars->cl_of_alpha;
-    cd_of_alpha = vars->cd_of_alpha;
-    cq_of_alpha = vars->cq_of_alpha;*/
 
-    kx_of_alpha = vars->kx_of_alpha;
-    kx = kx_of_alpha;
-    //inc = inc_of_alpha;
-    //cz = cl_of_alpha;
-    //cx = cd_of_alpha;
-    //cq = cq_of_alpha;
+    kx = vars->kx_of_alpha;
+    //cout << "kx = " << kx << endl;
+    for (int j = 0; j < kx; ++j) {
+        inc[j] = vars->inc_of_alpha[j];
+        cz[j] = vars->cl_of_alpha[j];
+        cx[j] = cd_of_alpha[j];
+        cq[j] = cq_of_alpha[j];
+    }
+    cout << "inc_of_alpha = " << vars->inc_of_alpha[0] << endl;
+    cout << "inc_of_alpha = " << inc[0] << endl;
 }
 
 void canareq::readInputParams() {
