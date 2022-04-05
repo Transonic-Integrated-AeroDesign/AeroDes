@@ -1,3 +1,7 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #ifndef AERODES_H
 #define AERODES_H
 
@@ -23,7 +27,6 @@ public:
     wake* wk;
     aerodes(int argc, char** argv);
     ~aerodes();
-    void printTest();
 };
 
 #endif

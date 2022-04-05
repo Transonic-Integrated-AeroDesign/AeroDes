@@ -27,9 +27,9 @@ include_directories(src/wake)
 
 # executables
 add_executable(prandtl
+        src/variables.hpp
         src/prandtline/prandtline.cpp
         src/prandtline/prandtline.hpp
-        src/variables.hpp
         src/prandtline/main.cpp)
 
 add_executable(wake

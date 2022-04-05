@@ -1,19 +1,39 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #ifndef VARIABLES_H
 #define VARIABLES_H
-
-/*#include "prandtline.hpp"
-#include "wake.hpp"
-#include "canareq.hpp*/
 
 class variables{
 public:
     // absolutely need constructor
     variables() {
-        iter = -6;
+        kx_of_alpha = 0;
+        alphad = 0;
+        jxx=102;
+        inc_of_alpha = (double *) malloc(sizeof(double)*jxx);
+        al_of_alpha = (double *) malloc(sizeof(double)*jxx);
+        cl_of_alpha = (double *) malloc(sizeof(double)*jxx);
+        cd_of_alpha = (double *) malloc(sizeof(double)*jxx);
+        cq_of_alpha = (double *) malloc(sizeof(double)*jxx);
+    };
+    ~variables() {
+        delete inc_of_alpha;
+        delete al_of_alpha;
+        delete cl_of_alpha;
+        delete cd_of_alpha;
+        delete cq_of_alpha;
     };
 
-    int iter=-5;
-    double alphad = -1;
+    int jxx;
+    int kx_of_alpha;
+    double alphad;
+    double *inc_of_alpha;   // alpha in radians
+    double *al_of_alpha;    // alpha in degree
+    double *cl_of_alpha;
+    double *cd_of_alpha;
+    double *cq_of_alpha;
 };
 
 #endif
