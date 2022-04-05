@@ -10,7 +10,7 @@
       real alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj
       real reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0
       real rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr
-      real Rf0,rf,phij,phi0,dwkj,Lambd,lamb,cl0,cl1,dClmda0,armeff
+      real Rf0,rf,phij,phi0,dwkj,Lambd,lamb
       real c(jxx),g(jxx),dg(jxx),y(jxx),eta(jxx)
       real w(jxx),t(jxx),dem(jxx)
       real a0(jxx),a1(jxx),b0(jxx),b1(jxx),c0(jxx),c1(jxx)
@@ -58,7 +58,7 @@ c*****polar data
       write(6,*)
       write(6,*)'******do you want to use polar data? Y/N=1/0'
       read(5,*)ipolar
-      if(ipolar.ne.1)goto 5
+      if(ipolar.eq.0)goto 5
       read(13,*)nx
       write(6,*)'******profile polars:'
       write(6,*)' nx= ',nx,' number of polars to be read'
@@ -238,8 +238,8 @@ c*****mesh, geometry and flow
          else
             etajm=eta(j-1)
          endif
-         if(j.eq.jx)then
-            etaj=eta(j-1)
+         if(j.eq.jx-1)then
+            etaj=1.0
          endif
          dem(j)=dm
          t(j)=tm
@@ -305,8 +305,9 @@ c     slender body treatment of fuselage
                a0(j)=0.
             endif
          endif
-         if(ipolar.eq.1)then
-            if(nx.ne.1)then
+         if(ipolar.ne.0)then
+            if(nx.gt.1)then
+               polar(j)=n
                if(y(j).gt.rbreak(n)-eps)then
                   write(6,*)'rbreak(n)=',rbreak(n)
                   n=n+1
@@ -362,8 +363,8 @@ c     slender body treatment of fuselage
       write(6,*)'****************'
       write(6,*)'calculated data:'
       write(6,*)'   maximum chord/fuselage cxm=',cxm,' ref. B/2)'
-      write(6,*)'                 wing area am=',am,' (ref. B**2/4)'
-      write(6,*)'        wing aspect ratio arm=',arm
+      write(6,*)'   wing+fuse planform area am=',am,' (ref. B**2/4)'
+      write(6,*)'   wing+fuse aspect ratio arm=',arm
       write(6,*)'average aerodynamic chord cam=',cam,' (ref. B/2)'
       write(6,*)'           fuselage radius rf=',rf,'(ref. B/2)'
       write(6,*)' '
@@ -443,15 +444,20 @@ c     search for point on polar and polar coefficients
             l(j)=2.0*g(j)/c(j)
             d(j)=0.0
             q(j)=0.0
+            c1(j)=0.0
+            c0(j)=-pi*dm
          endif
  9    continue
       m(1)=m(2)
       l(1)=l(2)+(l(3)-l(2))*(y(1)-y(2))/(y(3)-y(2))
       d(1)=d(2)+(d(3)-d(2))*(y(1)-y(2))/(y(3)-y(2))
+      q(1)=q(2)+(q(3)-q(2))*(y(1)-y(2))/(y(3)-y(2))
       m(jx)=m(jx-1)
       l(jx)=l(jx-1)+(l(jx-1)-l(jx-2))*(y(jx)-y(jx-1))
      &     /(y(jx-1)-y(jx-2))
       d(jx)=d(jx-1)+(d(jx-1)-d(jx-2))*(y(jx)-y(jx-1))
+     &     /(y(jx-1)-y(jx-2))
+      q(jx)=q(jx-1)+(q(jx-1)-q(jx-2))*(y(jx)-y(jx-1))
      &     /(y(jx-1)-y(jx-2))
  10   continue
 c     fixed point iteration
@@ -496,7 +502,7 @@ c     downwash due to lifting line
      &        /(8.*pi*(1.0+wj*wj))+2.*(avis+reg))
          w(j)=wj
          at(j)=attj
-         if(abs(y(j)).le.rf)then
+         if(iwing.eq.2.and.abs(y(j)).le.rf)then
            dg(j)=g(j-1)+2.0*rf*sin(3.0*alpha)/3.0*((1.0-(y(j)/rf)**2)
      &           /(1.0+(y(j)/rf)**2)-(1.0-(y(j-1)/rf)**2)
      &           /(1.0+(y(j-1)/rf)**2))-g(j)
@@ -530,8 +536,6 @@ c*****results
       is=mod(jx,2)
       si=is
       cl=0.
-      cm0=0.
-      amdum=0.
       xac=0.
       cmac=0.
       fz(1)=0.
@@ -542,11 +546,13 @@ c*****results
       cmt(1)=0.
       cmt(jx)=0.
       do 13 j=2,jx-1
+         if(j.eq.2)eta(j-1)=-1.0
+         if(j.eq.jx-1)eta(j)=1.0
          cl=cl+g(j)*(eta(j)-eta(j-1))
          if(ipolar.ne.1)then
             at(j)=alpha+atan2(w(j),1.)+t(j)
             q(j)=c0(j)+c1(j)*at(j)
-            xac=xac+(xle(j)+0.25*c(j))*c(j)*(eta(j)-eta(j-1))
+            xac=xac+xacm(j)*c(j)*(eta(j)-eta(j-1))
             cmac=cmac+c(j)**2*q(j)*(eta(j)-eta(j-1))
             if(j.eq.jx2+1)then
                cmt(j)=-cmt(j-1)+(1.-si)*c(j)**2*q(j)*(eta(j)-eta(j-1))
@@ -554,7 +560,6 @@ c*****results
                cmt(j)=cmt(j-1)+c(j)**2*q(j)*(eta(j)-eta(j-1))
             endif
          else
-            amdum=amdum+c(j)*(eta(j)-eta(j-1))
             xac=xac+xacm(j)*c(j)*(eta(j)-eta(j-1))
             cmac=cmac+c(j)**2*q(j)*(eta(j)-eta(j-1))
          endif
@@ -576,16 +581,8 @@ c*****results
       at(jx)=at(jx-1)
      &     +(at(jx-2)-at(jx-1))*(y(jx)-y(jx-1))/(y(jx-2)-y(jx-1))
       cl=0.5*arm*cl
-      if(alphad.eq.0.)then
-c          cl0=am*cl/(am+2.0*rf*cxm)+eps
-          cl0=cl
-      endif
-      if(alphad.eq.1.)then
-c          cl1=am*cl/(am+2.0*rf*cxm)+eps
-         cl1=cl
-      endif
-      xac=xac/amdum
-      cmac=cmac/(amdum*cam)
+      xac=xac/am
+      cmac=cmac/(am*cam)
       cm0=cmac-xac*cl/cam
       xcp=xac-cam*cmac/cl
       cd0=0.
@@ -673,17 +670,6 @@ c*****force and moment
       write(34,*)y(55),xle(55)
       write(35,*)cd,cl
       write(6,*)
-      write(6,*)'run alpha=0 to 1 deg to get effective'
-     &     ,' aspect ratio of canard armeff'
-      if(alstep.lt.eps)then
-         write(6,*)'********************************'
-     &        ,'not enough info to calculate armeff and dClmda0'
-      else
-         dClmda0=180.*(cl1-cl0)/pi
-         armeff=2.*dClmda0/(2.*pi-dClmda0)
-         write(6,*)'*********************************************'
-     &        ,'****************armeff=',armeff,'dClmda0=',dClmda0
-      endif
 c*****files
       write(6,*)'******data file:'
       write(6,*)'polarbl.dat           :profile polar from Xfoil'
