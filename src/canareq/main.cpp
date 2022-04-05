@@ -34,9 +34,8 @@ using namespace std;
 int main(int argc, char** argv) {
     variables *vars = new variables();
     wake *wk = new wake(vars);
-    canareq *canary = new canareq(vars);
+    canareq *canary = new canareq(argc, argv, vars);
 
-    canary->cmdInput(argc, argv);
     canary->readInputParams();
     canary->printInputParams();
 

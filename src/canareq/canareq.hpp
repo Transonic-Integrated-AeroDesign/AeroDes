@@ -25,11 +25,10 @@ class canareq : virtual public variables {
 public:
     variables *vars;
 
-    canareq(variables *);
+    canareq(int argc, char** argv, variables *);
     ~canareq();
 
     // file input
-    void cmdInput(int argc, char** argv);
     void init();
     void readInputParams();
     void readInputPolar(std::string); // read main wing polar

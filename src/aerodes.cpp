@@ -27,7 +27,7 @@ aerodes::aerodes(int argc, char** argv) {
     vars = new variables();
     prants = new prandtline(vars);
     wk = new wake(vars);
-    canary = new canareq(vars);
+    canary = new canareq(argc, argv, vars);
 }
 
 aerodes::~aerodes() {
