@@ -1,3 +1,7 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #include <cstdlib>
 #include <cstdio>
 #include <vector>

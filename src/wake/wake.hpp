@@ -1,3 +1,7 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #ifndef WAKE_H
 #define WAKE_H
 
@@ -13,7 +17,7 @@
 #include "config.hpp"
 #include "variables.hpp"
 
-class wake : public variables {
+class wake : virtual public variables {
 public:
     variables *vars;
 
@@ -56,17 +60,20 @@ public:
     void printCanarWake();
 
 private:
-    int jxx,lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx;
+    int lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx;
     int jx2,is,iwing,nsteps,ivis,nstep,it,mj,jdx,jm;
     int itx,jxs2,jc,ixx,ix,ixw;
-    //parameter(ixx=201,jxx=102,lxx=102,nxx=10)
+    int iter;
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
-    double B,cxc,dm,tcd,Rho,Vinf,Amu,tc,alpha,Re,acdum;
+    double B,cxc,dm,tcd,Rho,Vinf,Amu,tc,alpha, alphad,Re,acdum;
     double cacdum,dtet,tetj,yj,etaj,etajm,ac,cac,arc,alphain;
     double alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;
-    double rey,cdi,cdv,em,cd,xcp,Bc0,bc,Cc0,cl0,cl1;
-    double Rf0,rf,phij,phi0,dwkj,Lambd,lamb,dClcda0,arceff;
+    double rey,cdi,cdv;
+    double em; // shared variable
+    double cd,xcp,Bc0,bc,Cc0,cl0,cl1;
+    double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
+    double dClcda0,arceff; // shared variables*
     double Dx0,xi,str,dxm,Lf0,lf,Zc0,zcanar,xcim,zcim,zwake;
     double *c,*g,*dg,*y,*eta;
     double *w,*t,*dem,*ww;

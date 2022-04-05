@@ -1,11 +1,13 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #include <cstdlib>
-#include <cstdio>
 #include <vector>
 #include <iostream> // std
 #include <iomanip>  // setw
 #include <sstream>  // istream
 #include <fstream>  // fopen, ifstream
-#include <string>
 #include <stdio.h>  // strcpy
 #include <math.h>   // copysign
 #include "wake.hpp"
@@ -18,11 +20,9 @@ using namespace std; // g++ wake.cpp -c
 
 wake::wake(variables *varshr) : vars(varshr) {
     ixx=201;
-    jxx=102;
     lxx=102;
     nxx=10;
 
-    std::cout << " alphad = " << alphad << endl;
     // initialize arrays
     c   = (double *) malloc(sizeof(double)*jxx);
     g   = (double *) malloc(sizeof(double)*jxx);
@@ -45,7 +45,7 @@ wake::wake(variables *varshr) : vars(varshr) {
     l   = (double *) malloc(sizeof(double)*jxx);
     d   = (double *) malloc(sizeof(double)*jxx);
     q   = (double *) malloc(sizeof(double)*jxx);
-    at  = (double *) malloc(sizeof(double)*jxx); // good
+    at  = (double *) malloc(sizeof(double)*jxx);
 
     cx  = (double **) malloc(sizeof(double *)*nxx);
     cz  = (double **) malloc(sizeof(double *)*nxx);
@@ -59,7 +59,7 @@ wake::wake(variables *varshr) : vars(varshr) {
 
     cmf  = (double *) malloc(sizeof(double)*jxx);
     cmt  = (double *) malloc(sizeof(double)*jxx);
-    fz   = (double *) malloc(sizeof(double)*jxx); // good
+    fz   = (double *) malloc(sizeof(double)*jxx);
 
     xle  = (double *) malloc(sizeof(double)*jxx);
     xte  = (double *) malloc(sizeof(double)*jxx);
@@ -171,9 +171,9 @@ void wake::setMesh() {
     // note: currently eta distribution differs in the 8'th decimal place from fortran version
     //       this may in turn effect the resulting distributions. this is likely due to switching
     //       to double precision instead of float. -cp 3/28/22
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::setMesh()" << endl;
-    cout << " (point distribution, geometry and flow)" << endl;
+    if (DBG) cout << " (point distribution, geometry and flow)" << endl;
 
     if(DBG) {
         cout << left << setw(16) << "y(j) "
@@ -323,8 +323,11 @@ void wake::setMesh() {
     //xiac[jx]=xiac[jx-1];
 
     cout << std::setprecision(10);
-    for (int i1 = 0; i1 < jx; ++i1) {
-        cout << "i1 = " << i1 << " xiac = " << xiac[i1] << " xacc = " << xacc[i1] << " xte = " << xte[i1] << " xle = " << xle[i1] << " y = " << y[i1] << " eta = " << eta[i1] << endl;
+    if (DBG) {
+        for (int i1 = 0; i1 < jx; ++i1) {
+            cout << "i1 = " << i1 << " xiac = " << xiac[i1] << " xacc = " << xacc[i1] << " xte = " << xte[i1]
+                 << " xle = " << xle[i1] << " y = " << y[i1] << " eta = " << eta[i1] << endl;
+        }
     }
 
     // geometric values
@@ -348,27 +351,24 @@ void wake::solveLiftingLine() {
     int jxs2m, jxm;
     int n = 0;  // polar index
 
-    cout << endl << "=========================================\n";
-    cout << " wake::solveLiftingLine() " << endl;
-    cout << endl << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
-    cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
-    cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " wake::solveLiftingLine() " << endl;
+    if (DBG) cout << endl << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
+    if (DBG) cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
+    if (DBG) cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
 
     // setup angular step
     if (alstep==0) nsteps = 1;
     else nsteps=1+(alphafi-alphain)/alstep;
     alphad = alphain-alstep;
-    cout << " nsteps = " << nsteps << endl;
+
     if((nsteps <= 0.) || (nsteps>lxx)) {
         cout << " Error in solveLiftingLine()" << endl;
         cout << " (bad sequence, exit)" << endl;
         cout << " (more steps than memory allocated by lxx)" << endl;
         abort();
     }
-
-    // save polar filename
-    title = "test.dat";
-    cout << "name of saved polar? = " << title << endl;
+    vars->kx_of_alpha = nsteps; // set shared variable
 
     // loop over incidence angles
     for (int nstep = 0; nstep < nsteps; nstep++) {
@@ -379,8 +379,9 @@ void wake::solveLiftingLine() {
             abort();
         }
         iter = 0;
-        cout << endl << " solution:" << endl;
-        cout << "\t alpha = " << alphad << " (degrees)" << endl;
+
+        cout << " solution complete: alpha " << alphad << " (degrees)" << endl;
+
         if (ivis == 0) {
             cout << "do you want to introduce viscous effects?" << endl;
             cout << "viscous/inviscid=1/0   choose ivis=" << endl;
@@ -685,12 +686,13 @@ void wake::solveLiftingLine() {
             //16   continue
         }
 
-        // results
-        //alphares[nstep] = alphad;
-        //czres[nstep] = cl;
-        //cxres[nstep] = cd;
-        //dum = 0.;
-        //cqres[nstep] = cmac;
+        // set shared variables
+        // for "wake" to "canareq" you would have to do a search... to find out where you are.
+        //vars->inc_of_alpha[nstep] = alpha; // do not use canard-wake-line new polar
+        //vars->al_of_alpha[nstep] = alphad;
+        //vars->cl_of_alpha[nstep] = cl;
+        //vars->cd_of_alpha[nstep] = cd;
+        //vars->cq_of_alpha[nstep] = cmac;
     }
     // set breakpoints in y-distribution
     y[46] = -0.11111;
@@ -703,14 +705,18 @@ void wake::solveLiftingLine() {
     xle[54] = 1.3;
 
     // check that AReff has sufficient information
-    cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
+    // and set shared variables
+    //vars->kx_of_alpha = nsteps; // do not use canard-wake-line new polar
+    vars->em = em;
+    if (DBG) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
     if(alstep < eps) {
         cout << "not enough info to calculate arceff and dClcda0" << endl;
     }
     else {
         dClcda0=180.* (cl1-cl0) / pi;
         arceff=2.*dClcda0 / (2.*pi-dClcda0);
-        cout << endl << " arceff = " << arceff << " dClcda0 = " << dClcda0 << endl;
+        vars->arceff = arceff;
+        vars->dClcda0 = dClcda0;
     }
 }
 
@@ -721,12 +727,12 @@ void wake::integrate_canard() {
     // note: readInputCanardGeom() must be executed first
     // fortran version outputs to "canarwake.xz"
 
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::integrate_canard()" << endl;
 
     // integration of wake trajectory in canard coordinates (ref Bc0/2)
     ixw=1+log(1.0+(str-1.0)*(lf/dxm)) / log(str);
-    cout << " ix = " << ix << " ixw = " << ixw << endl;
+    if (DBG) cout << " ix = " << ix << " ixw = " << ixw << endl;
 
     // first section
     for (int i = 0; i < ix; ++i) {
@@ -908,7 +914,7 @@ void wake::readInputParams() {
     // open input file
     // add the ability to read any input filename -cp 3/29/22
 
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::readInputParams()" << endl;
 
     ifstream paramfile(filenameInputData);
@@ -997,8 +1003,8 @@ void wake::readInputPolar(std::string filename) {
     //  [breakpoint]
     //
 
-    cout << endl << "=========================================\n";
-    cout << " wake::readInputPolar()" << endl;
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " wake::readInputPolar()" << endl;
 
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
@@ -1009,7 +1015,7 @@ void wake::readInputPolar(std::string filename) {
 
     // polar data
     if(polarBool==false) {
-        cout << " exiting polar is [off]" << endl;
+        cout << " readInputPolar(): exiting! polar is [off]" << endl;
         return;
     }
 
@@ -1153,8 +1159,8 @@ void wake::readInputDownwash() {
     // downwash due to canard on wing for Clc/(pi*arc)=0.1
     //
 
-    cout << endl << "=========================================\n";
-    cout << endl << " wake::readInputDownwash()" << endl;
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << endl << " wake::readInputDownwash()" << endl;
     // open input file
     ifstream inputfile(filenameInputDownwash);
     if (!inputfile.is_open()) {
@@ -1202,7 +1208,7 @@ void wake::readInputCanardGeom(std::string filename) {
     //   ...   ...
     //
 
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::readInputCanardGeom()" << endl;
 
     // open input file
@@ -1297,7 +1303,7 @@ void wake::outputGammaDownwash(std::string filename) {
     // output legacy 'prandtline.ygw' file
     //
 
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::outputGammaDownwash()" << endl;
 
     ofstream file;
@@ -1327,7 +1333,7 @@ void wake::outputCanardWake(std::string filename) {
     // output legacy 'canarwake.xz' file
     //
 
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::outputCanardWake()" << endl;
 
     ofstream file;
@@ -1356,7 +1362,7 @@ void wake::printInputParams() {
     //
     // print input parameters to screen
     //
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::printInputParams()" << endl;
     cout << right << setw(20) << "ITX = " << itx << endl;
     cout << right << setw(20) << "OMEGA = " <<  omega << endl;
@@ -1459,7 +1465,7 @@ void wake::printResults() {
     //
 
     // essential formula
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " wake::printResults()" << endl << endl;
     cout << "                      Y=0.5*Bc0*y" << endl;
     cout << "                      C=0.5*Bc0*c" << endl;
@@ -1476,15 +1482,16 @@ void wake::printResults() {
     cout << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
 
     // results
-    cout << endl << " results:" << endl;
+    cout << endl << "\033[1;42m results: \033[0m" << endl;
     cout << right << setw(38) << " alpha = " << alphad << " (deg) " << endl;
-    vars->alphad = alphad;
-    vars->iter = iter;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
     cout << right << setw(38) << " oswald efficiency e = " << em << endl;
     cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
-    cout<< " Global results:  " << endl;
+    cout << right << setw(38) << " arceff = " << arceff << endl;
+    cout << right << setw(38) << " dClcda0 = " << dClcda0 << endl << endl;
+
+    cout<< "\033[1;42m global results: \033[0m" << endl;
     cout << right << setw(38) << "CD = " << cd << endl;
     cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
     cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
@@ -1493,7 +1500,7 @@ void wake::printResults() {
     cout << right << setw(38) << " center of pressure x,cp = " << xcp << endl;
     cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jxs2-1] << endl; // *
     cout << right << setw(38) << " root torsion moment coef. CM,y = " << -cmt[jxs2-1] << endl;    // *
-    cout << right << setw(38) << " ivis = " << ivis << endl;
+    cout << right << setw(38) << " ivis = " << ivis << endl << endl;
 }
 
 void wake::printDistributions() {
