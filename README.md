@@ -13,23 +13,23 @@ Follow the sections below for compiling and using this package.
 
 Below are the steps required to compile this project.
 
-**step one:** clone the code repository
+**step one:** clone the code repository,
 ```
 git clone https://github.com/carlos-pereyra/AeroDes
 ```
 
-**step two:** change directory into AeroDes
+**step two:** change directory into AeroDes,
 ```
 cd AeroDes
 ```
 
-**step three:** make a new build directory & change into it
+**step three:** make a new build directory and change into it,
 ```
-mkdir build       (make a build directory)
+mkdir build 
 cd build
 ```
 
-**step four:** build code with cmake utility and install to your system
+**step four:** build code with cmake utility and install to your system,
 ```
 cmake ../.
 make

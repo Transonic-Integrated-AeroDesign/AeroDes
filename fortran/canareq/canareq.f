@@ -320,6 +320,7 @@ c*****use polar data
          endif
          write(13,*)cx(k),cz(k),cq(k),inc(k)
          incd=inc(k)
+c convert inc to radians
          inc(k)=degrad*inc(k)
 c         prod=prod*(aleq-inc(k))
          if(inc(km)*inc(k).le.0.0.and.k.ne.1)then
@@ -451,6 +452,7 @@ c*****global coefficients
       write(24,*)'               xac=',xac
      &     ,'(m)  xcg=',xcg,'(m)'
 c     center of gravity position if static margin >0
+c     this should be moved forward - Cp 3/2/22
       if(statmarg.gt.0.)then
          xcg=xac-statmarg*lref
       endif
@@ -512,8 +514,21 @@ c     total drag
          write(6,1002)
          write(6,*)'****linear model results: m=',m
          write(6,*)'aleq=',aleq,' Ueq=',Ueq,'beteq=',beteq
-         write(6,*),'Cleq=',Cleq,'Cdeq=',Cdeq,' Cteq=',Cteq
-     &        ,'CM,ac=',Cmac
+         write(6,*)'Cleq=',Cleq,'Cdeq=',Cdeq,' Cteq=',Cteq,'CM,ac=',Cmac
+         write(6,*)'Cweq=',Cweq
+c         write(6,*)'af=',af
+c         write(6,*)'am=',am
+c         write(6,*)'Cdmeq=',Cdmeq
+c         write(6,*)'Cdfeq=',Cdfeq
+c         write(6,*)'cx(m)=',cx(m)
+c         write(6,*)'cx(m+1)=',cx(m+1)
+c         write(6,*)'inc(m)=',inc(m)
+c         write(6,*)'inc(m+1)=',inc(m+1)
+c write(6,*)'Cmeq:',Cmeq,'xcg',xcg,'Cweq',Cweq,'aleq',aleq
+c write(6,*)'beteq',beteq,'lref',lref
+c         write(6,*)'ac=',ac,'Cdceq=',Cdceq,'aref=',aref,'Cdic',Cdic
+         write(6,*)'Cdc0',Cdc0
+c       Cdceq is infinite
          write(24,1002)
          write(24,*)'aleq=',aleq,' Ueq=',Ueq,'beteq=',beteq
          write(24,*),'Cleq=',Cleq,'Cdeq=',Cdeq,' Cteq=',Cteq
@@ -590,6 +605,7 @@ c     alpha at equilibrium, lift and moment
       iter=0
 c*****iterations
       do 9 it=1,itx
+         write(6,*)'i = ',it,'reseq0',reseq0,'reseq',reseq
 c     engine operating point
          call thrust(ndatx,ndat,Ueq,vr,tr,T,dTdv)
          dynaref=0.5*rho*aref*Ueq**2
@@ -624,7 +640,7 @@ c     add flap influence on Clm
          Clm0=Clm0+dClmdtf*tf
 c     moment coefficients of the main wing Cmacm and Cmmo
          dCmacdam=(cq(m+1)-cq(m))/(inc(m+1)-inc(m))
-         Cmacm0=cq(m)+dCmacdam*(-inc(m))
+         Cmac0=cq(m)+dCmacdam*(-inc(m))
          dCmdam=dCmacdam-xacm*dCldam/cam
          Cmm0=Cmac0-xacm*Clm0/cam
 c     add flap influence on Cmm
