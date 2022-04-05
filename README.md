@@ -38,6 +38,11 @@ make install
 
 ```make``` compiles the code. ```make install``` installs the executables to your system.
 
+### Re-syncing your code with latest stuff
+```
+git fetch
+git pull origin master
+```
 
 ### Depedencies
 
@@ -140,7 +145,6 @@ You absolutely must have the ```-laerolib``` flag in the compile line in order f
 ## Contributors
 * Jean-Jacques Chattot, University of California, Davis, Professor
 * Carlos Pereyra, University of California, Davis, Grad. Student (czpereyra@ucdavis.edu)
-* ...
 
 ## <a name="References"></a> References
 
