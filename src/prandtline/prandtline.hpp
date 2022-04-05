@@ -1,3 +1,7 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #ifndef PRANDTLINE_H
 #define PRANDTLINE_H
 
