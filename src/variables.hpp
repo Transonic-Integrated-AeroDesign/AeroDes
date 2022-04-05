@@ -10,7 +10,7 @@ public:
     // absolutely need constructor
     variables() {
         kx_of_alpha = 0;
-        //alphad = 0;
+        dClmda0 = 0;
         em = 0;
         jxx=102;
         inc_of_alpha = (double *) malloc(sizeof(double)*jxx);
@@ -29,10 +29,14 @@ public:
 
     int jxx;
     int kx_of_alpha;
-    //double alphad;
+
+    // canard equilibrium
+    double dClmda0;
     double em;              // oswald efficiency
-    double arceff;          // corrected aspect ratio
+    double arceff, armeff;  // corrected aspect ratio
     double dClcda0;         // lift slope
+
+    // polar
     double *inc_of_alpha;   // alpha in radians
     double *al_of_alpha;    // alpha in degree
     double *cl_of_alpha;

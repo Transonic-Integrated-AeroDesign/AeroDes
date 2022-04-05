@@ -347,20 +347,20 @@ void canareq::nonlinearModel() {
         Clm0 = cz[m] + dCldam * (-inc[m]);
 
         // add canar influence on Clm
-        Clm0 = Clm0 + acw * dCldalind * Clceq / (pi * arc);
+        Clm0=Clm0+acw*dCldalind*Clceq / (pi*arc);
 
         // add flap influence on Clm
-        Clm0 = Clm0 + dClmdtf * tf;
+        Clm0=Clm0+dClmdtf*tf;
 
         // moment coefficients of the main wing Cmacm and Cmmo
-        dCmacdam = (cq[m + 1] - cq[m]) / (inc[m + 1] - inc[m]);
-        Cmac0 = cq[m] + dCmacdam * (-inc[m]);
-        dCmdam = dCmacdam - xacm * dCldam / cam;
-        Cmm0 = Cmac0 - xacm * Clm0 / cam;
+        dCmacdam=(cq[m+1]-cq[m]) / (inc[m+1]-inc[m]);
+        Cmacm0=cq[m]+dCmacdam*(-inc[m]);
+        dCmdam=dCmacdam-xacm*dCldam / cam;
+        Cmm0=Cmac0-xacm*Clm0 / cam;
 
         // add flap influence on Cmm
-        Cmac0 = Cmac0 + dCmmdtf * tf;
-        Cmm0 = Cmm0 + dCmmdtf * tf;
+        Cmac0=Cmac0+dCmmdtf*tf;
+        Cmm0=Cmm0+dCmmdtf*tf;
 
         // add influence of wing on canard(downwash)
         Clc0 = Clc0 + dCldac * awc * Clm0 / (pi * arm);
@@ -766,7 +766,8 @@ void canareq::readInputParams() {
         if(a.compare("dCdtf0")==0) dCdtf0 = b;
         if(a.compare("dCdtf1")==0) dCdtf1 = b;
         if(a.compare("dCdtf2")==0) dCdtf2 = b;
-        
+        if(a.compare("dClmda0")==0) dClmda0 = b; // new
+
         // data for fuselage
         if(a.compare("LF")==0) lf = b;
         if(a.compare("RF")==0) rf = b;
@@ -780,7 +781,15 @@ void canareq::readInputParams() {
         if(a.compare("DC")==0) dc = b;
         if(a.compare("EC")==0) ec = b;
         if(a.compare("AWC")==0) awc = b;
-        if(a.compare("TCD")==0) tcd = b;
+        if(a.compare("ARCEFF")==0) {
+            arceff = b;
+            arc = arceff;
+        }
+        if(a.compare("ARMEFF")==0) {
+            armeff = b;
+            arm = armeff;
+        }
+        //if(a.compare("TCD")==0) tcd = b;
         
         // airbrake data
         if(a.compare("CdBRAKE")==0) Cdbrake = b;
@@ -828,12 +837,12 @@ void canareq::readInputParams() {
     tf=degrad*tfd;
 
     // fuselage calcs
-    hf=2.*(pi-2.)*rf;
+    hf=2.*pi*rf;
     af=lf*hf;
     
     // canard calcs
     tc=degrad*tcd;
-    arc=2.0*pow((0.5*bc-rf),2)/ac;
+    //arc=2.0*pow((0.5*bc-rf),2)/ac;
 
     // data for rudder
     ar=rav*ruh;
@@ -1040,7 +1049,8 @@ void canareq::readInputPolar(std::string filename) {
         }
         
         //     aerodynamic center of airplane
-        xac=lref*(dCmacda-dCmda)/dClda;
+        xac=(am*dClmda0*xacm+ac*dClcda0*xacc)
+                / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
     }
     
     // note: do not change kx after this point
@@ -1148,6 +1158,8 @@ void canareq::printInputParams() {
     cout << right << setw(32) << "               average chord = " << cam <<  " (m)" << endl;
     cout << right << setw(32) << "                   wing area = " << am <<  " (m**2)" << endl;
     cout << right << setw(32) << "  aerodynamic center of wing = " << xacm <<  " (m)" << endl;
+    cout << right << setw(32) << "     wing lift slope dClmda0 = " << dClmda0 << endl;
+    cout << right << setw(32) << "    wing effective AR armeff = " << armeff << endl;
     cout << right << setw(32) << "     relative camber of wing = " << dm << endl;
     cout << right << setw(32) << "             wing efficiency = " << em << endl;
     cout << right << setw(32) << " influence fo canard on wing = " << acw << endl;
@@ -1161,9 +1173,10 @@ void canareq::printInputParams() {
     cout << right << setw(32) << "flap setting influence on Cd = " << dCdtf2 << endl << endl;
 
     cout << "fuselage data:" << endl;
-    cout << right << setw(32) << "                     length = " << lf <<  " (m)" << endl;
+    cout << right << setw(32) << "                      length = " << lf <<  " (m)" << endl;
     cout << right << setw(32) << "                      radius = " << rf <<  " (m)" << endl;
-    cout << right << setw(32) << "        fuselage missed area = " << af <<  " (m**2)" << endl << endl;
+    cout << right << setw(32) << "   fuselage circumference hf = " << hf << " (m)" << endl;
+    cout << right << setw(32) << "               fuselage area = " << af <<  " (m**2)" << endl << endl;
 
     cout << "canard data:" << endl;
     cout << right << setw(32) << "                 canard span = " << bc <<  " (m)" << endl;
@@ -1171,6 +1184,8 @@ void canareq::printInputParams() {
     cout << right << setw(32) << "canar mean aerodynamic chord = " << cac <<  " (m)" << endl;
     cout << right << setw(32) << "        canard planform area = " << ac <<  " (m**2)" << endl;
     cout << right << setw(32) << "aerodynamic center of canard = " << xacc <<  " (m)" << endl;
+    cout << right << setw(32) << "   canard lift slope dClcda0 = " << dClcda0 << endl;
+    cout << right << setw(32) << "  canard effective AR arceff = " << arceff << endl;
     cout << right << setw(32) << "   relative camber of canard = " << dc << endl;
     cout << right << setw(32) << "aspect ratio of single canar = " << arc << endl;
     cout << right << setw(32) << "           canard efficiency = " << ec << endl;
