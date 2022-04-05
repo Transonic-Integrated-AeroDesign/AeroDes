@@ -27,6 +27,7 @@ dCdtf2      0.0836		    # dCdtf2 flap influence on Cd quadratic in alfa
 ARCEFF      6.1		        # arceff canard effective aspect ratio
 ARMEFF      4.345		    # armeff wing effective aspect ratio
 dClmda0     3.792		    # dClmda0 wing lift slope
+dClcda0     4.79            # dClcda0 canard lift slope
 
 LF          39.0		    # lf length of fuselage (m)
 RF          2.0		        # rf radius of fuselage (m)
@@ -65,8 +66,6 @@ ENGPERF
     233.000000       149909.734
     400.000000       103994.477
 ENDPERF
-
-TCD         0.0		        # tcd canard setting angle (deg)
 
 ALEQ        0.01425		    # aleq equilibrium incidence (rd)
 UEQ         233.0		    # Ueq equilibrium velocity (m/s)

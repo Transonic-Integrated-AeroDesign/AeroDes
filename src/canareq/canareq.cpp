@@ -143,7 +143,7 @@ double canareq::thrust(int ndat, double v){
     
     // else
     prod=v-vr[1];
-    for (int i=1; i<ndat; i++) {
+    for (int i=0; i<ndat; i++) {
         prod=prod*(v-vr[i]);
         if(prod <= 0){
             dTdv=(tr[i]-tr[i-1])/(vr[i]-vr[i-1]);
@@ -153,8 +153,8 @@ double canareq::thrust(int ndat, double v){
         prod=1.0;
         im=i;
     }
-    dTdv=(tr[ndat]-tr[ndat-1])/(vr[ndat]-vr[ndat-1]);
-    T=tr[ndat-1]+dTdv*(-vr[ndat-1]);
+    dTdv=(tr[ndat-1]-tr[ndat-2])/(vr[ndat-1]-vr[ndat-2]);
+    T=tr[ndat-2]+dTdv*(-vr[ndat-2]);
     return dTdv;
 }
 
@@ -191,6 +191,16 @@ void canareq::linearModel() {
     //*****linear model results
     aleq=-(Cmac0+(xcg-xac)*Cl0/lref)
             /(dCmacda+(xcg-xac)*dClda/lref);
+
+    if (DBG) {
+        cout << endl << " Cmac0 = " << Cmac0 << endl << endl;
+        cout << endl << " xcg = " << xcg << endl << endl;
+        cout << endl << " xac = " << xac << endl << endl;
+        cout << endl << " Cl0 = " << Cl0 << endl << endl;
+        cout << endl << " lref = " << lref << endl << endl;
+        cout << endl << " dCmacda = " << dCmacda << endl << endl;
+    }
+
     Cleq=Cl0+dClda*aleq;
     Cweq=Cleq;
     if(Cleq <= 0.) {
@@ -205,6 +215,15 @@ void canareq::linearModel() {
     dTdv = thrust(ndat,Ueq);
 
     Cteq=rcor*(T+dTdv*Ueq)/dynaref;
+    if (DBG) {
+        cout << endl << " aleq = " << aleq << endl << endl;
+        cout << endl << " Cleq = " << Cleq << endl << endl;
+        cout << endl << " dTdv = " << dTdv << endl << endl;
+        cout << endl << " Ueq = " << Ueq << endl << endl;
+        cout << endl << " ndat = " << ndat << endl << endl;
+        cout << endl << " ndatx = " << ndatx << endl << endl;
+    }
+
     //     search for point on wing polar and interpolate Cd
     m=0;
     prod=aleq+0.5*pi;
@@ -297,7 +316,7 @@ void canareq::nonlinearModel() {
     Cmcg=Cmeq+xcg*Cweq*cos(aleqB+beteqB)/lref;
     amarg=100.*(xac-xcg-eps)/lref;
 
-    //*****update with best design input data
+    // update best design params with input data (check this -cp 4/5/22)
     aleq=aleqB; // aleq0;
     Ueq=UeqB; // Ueq0;
     beteq=beteqB; // beteq0;
@@ -767,6 +786,7 @@ void canareq::readInputParams() {
         if(a.compare("dCdtf1")==0) dCdtf1 = b;
         if(a.compare("dCdtf2")==0) dCdtf2 = b;
         if(a.compare("dClmda0")==0) dClmda0 = b; // new
+        if(a.compare("dClcda0")==0) dClcda0 = b; // new
 
         // data for fuselage
         if(a.compare("LF")==0) lf = b;
@@ -886,7 +906,7 @@ void canareq::readInputPolar(std::string filename) {
     //  [breakpoint]
     //
 
-    cout << endl << "=========================================\n";
+    if (DBG) cout << endl << "=========================================\n";
     cout << " canareq::readInputPolar()" << endl;
 
     // polar data
@@ -1047,12 +1067,21 @@ void canareq::readInputPolar(std::string filename) {
             dCmda=(am*cam*dCmdam0+ac*cac*dCmdac0)/(aref*lref);
             Cm0=(am*cam*Cmm00+ac*cac*Cmc00)/(aref*lref);
         }
-        
+
+        if (DBG) {
+            cout << endl;
+            cout << "update xac = " << xac << endl;
+            cout << "update xacc = " << xacc << endl;
+            cout << "update xacm = " << xacm << endl;
+            cout << "update dClmda0 = " << dClmda0 << endl;
+            cout << "update dClcda0 = " << dClcda0 << endl;
+            cout << "update am = " << am << endl;
+            cout << "update ac = " << ac << endl;
+        }
         //     aerodynamic center of airplane
-        xac=(am*dClmda0*xacm+ac*dClcda0*xacc)
-                / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
+        xac=(am*dClmda0*xacm+ac*dClcda0*xacc) / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
     }
-    
+    cout << " xac = " << xac << endl;
     // note: do not change kx after this point
     polarfile.close();
 }
@@ -1235,30 +1264,32 @@ int canareq::printInputPolar() {
     cout << endl << "=============================================="<< endl;
     cout << " canareq::printInputPolar()" << endl;
     cout << " (wing polar; profile data from Xfoil)\n";
-    cout << left << setw(16) << " i ";
-    cout << left << setw(16) << " Cx ";
-    cout << left << setw(16) << " Cz ";
-    cout << left << setw(16) << " Cq ";
-    cout << left << " Incidence " << endl;
+    cout << left << setw(16) << "i ";
+    cout << left << setw(16) << "Cx ";
+    cout << left << setw(16) << "Cz ";
+    cout << left << setw(16) << "Cq ";
+    cout << left << "incidence " << endl;
 
-    for(int i=0; i<1; i++) {
-        cout << std::setprecision(8);
-        cout << left << setw(16) << i;
-        cout << left << setw(16) << cd_of_alpha[i];
-        cout << left << setw(16) << cl_of_alpha[i];
-        cout << left << setw(16) << cq_of_alpha[i];
-        cout << left << inc[i] << endl;
-    }
-
-    cout << endl;
-/*    for(int i=0; i<kx; i++) {
+    for(int i=0; i<kx; i++) {
         cout << std::setprecision(8);
         cout << left << setw(16) << i;
         cout << left << setw(16) << cx[i];
         cout << left << setw(16) << cz[i];
         cout << left << setw(16) << cq[i];
         cout << left << inc[i] << endl;
-    }*/
+    }
+
+    if (DBG) {
+        cout << endl;
+        for (int i = 0; i < kx; i++) {
+            cout << std::setprecision(8);
+            cout << left << setw(16) << i;
+            cout << left << setw(16) << cx[i];
+            cout << left << setw(16) << cz[i];
+            cout << left << setw(16) << cq[i];
+            cout << left << inc[i] << endl;
+        }
+    }
     return 1;
 }
 
