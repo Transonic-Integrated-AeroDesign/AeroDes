@@ -1,13 +1,14 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #include <cstdlib>
-#include <cstdio>
 #include <vector>
 #include <iostream> // std
 #include <iomanip>  // setw
 #include <sstream>  // istream
-#include <fstream>  // fopen, ifstream
-#include <string>
-#include <stdio.h>  // strcpy
 #include <math.h>   // copysign
+
 #include "prandtline.hpp"
 
 using namespace std; // g++ prandtline.cpp -c
@@ -620,7 +621,6 @@ void prandtline::solveLiftingLine() {
         }
 
         // set shared variables
-        vars->alphad = alphad;
         vars->inc_of_alpha[nstep] = alpha; // would have to do a search... to find out where you are.
         vars->al_of_alpha[nstep] = alphad;
         vars->cl_of_alpha[nstep] = cl;
@@ -651,6 +651,10 @@ void prandtline::solveLiftingLine() {
         dum = 0.;
         cqres[nstep] = cmac;
     }
+
+    // set shared variable
+    vars->kx_of_alpha = nsteps;
+
     // set breakpoints in y-distribution
     y[46] = -0.11111;
     xle[46] = 1.3;
