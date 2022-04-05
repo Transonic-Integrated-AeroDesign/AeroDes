@@ -704,10 +704,16 @@ void canareq::cmdInput(int argc, char **argv) {
 }
 
 void canareq::init() {
-    alphad = vars->alphad;
-    cout << "inc_of_alpha = " << vars->inc_of_alpha[0] << endl;
-    cout << "inc_of_alpha = " << inc_of_alpha[0] << endl;
+    //
+    // canareq::init()
+    //
 
+    // wake shared vars
+    arceff = vars->arceff;
+    em = vars->em;
+    dCldac0 = vars->dClcda0;
+
+    // prandtline shared vars
     kx = vars->kx_of_alpha;
     //cout << "kx = " << kx << endl;
     for (int j = 0; j < kx; ++j) {
@@ -716,8 +722,6 @@ void canareq::init() {
         cx[j] = cd_of_alpha[j];
         cq[j] = cq_of_alpha[j];
     }
-    cout << "inc_of_alpha = " << vars->inc_of_alpha[0] << endl;
-    cout << "inc_of_alpha = " << inc[0] << endl;
 }
 
 void canareq::readInputParams() {

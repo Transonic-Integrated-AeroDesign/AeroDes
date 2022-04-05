@@ -18,10 +18,14 @@
 #include "canareq.hpp"
 
 /*
- * compile:
+ * compile for acceleration:
  * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp algorithmic.cpp
+ *
+ * compile for regular build:
  * 	g++ -o test main.cpp canareq.cpp
  *  ./test
+ *
+ * run executable with leak-check
  *	valgrind --leak-check=yes ./test
  */
 
