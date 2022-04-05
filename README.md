@@ -1,7 +1,7 @@
 # AeroDesign
 The original version of this software was written by Dr. Jean-Jacques Chattot in Fortran.  This C++ implementation has been created with the permission of Dr. Chattot.
 
-The work done herein is based solely on the lattice-vortex sheet method outlined by Professors JJ. Chattot and M. Hafez [1].
+The work done herein is based solely on the lattice-vortex sheet method outlined by Professors JJ. Chattot and MM. Hafez [1].
 The point of contact for questions should be directed to Carlos Pereyra.
 
 Follow the sections below for compiling and using this package.
@@ -131,5 +131,5 @@ You absolutely must have the ```-laerolib``` flag in the compile line in order f
 
 ## <a name="References"></a> References
 
-[1] Jean-Jacques Chattot and Mohamed Hafez. 2015. Theoretical and Applied Aerodynamics: And Related Numerical Methods.
+[1] JJ. Chattot and MM. Hafez. 2015. Theoretical and Applied Aerodynamics: And Related Numerical Methods.
 Springer Netherlands, Dordrecht
