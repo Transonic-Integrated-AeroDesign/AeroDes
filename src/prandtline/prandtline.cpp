@@ -8,12 +8,16 @@
 #include <string>
 #include <stdio.h>  // strcpy
 #include <math.h>   // copysign
-//#include <string.h>
 #include "prandtline.hpp"
 
 using namespace std; // g++ prandtline.cpp -c
-
-prandtline::prandtline() {
+/*
+ * -20 to 25 at incriments of 1 (depending on the geometry)
+ * run again through smooth polar!
+ * include maximum Cl between 20-25 degrees
+ * start with negative alpha
+ */
+prandtline::prandtline(variables *varshr) : vars(varshr) {
     jxx = 201;
     lxx = 101;  // n discrete wing-span points
     nxx = 10;   // n polars
@@ -614,6 +618,14 @@ void prandtline::solveLiftingLine() {
             //write(28, *) eta(j), cmt(j)
             //16 continue
         }
+
+        // set shared variables
+        vars->alphad = alphad;
+        vars->inc_of_alpha[nstep] = alpha; // would have to do a search... to find out where you are.
+        vars->al_of_alpha[nstep] = alphad;
+        vars->cl_of_alpha[nstep] = cl;
+        vars->cd_of_alpha[nstep] = cd;
+        vars->cq_of_alpha[nstep] = cmac;
 
         // print results
         cout << " results:" << endl;

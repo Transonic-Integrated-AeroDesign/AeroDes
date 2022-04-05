@@ -20,7 +20,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    prandtline *prants = new prandtline();
+    variables *vars = new variables();
+    prandtline *prants = new prandtline(vars);
 
     prants->cmdInput(argc, argv);
     prants->readInputParams();

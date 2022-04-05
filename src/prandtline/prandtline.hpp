@@ -10,9 +10,12 @@
 #include <string>
 #include <math.h>
 
-class prandtline{
+#include "variables.hpp"
+
+class prandtline : virtual public variables {
 public:
-    prandtline();
+    variables *vars;
+    prandtline(variables *);
     //prandtline(int argc, char** argv);
     ~prandtline();
 
@@ -47,7 +50,7 @@ private:
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
     double B,cxm,dm,tmd,Rho,Vinf,Amu,tm,alpha,Re,amdum;
     double cavdum,dtet,tetj,yj,etaj,etajm,am,cav,arm;
-    double alphain,alphafi,alstep,alphad;
+    double alphain,alphafi,alstep, alphad; // alphad;
     double vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;
     double rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
