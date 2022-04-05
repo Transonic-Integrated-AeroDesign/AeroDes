@@ -19,12 +19,11 @@
 class prandtline : virtual public variables {
 public:
     variables *vars;
-    prandtline(variables *);
+    prandtline(int argc, char** argv, variables *);
     //prandtline(int argc, char** argv);
     ~prandtline();
 
     // inputs
-    void cmdInput(int argc, char** argv);
     void readInputParams();
     void readInputPolar(std::string);
     void readInputDownwash();

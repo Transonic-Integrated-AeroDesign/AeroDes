@@ -18,7 +18,7 @@ using namespace std; // g++ prandtline.cpp -c
  * include maximum Cl between 20-25 degrees
  * start with negative alpha
  */
-prandtline::prandtline(variables *varshr) : vars(varshr) {
+prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) {
     jxx = 201;
     lxx = 101;  // n discrete wing-span points
     nxx = 10;   // n polars
@@ -94,7 +94,23 @@ prandtline::prandtline(variables *varshr) : vars(varshr) {
 
     filenameInputDownwash = "canarwash.ylwl";
 
-    // *****constants
+    // parse commandline input
+    for (int iarg = 0; iarg<argc ; ++iarg) {
+        if (!strcmp(argv[iarg],"-in_prandtline")){
+            inputBool=true;
+            inputFlag=iarg+1;
+            filenameInputData = std::string(argv[inputFlag]);
+            iarg+=2;
+        }
+        else if (!strcmp(argv[iarg],"-bl")){
+            polarBool=true;
+            inputFlag=iarg+1;
+            filenameInputPolar = argv[inputFlag];
+            iarg+=2;
+        }
+    }
+
+    // constants
     eps=1.e-7;
     pi=2.*asin(1.);
     degrad=pi/180.;
@@ -696,24 +712,6 @@ void prandtline::delete_2d_int_array(int **array) {
 void prandtline::delete_2d_double_array(double **array) {
     free(array[0]);
     free(array);
-}
-
-void prandtline::cmdInput(int argc, char** argv) {
-    // parse commandline input
-    for (int iarg = 0; iarg<argc ; ++iarg) {
-        if (!strcmp(argv[iarg],"-in")){
-            inputBool=true;
-            inputFlag=iarg+1;
-            filenameInputData = std::string(argv[inputFlag]);
-            iarg+=2;
-        }
-        else if (!strcmp(argv[iarg],"-bl")){
-            polarBool=true;
-            inputFlag=iarg+1;
-            filenameInputPolar = argv[inputFlag];
-            iarg+=2;
-        }
-    }
 }
 
 void prandtline::readInputParams() {

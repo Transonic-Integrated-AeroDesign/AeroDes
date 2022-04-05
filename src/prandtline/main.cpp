@@ -25,9 +25,8 @@ using namespace std;
 
 int main(int argc, char** argv) {
     variables *vars = new variables();
-    prandtline *prants = new prandtline(vars);
+    prandtline *prants = new prandtline(argc, argv, vars);
 
-    prants->cmdInput(argc, argv);
     prants->readInputParams();
     prants->printInputParams();
 
