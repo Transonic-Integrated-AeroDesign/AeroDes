@@ -1,3 +1,7 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #ifndef CANAREQ_H
 #define CANAREQ_H
 
@@ -17,7 +21,7 @@
 #include "variables.hpp"
 
 //class canareq : protected variables {
-class canareq : public variables {
+class canareq : virtual public variables {
 public:
     variables *vars;
 
@@ -28,7 +32,7 @@ public:
     void cmdInput(int argc, char** argv);
     void init();
     void readInputParams();
-    void readInputPolar(std::string);
+    void readInputPolar(std::string); // read main wing polar
 
     // memory
     double* create_1d_double_array(int n1, double *array);
@@ -56,13 +60,15 @@ public:
     
     private:
         int n1, n2;
-        int lxx,ndatx,ndat,nal,itx,i,km,k,kx,kp,k0,m,it;
+        int lxx,ndatx,ndat,nal,itx,i,km,k,kp,k0,m,it, kx;
         int inewton,imarg,itfd,nalmin,nalmax,n,incidence;
         //parameter(lxx=101,ndatx=21)
         int *kxtrm;
         double pi,eps,degrad,radeg,us3,omega,epser,rho,amu,mass;
         double xcg,statmarg,amlb,mg,bm,cxm,cam,am,xac,tfd,dClmdtf;
-        double dCmmdtf,dCdtf0,dCdtf1,dCdtf2,dm,em,tf,rf,hf,af;
+        double dCmmdtf,dCdtf0,dCdtf1,dCdtf2,dm;
+        double em; // shared variable
+        double tf,rf,hf,af;
         double Cdbrake,aref,lref,hpower,Pcent,Ueq,Ref;
         double T,dTdv,tr0,dtrdv,arm,prod,dum,dcz,dcxm,dcxp,incd;
         double dCldam0,Clm00,dCmacdam0,dCmdam0,Cmacm00,Cmm00,Cdm,dClda;

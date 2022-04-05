@@ -1,3 +1,7 @@
+/*
+ * ©2022 The Regents of the University of California.  All rights reserved.
+ */
+
 #include <cstdlib>
 #include <vector>
 #include <iostream> // std
@@ -225,9 +229,8 @@ void canareq::linearModel() {
 
     cout << "\n";
     cout << std::setprecision(6);
-    cout << "===========================*" << endl;
-    cout << " \033[1;42m Linear model results:\033[0m" << endl;
     cout << "============================" << endl;
+    cout << " \033[1;42m Linear model results:\033[0m" << endl;
     cout << "m = " << m << endl;
     cout << "aleq = " << left << setw(10) << aleq << " Ueq  = " << left << setw(10) << Ueq << " beteq = " << left << setw(10) <<  beteq << endl;
     cout << "Cleq = " << left << setw(10) << Cleq << " Cdeq = " << left << setw(10) << Cdeq << " Cteq = " << left << setw(10) <<  Cteq << " CM,ac = " << left << setw(10) << Cmac << endl;
@@ -235,7 +238,7 @@ void canareq::linearModel() {
     cout << "equ1 = " << left << setw(10) << bb[0] << "equ2 = " << left << setw(10) << bb[1] << " equ3 = " << left << setw(10) << bb[2] << endl;
     cout << " given best design parameters:" << endl;
     cout << "aleq = " << left << setw(10) << aleqB << " Ueq  = " << left << setw(10) << UeqB << " beteq = " << left << setw(10) <<  beteqB << endl;
-    cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl;
+    cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl << endl;
 
     // new best parameters (calculated by linear model)
     //aleqB=aleq; //aleq;
@@ -247,8 +250,8 @@ void canareq::linearModel() {
 }
 
 void canareq::nonlinearModel() {
-    cout << endl << "=========================================" << endl;
-    cout << " canareq::nonlinearModel()" << endl;
+    if (DBG) cout << endl << "=========================================" << endl;
+    if (DBG) cout << " canareq::nonlinearModel()" << endl;
 
     // read canar setting angle tcd (deg)
     //tcd = 5;
@@ -264,7 +267,6 @@ void canareq::nonlinearModel() {
     //Cdeq0=CdeqB; // Cdeq;
     //Cmac0=CmacB; // Cmac;
 
-    // ...
     Cteq=CdeqB;
     Cweq=CleqB;
     Cmeq=CmacB-xac*CleqB*cos(aleqB)/lref;
@@ -285,7 +287,7 @@ void canareq::nonlinearModel() {
 
     // equilibrium
     //     alpha at equilibrium, lift and moment
-    iter=1;
+    int iter=1;
 
     // iterations
     for (int i = 0; i < itx; ++i) {
@@ -540,7 +542,7 @@ void canareq::nonlinearModel() {
         dTdv = thrust(ndat, Ueq);
         //write(17, *) iter, reseq, inewton
         if (reseq < epser) {
-            cout << " done iterating " << endl;
+            if (DBG) cout << " done iterating " << endl;
             break;
         }
 
@@ -550,18 +552,20 @@ void canareq::nonlinearModel() {
         }
     }
 
+    cout << "===========================" << endl;
+    cout << " \033[1;42m Non-linear model results:\033[0m" << endl;
+    cout << "============================" << endl << endl;
+
     // non-linear equations residuals
     if(inewton==0) {
         cout << std::setprecision(3);
-        cout <<"=============================" << endl;
-        cout << "relaxation:" << endl;
+        cout << "\033[1;42m relaxation: \033[0m" << endl;
         cout << left << setw(10) << "daleq = " << left << setw(10) << daleq << " dUeq=" << left << setw(10) << dUeq << " dbeteq = " << left << setw(10) << dbeteq << endl;
         cout << left << setw(10) << " equ1 = " << left << setw(10) << bb[1] << " equ2=" << left << setw(10) << bb[2] << "  equ3 = " << left << setw(10) << bb[3] << endl;
     }
     else if(inewton==1) {
         cout << std::setprecision(3);
-        cout <<"=============================" << endl;
-        cout << "Newton:" << endl;
+        cout << "\033[1;42m newton: \033[0m" << endl;
         cout << left << setw(10) << "  det = " << left << setw(10) << det << endl;
         cout << left << setw(10) << "daleq = " << left << setw(10) << bb[1] << " dUeq = " << left << setw(10) << bb[2] << " dbeteq = " << left << setw(10) << bb[3] << endl;
         cout << left << setw(10) << " equ1 = " << left << setw(10) << b1 << " equ2 = " << left << setw(10) << b2 << " equ3 = " << left << setw(10) << b3 << endl;
@@ -700,8 +704,22 @@ void canareq::cmdInput(int argc, char **argv) {
 }
 
 void canareq::init() {
-    iter = vars->iter;
     alphad = vars->alphad;
+
+    cout << "inc_of_alpha = " << vars->inc_of_alpha[0] << endl;
+    cout << "inc_of_alpha = " << inc_of_alpha[0] << endl;
+    //= vars->inc_of_alpha;
+   /* al_of_alpha = vars->al_of_alpha;
+    cl_of_alpha = vars->cl_of_alpha;
+    cd_of_alpha = vars->cd_of_alpha;
+    cq_of_alpha = vars->cq_of_alpha;*/
+
+    kx_of_alpha = vars->kx_of_alpha;
+    kx = kx_of_alpha;
+    //inc = inc_of_alpha;
+    //cz = cl_of_alpha;
+    //cx = cd_of_alpha;
+    //cq = cq_of_alpha;
 }
 
 void canareq::readInputParams() {
@@ -929,7 +947,7 @@ void canareq::readInputPolar(std::string filename) {
     //kx=k-1; // off by 1 -Cp 3/4/22
     kx = km+1; // +1 to include zero'th point -Cp 3/4/22
 
-    //*****zero incidence coefficients with assumption of small angles
+    // zero incidence coefficients with assumption of small angles
     for(k=0; k<kx; k++) {
         kp=k+1; // kplus
         if(kp > kx) kp=kx;
@@ -1199,23 +1217,33 @@ void canareq::printInputParams() {
 }
 
 int canareq::printInputPolar() {
-    cout << "\n\n";
-    cout << "=================================\n";
-    cout << " wing polar (profile data from Xfoil):\n";
-    cout << "=================================\n";
+    cout << endl << "=============================================="<< endl;
+    cout << " canareq::printInputPolar()" << endl;
+    cout << " (wing polar; profile data from Xfoil)\n";
     cout << left << setw(16) << " i ";
     cout << left << setw(16) << " Cx ";
     cout << left << setw(16) << " Cz ";
     cout << left << setw(16) << " Cq ";
     cout << left << " Incidence " << endl;
-    for(int i=0; i<kx; i++) {
+
+    for(int i=0; i<1; i++) {
+        cout << std::setprecision(8);
+        cout << left << setw(16) << i;
+        cout << left << setw(16) << cd_of_alpha[i];
+        cout << left << setw(16) << cl_of_alpha[i];
+        cout << left << setw(16) << cq_of_alpha[i];
+        cout << left << inc[i] << endl;
+    }
+
+    cout << endl;
+/*    for(int i=0; i<kx; i++) {
         cout << std::setprecision(8);
         cout << left << setw(16) << i;
         cout << left << setw(16) << cx[i];
         cout << left << setw(16) << cz[i];
         cout << left << setw(16) << cq[i];
         cout << left << inc[i] << endl;
-    }
+    }*/
     return 1;
 }
 
@@ -1227,11 +1255,10 @@ void canareq::printGlobalCoefs() {
 
     // global coefficients
     cout << std::setprecision(8);
-    cout << endl;
-    cout << "=============================================="<< endl;
-    cout << "zero incidence aerodynamic coefficients" << endl;
-    cout << " k0 = " << k0<< endl;
-    cout << "==============" << endl;
+    cout << endl << "=============================================="<< endl;
+    cout << " canareq::printGlobalCoefs()" << endl;
+    cout << " (zero incidence aerodynamic coefficients)" << endl;
+    cout << " k0 = " << k0<< endl << endl;
     cout << " lift:" << endl;
     cout << " wing:     dCldam0 = " << left << setw(15) << dCldam0 << left << setw(15) << " Clm00 = " << Clm00 << endl;
     cout << "canar:     dCldac0 = " << left << setw(15) << dCldac0 << left << setw(15) << " Clc00 = " << Clc00 << endl;
