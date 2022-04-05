@@ -276,9 +276,11 @@ void canareq::linearModel() {
     cout << " \033[1;42m Linear model results:\033[0m" << endl;
     cout << "m = " << m << endl;
     cout << "aleq = " << left << setw(10) << aleq << " Ueq  = " << left << setw(10) << Ueq << " beteq = " << left << setw(10) <<  beteq << endl;
-    cout << "Cleq = " << left << setw(10) << Cleq << " Cdeq = " << left << setw(10) << Cdeq << " Cteq = " << left << setw(10) <<  Cteq << " CM,ac = " << left << setw(10) << Cmac << endl;
+    cout << "Cleq = " << left << setw(10) << Cleq << " Cdeq = " << left << setw(10) << Cdeq << " Cteq = " << left << setw(10) <<  Cteq << " CM,ac = " << left << setw(10) << Cmac << endl << endl;
+
     cout << " non-linear equations residuals from linear solution:" << endl;
-    cout << "equ1 = " << left << setw(10) << bb[0] << "equ2 = " << left << setw(10) << bb[1] << " equ3 = " << left << setw(10) << bb[2] << endl;
+    cout << "equ1 = " << left << setw(10) << bb[0] << " equ2 = " << left << setw(10) << bb[1] << " equ3 = " << left << setw(10) << bb[2] << endl << endl;
+
     cout << " given best design parameters:" << endl;
     cout << "aleq = " << left << setw(10) << aleqB << " Ueq  = " << left << setw(10) << UeqB << " beteq = " << left << setw(10) <<  beteqB << endl;
     cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl << endl;
@@ -294,7 +296,7 @@ void canareq::linearModel() {
 
 void canareq::nonlinearModel() {
     if (DBG) cout << endl << "=========================================" << endl;
-    if (DBG) cout << " canareq::nonlinearModel()" << endl;
+    cout << " canareq::nonlinearModel()" << endl;
 
     // read canar setting angle tcd (deg)
     //tcd = 5;
@@ -322,7 +324,7 @@ void canareq::nonlinearModel() {
     beteq=beteqB; // beteq0;
     Cleq=CleqB; // Cleq0;
     Cdeq=CdeqB; // Cdeq0;
-    Cmac=CmacB; // Cmac0;
+    Cmac0=CmacB; // Cmac0;
     Cteq=Cdeq;
     Cweq=Cleq;
     Cmeq=Cmac-xac*Cleq*cos(aleq)/lref;
@@ -350,19 +352,18 @@ void canareq::nonlinearModel() {
         dCmdac = dCmacdac - xacc * dCldac / cac;
         Cmc0 = Cmacc0 - xacc * Clc0 / cac;
         // search for point on polar of wing
-        m = 1;
+        m = 0;
         prod = aleq + .5 * pi;
-        for (int j = 0; j < kx; ++j) {
+        for (int j = 1; j < kx; ++j) {
             //do 7 k = 2, kx - 1
             prod = prod * (aleq - inc[j]);
             if (prod <= eps) break;//goto 8
             prod = 1.;
             m = j;
-            //7 continue
         }
-        //8 continue
+
         // lift coefficients of main wing
-        dCldam = (cz[m + 1] - cz[m]) / (inc[m + 1] - inc[m]);
+        dCldam = (cz[m+1] - cz[m]) / (inc[m+1] - inc[m]);
         Clm0 = cz[m] + dCldam * (-inc[m]);
 
         // add canar influence on Clm
@@ -372,7 +373,8 @@ void canareq::nonlinearModel() {
         Clm0=Clm0+dClmdtf*tf;
 
         // moment coefficients of the main wing Cmacm and Cmmo
-        dCmacdam=(cq[m+1]-cq[m]) / (inc[m+1]-inc[m]);
+        //dCmacdam=(cq[m+1]-cq[m]) / (inc[m+1]-inc[m]);
+        dCmacdam=(cq[m]-cq[m-1]) / (inc[m]-inc[m-1]);
         Cmacm0=cq[m]+dCmacdam*(-inc[m]);
         dCmdam=dCmacdam-xacm*dCldam / cam;
         Cmm0=Cmac0-xacm*Clm0 / cam;
@@ -382,18 +384,18 @@ void canareq::nonlinearModel() {
         Cmm0=Cmm0+dCmmdtf*tf;
 
         // add influence of wing on canard(downwash)
-        Clc0 = Clc0 + dCldac * awc * Clm0 / (pi * arm);
+        Clc0=Clc0+dCldac*awc*Clm0 / (pi*arm);
 
         // global coefficients wing + canard(ac is area of 2 canards)
         // global lift
-        dClda = (am * dCldam + ac * dCldac) / aref;
-        Cl0 = (am * Clm0 + ac * Clc0) / aref;
+        dClda=(am*dCldam+ac*dCldac) / aref;
+        Cl0=(am*Clm0+ac*Clc0) / aref;
 
         // global moments(ac is area of 2 canards)
-        dCmacda = (am * cam * dCmacdam + ac * cac * dCmacdac) / (aref * lref);
-        Cmac0 = (am * cam * Cmacm0 + ac * cac * Cmacc0) / (aref * lref);
-        dCmda = (am * cam * dCmdam + ac * cac * dCmdac) / (aref * lref);
-        Cm0 = (am * cam * Cmm0 + ac * cac * Cmc0) / (aref * lref);
+        dCmacda=(am*cam*dCmacdam+ac*cac*dCmacdac) / (aref * lref);
+        Cmac0=(am*cam*Cmacm0+ac*cac*Cmacc0) / (aref * lref);
+        dCmda=(am*cam*dCmdam+ac*cac*dCmdac) / (aref * lref);
+        Cm0=(am*cam*Cmm0+ac*cac*Cmc0) / (aref * lref);
 
         // main wing drag
         Cdmeq = cx[m] + (aleq - inc[m]) * (cx[m + 1] - cx[m]) / (inc[m + 1] - inc[m]);
@@ -424,8 +426,8 @@ void canareq::nonlinearModel() {
         Cdceq = Cdic+2.0*Cdc0;
 
         // global lift and moment at x = 0
-        Cleq = Cl0 + dClda * aleq;
-        Cmeq = Cm0 + dCmda * aleq;
+        Cleq=Cl0+dClda*aleq;
+        Cmeq=Cm0+dCmda*aleq;
 
         //c calculate rudder drag for 2 sides
         reyr = reyeq * rav / cam;
@@ -451,33 +453,33 @@ void canareq::nonlinearModel() {
 
         // relaxation method equation by equation
         // equation 1 for daleq with correction for influence of canard on wing
-        daleq = -(Cmeq + xcg * Cweq * cos(aleq + beteq) / lref - zeng * Cteq / lref)
+        daleq=-(Cmeq+xcg*Cweq*cos(aleq+beteq) / lref-zeng*Cteq / lref)
                         /(dCmda - xcg * Cweq * sin(aleq + beteq) / lref);
-        aleq = aleq + omega * daleq;
+        aleq=aleq+omega*daleq;
 
         // daleq = 0.
         // update global coefficients
-        aleqd = radeg * aleq;
-        Cleq = Cl0 + dClda * aleq;
-        Cmeq = Cm0 + dCmda * aleq;
-        Cmac = Cmac0 + dCmacda * aleq;
-        Cmcg = Cmeq + xcg * Cweq * cos(aleq + beteq) / lref;
+        aleqd=radeg * aleq;
+        Cleq=Cl0 + dClda * aleq;
+        Cmeq=Cm0 + dCmda * aleq;
+        Cmac=Cmac0 + dCmacda * aleq;
+        Cmcg=Cmeq + xcg * Cweq * cos(aleq + beteq) / lref;
 
         // equation 2 for dUeq
-        dUeq = -(Cleq - Cweq * cos(beteq) + Cteq * sin(aleq))
+        dUeq=-(Cleq - Cweq * cos(beteq) + Cteq * sin(aleq))
                 / (-2. * (0. * Cleq - Cweq * cos(beteq) + 0. * Cteq * sin(aleq)) / Ueq
                 +0. * dTdv * sin(aleq) / dynaref); // this can become negative -Cp 3/9/22
 
         // dUeq = 0.
         // velocity and Reynolds number at equilibrium
-        Ueq = Ueq + omega * dUeq;
-        reyeq = rho * Ueq * cam / amu;
+        Ueq=Ueq + omega * dUeq;
+        reyeq=rho * Ueq * cam / amu;
 
         // wing Reynolds number, wing induced drag estimation
-        reym = reyeq;
-        Clmeq = Clm0 + dCldam * aleq;
-        Cdim = pow(Clmeq,2) / (pi * em * arm);
-        Cdm0 = Cdmeq - Cdim;
+        reym=reyeq;
+        Clmeq=Clm0 + dCldam * aleq;
+        Cdim=pow(Clmeq,2) / (pi * em * arm);
+        Cdm0=Cdmeq - Cdim;
 
         // fuselage viscous drag
         reyf = reyeq * lf / cam;    // this can become negative -Cp 3/9/22
@@ -486,7 +488,6 @@ void canareq::nonlinearModel() {
             Cdf0 = .072 / pow(reyf,.2);
         }
         Cdfeq = Cdf0;
-        if (DBG) cout << " i = " << left << setw(10) << i << left << setw(10) << " reyf = " << reyf << " Cdf0 = " << Cdf0 << " reseq0 = " << reseq0 << endl;
 
         // canard viscous drag
         reyc = reyeq * cac / cam;
@@ -528,18 +529,18 @@ void canareq::nonlinearModel() {
         beteqd = radeg * beteq;
 
         // evaluation of moments
-        Cmeq = Cm0 + dCmda * aleq;
-        Cmac = Cmac0 + dCmacda * aleq;
-        inewton = 0;
-        det = 1.0;
-        usdet = 1. / det;
+        Cmeq=Cm0+dCmda*aleq;
+        Cmac=Cmac0+dCmacda*aleq;
+        inewton=0;
+        det=1.0;
+        usdet=1. / det;
 
         // residuals
-        bb[0] = -(Cmeq + xcg * Cweq * cos(aleq + beteq) / lref - zeng * Cteq / lref);
-        bb[1] = -(Cleq - Cweq * cos(beteq) + Cteq * sin(aleq));
-        bb[2] = -(Cdeq + Cweq * sin(beteq) - Cteq * cos(aleq));
-        reseq = pow(bb[0],2) + pow(bb[1],2) + pow(bb[2],2);
-        reseq = sqrt(reseq);
+        bb[0]=-(Cmeq + xcg * Cweq * cos(aleq + beteq) / lref - zeng * Cteq / lref);
+        bb[1]=-(Cleq - Cweq * cos(beteq) + Cteq * sin(aleq));
+        bb[2]=-(Cdeq + Cweq * sin(beteq) - Cteq * cos(aleq));
+        reseq=pow(bb[0],2) + pow(bb[1],2) + pow(bb[2],2);
+        reseq=sqrt(reseq);
 
         // check for premature NaNs
         if (isnan(reseq)) {
@@ -604,13 +605,13 @@ void canareq::nonlinearModel() {
         cout << std::setprecision(3);
         cout << "\033[1;42m relaxation: \033[0m" << endl;
         cout << left << setw(10) << "daleq = " << left << setw(10) << daleq << " dUeq=" << left << setw(10) << dUeq << " dbeteq = " << left << setw(10) << dbeteq << endl;
-        cout << left << setw(10) << " equ1 = " << left << setw(10) << bb[1] << " equ2=" << left << setw(10) << bb[2] << "  equ3 = " << left << setw(10) << bb[3] << endl;
+        cout << left << setw(10) << " equ1 = " << left << setw(10) << bb[0] << " equ2=" << left << setw(10) << bb[1] << "  equ3 = " << left << setw(10) << bb[2] << endl;
     }
     else if(inewton==1) {
         cout << std::setprecision(3);
         cout << "\033[1;42m newton: \033[0m" << endl;
         cout << left << setw(10) << "  det = " << left << setw(10) << det << endl;
-        cout << left << setw(10) << "daleq = " << left << setw(10) << bb[1] << " dUeq = " << left << setw(10) << bb[2] << " dbeteq = " << left << setw(10) << bb[3] << endl;
+        cout << left << setw(10) << "daleq = " << left << setw(10) << bb[0] << " dUeq = " << left << setw(10) << bb[1] << " dbeteq = " << left << setw(10) << bb[2] << endl;
         cout << left << setw(10) << " equ1 = " << left << setw(10) << b1 << " equ2 = " << left << setw(10) << b2 << " equ3 = " << left << setw(10) << b3 << endl;
     }
 
@@ -716,7 +717,7 @@ void canareq::nonlinearModel() {
     cout << right << setw(32) << " nacelle Reynolds = " << reyn << endl;
     cout << right << setw(32) << " drag Cdn = " << Cdneq << endl;
     cout << right << setw(32) << " Pcent = " << Pcent << endl;
-    cout << right << setw(32) << " tr0 = " << tr0 << endl;
+    cout << right << setw(32) << " thrust = " << tr0 << endl;
     cout << right << setw(32) << " nsteps = " << nsteps << endl;
 }
 
