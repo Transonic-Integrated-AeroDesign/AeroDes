@@ -130,7 +130,7 @@ c*****polar data
                kfirst=1
             endif
          endif
-         prod=sign(1.0,dcz)
+         prod=sign(1.,dcz)
          km=k
  1    continue
  2    continue
@@ -233,8 +233,8 @@ c*****mesh, geometry and flow
       write(6,*)' '
       write(6,*)'******point distribution, geometry and flow:'
       write(6,1002)
-      acdum=0.0
-      cacdum=0.0
+      acdum=0.
+      cacdum=0.
       dtet=pi/(jxs2-1)
       n=1
       do 6 j=1,jxs2
@@ -326,11 +326,6 @@ c******canard geometry
          write(29,*)y(j),xle(j),xte(j),xacc(j)
          if(j.ge.jxs2+2)write(33,*)eta(j-1),xiac(j-1)
  61   continue
-      write(6,*)' y ',' xle ',' xte ',' xacc ',' xiac ',' eta '
-      do 101 jc=1,jx
-         write(6,*)y(jc),xle(jc),xte(jc),xacc(jc),xiac(jc),eta(jc)
-101    continue
-
       xiac(jx)=xiac(jx-1)
       write(6,*)' '
       ac=acdum
@@ -477,11 +472,6 @@ c     trailed vorticity
      &           *atan((xacc(j)-xiac(k))/(y(j)-eta(k)))
 c            phi0=0.
             sum=sum+(g(k+1)-g(k))*(1.0-sin(phi0))/(y(j)-eta(k))
-c            write(6,*)
-c            write(6,*)'j = ',j,' k = ',k,' y = ',y(j)
-c            write(6,*)'xacc = ',xacc(j),'xiac = ',xiac(k),'phi0 = ',phi0
-c            write(6,*)'eta = ',eta(k)
-c            write(6,*)'eta = ',eta(k),' r = ',phi0
 c     downwash due to lifting line
             if(k+1.ne.j.and.k.lt.jx-1)then
                dwkj=-g(k+1)*((xiac(k+1)-xiac(k))*(y(j)-y(k+1))
@@ -543,7 +533,6 @@ c     downwash due to lifting line
      &     /(y(jxs2-2)-y(jxs2-1))
       at(jxs2+1)=at(jxs2)
       at(jx)=at(1)
-      write(6,*)'dgx = ',dgx,'iter = ',iter
       if(abs(dgx).lt.eps)goto 300
  200  continue
       write(6,*)'************NOT CONVERGED!!!!!'
@@ -577,8 +566,6 @@ c*****results
      &           *(q(j)+(xacc(j+1)-xacc(j))*fz(j)/cac)
      &           *(eta(j)-eta(j-1))
             cmf(j+1)=cmf(j)-fz(j)*(eta(j+1)-eta(j))
-
-         write(6,*)'cmt = ',cmt(j),' cmf = ', cmf(j),' j = ',j
  13   continue
       fz(jxs2)=fz(jxs2-1)
      &     +(fz(jxs2-2)-fz(jxs2-1))*(y(jxs2)-y(jxs2-1))
@@ -730,15 +717,12 @@ c     transfer to airplane coordinates (ref B/2)
       do 22 i=1,ix
          zc(i)=zcanar+zc(i)
          write(36,*)xc(i),zc(i)
-         write(6,*)'xc = ',xc(i),' zc = ',zc(i),' i = ',i
          zc(i)=zc(i)-zcanar
-c         write(6,*)'xc = ',xc(i),' zc = ',zc(i),' i = ',i
  22   continue
       do 23 i=ix+1,ix+ixw
          xc(i)=xc(ix)+Bc0*xc(i)/B
          zc(i)=zcanar+Bc0*zc(i)/B
          write(36,*)xc(i),zc(i)
-         write(6,*)'xc = ',xc(i),' zc = ',zc(i),' i = ',i
  23   continue
 c     downwash on wing
       jx=101
@@ -813,7 +797,7 @@ c*****files
  1001 format(1x,i4,4x,f8.4,4x,f8.4,4x,f8.4,4x,f8.4)
  1002 format(7x,'y(j)=',5x,'eta(j)=',7x,'c(j)=',7x,'t(j)='
      &     ,7x,'d(j)=',7x,'g(j)=',7x,'w(j)=',6x,'at(j)=',3x,'polar(j)=')
- 1003 format(8f13.4,i12)
+ 1003 format(8f12.4,i12)
  1004 format(7x,'y(j)=',7x,'c(j)=',7x,'t(j)=',7x,'d(j)=',7x,'g(j)=',
      &     7x,'w(j)=',7x,'  Cl=',7x,'  Cd=',3x,'polar(j)=')
  1005 format(' inviscid contribution: CDi=',f10.6
