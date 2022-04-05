@@ -22,7 +22,7 @@
       real Cmc0,dCldac,dCmacdac,dCmacdam,dCmdac,Cdc0,Cmacc
       real aleq0,Ueq0,beteq0,Cleq0,Cdeq0,rcor,xcpm,xcpc,dCldalind
       real zeng,rav,ruh,ar,reyr,Cdr0,Cdreq,dna,lna,reyn,an
-      real Cdn0,Cdneq
+      real Cdn0,Cdneq,dClmda0,dClcda0,armeff,arceff
       real vr(ndatx),tr(ndatx)
       real cx(lxx),cz(lxx),cq(lxx),inc(lxx)
       doubleprecision det,usdet,b1,b2,b3
@@ -69,6 +69,8 @@ c*****data for wing
       read(15,*)cam
       read(15,*)am
       read(15,*)xacm
+      read(15,*)dClmda0
+      read(15,*)armeff
       read(15,*)dm
       read(15,*)em
       read(15,*)acw
@@ -79,11 +81,12 @@ c*****data for wing
       read(15,*)dCdtf0
       read(15,*)dCdtf1
       read(15,*)dCdtf2
+      arm=armeff
       tf=degrad*tfd
 c*****data for fuselage
       read(15,*)lf
       read(15,*)rf
-      hf=2.*(pi-2.)*rf
+      hf=2.*pi*rf
       af=lf*hf
 c*****data for canard
       read(15,*)bc
@@ -91,12 +94,12 @@ c*****data for canard
       read(15,*)cac
       read(15,*)ac
       read(15,*)xacc
+      read(15,*)dClcda0
+      read(15,*)arceff
       read(15,*)dc
       read(15,*)ec
       read(15,*)awc
-      read(15,*)tcd
-      tc=degrad*tcd
-      arc=2.0*(0.5*bc-rf)**2/ac
+      arc=arceff
 c*****airbrake data
       read(15,*)Cdbrake
 c*****data for rudder
@@ -129,7 +132,6 @@ c*****thrust and thrust slope correction with density
       rcor=rcor*(Pcent*Pcent/10000.0)**us3
       tr0=rcor*(T+dTdv*Ueq)
       dtrdv=rcor*dTdv
-      arm=bm*bm/am
 c*****write data
       write(6,1002)
       write(6,1002)
@@ -153,10 +155,11 @@ c*****write data
       write(6,*)'               average chord=',cam,' (m)'
       write(6,*)'                   wing area=',am,' (m**2)'
       write(6,*)'  aerodynamic center of wing=',xacm,' (m)'
+      write(6,*)'     wing lift slope dClmda0=',dClmda0
+      write(6,*)'    wing effective AR armeff=',armeff
       write(6,*)'     relative camber of wing=',dm
-      write(6,*)'             wing efficiency=',em
+      write(6,*)'   wing effective efficiency=',em
       write(6,*)' influence fo canard on wing=',acw
-      write(6,*)'           wing aspect ratio=',arm
       write(6,*)'influence of canar dCldalind=',dCldalind
       write(6,*)'          flap setting angle=',tfd,' (deg)'
       write(6,*)'flap setting influence on Cl=',dClmdtf
@@ -167,18 +170,19 @@ c*****write data
       write(6,*)'**************'
       write(6,*)'fuselage data:        length=',lf,' (m)'
       write(6,*)'                      radius=',rf,' (m)'
-      write(6,*)'        fuselage missed area=',af,' (m**2)'
+      write(6,*)'   fuselage circumference hf=',hf,' (m)'
+      write(6,*)'               fuselage area=',af,' (m**2)'
       write(6,*)'************'
       write(6,*)'canard data:      canard span=',bc,' (m)'
       write(6,*)'           canard root chord=',cxc,' (m)'
       write(6,*)'canar mean aerodynamic chord=',cac,' (m)'
       write(6,*)'        canard planform area=',ac,' (m**2)'
       write(6,*)'aerodynamic center of canard=',xacc,' (m)'
+      write(6,*)'   canard lift slope dClcda0=',dClcda0
+      write(6,*)'  canard effective AR arceff=',arceff
       write(6,*)'   relative camber of canard=',dc
-      write(6,*)'aspect ratio of single canar=',arc
       write(6,*)'           canard efficiency=',ec
       write(6,*)' influence of wing on canard=',awc
-      write(6,*)'        canard setting angle=',tcd,' (deg)'
       write(6,*)'********************'
       write(6,*)'           airbrake: CDbrake=',Cdbrake
       write(6,*)'************'
@@ -226,10 +230,11 @@ c*****write data
       write(24,*)'               average chord=',cam,' (m)'
       write(24,*)'                   wing area=',am,' (m**2)'
       write(24,*)'  aerodynamic center of wing=',xacm,' (m)'
+      write(24,*)'     wing lift slope dClmda0=',dClmda0
+      write(24,*)'    wing effective AR armeff=',armeff
       write(24,*)'     relative camber of wing=',dm
-      write(24,*)'             wing efficiency=',em
+      write(24,*)'   wing effective efficiency=',em
       write(24,*)' influence fo canard on wing=',acw
-      write(24,*)'           wing aspect ratio=',arm
       write(24,*)'influence of canar dCldalind=',dCldalind
       write(24,*)'          flap setting angle=',tfd,' (deg)'
       write(24,*)'flap setting influence on Cl=',dClmdtf
@@ -240,18 +245,19 @@ c*****write data
       write(24,*)'**************'
       write(24,*)'fuselage data:        length=',lf,' (m)'
       write(24,*)'                      radius=',rf,' (m)'
-      write(24,*)'        fuselage missed area=',af,' (m**2)'
+      write(24,*)'   fuselage circumference hf=',hf,' (m)'
+      write(24,*)'               fuselage area=',af,' (m**2)'
       write(24,*)'***********'
       write(24,*)'canard data:      canard span=',bc,' (m)'
       write(24,*)'           canard root chord=',cxc,' (m)'
       write(24,*)'canar mean aerodynamic chord=',cac,' (m)'
       write(24,*)'        canard planform area=',ac,' (m**2)'
       write(24,*)'aerodynamic center of canard=',xacc,' (m)'
+      write(24,*)'   canard lift slope dClcda0=',dClcda0
+      write(24,*)'  canard effective AR arceff=',arceff
       write(24,*)'   relative camber of canard=',dc
-      write(24,*)'aspect ratio of single canar=',arc
       write(24,*)'           canard efficiency=',ec
       write(24,*)' influence of wing on canard=',awc
-      write(24,*)'        canard setting angle=',tcd,' (deg)'
       write(24,*)'************'
       write(24,*)'rudder data:'
       write(24,*)'        rudder average chord=',rav,' (m)'
@@ -320,9 +326,7 @@ c*****use polar data
          endif
          write(13,*)cx(k),cz(k),cq(k),inc(k)
          incd=inc(k)
-c convert inc to radians
          inc(k)=degrad*inc(k)
-c         prod=prod*(aleq-inc(k))
          if(inc(km)*inc(k).le.0.0.and.k.ne.1)then
             k0=km
 c*****zero incidence coefficients with assumption of small angles
@@ -391,7 +395,8 @@ c     global moments
             Cm0=(am*cam*Cmm00+ac*cac*Cmc00)/(aref*lref)
          endif
 c     aerodynamic center of airplane
-         xac=lref*(dCmacda-dCmda)/dClda
+         xac=(am*dClmda0*xacm+ac*dClcda0*xacc)
+     &        /(am*dClmda0+ac*dClcda0)
          write(14,*)cx(k),cz(k),cq(k),incd
          write(6,1001)k,incd,cz(k),cx(k),cq(k)
  4    continue
@@ -452,7 +457,6 @@ c*****global coefficients
       write(24,*)'               xac=',xac
      &     ,'(m)  xcg=',xcg,'(m)'
 c     center of gravity position if static margin >0
-c     this should be moved forward - Cp 3/2/22
       if(statmarg.gt.0.)then
          xcg=xac-statmarg*lref
       endif
@@ -481,7 +485,7 @@ c     search for point on wing polar and interpolate Cd
  6       continue
          Cdeq=cx(m)+(aleq-inc(m))*(cx(m+1)-cx(m))
      &        /(inc(m+1)-inc(m))
-c     wing induced drag estimation
+c     wing induced drag estimate
          Cdmeq=Cdeq
          Clmeq=Clm0+dCldam*aleq
          Cdim=Clmeq**2/(pi*em*arm)
@@ -514,21 +518,8 @@ c     total drag
          write(6,1002)
          write(6,*)'****linear model results: m=',m
          write(6,*)'aleq=',aleq,' Ueq=',Ueq,'beteq=',beteq
-         write(6,*)'Cleq=',Cleq,'Cdeq=',Cdeq,' Cteq=',Cteq,'CM,ac=',Cmac
-         write(6,*)'Cweq=',Cweq
-c         write(6,*)'af=',af
-c         write(6,*)'am=',am
-c         write(6,*)'Cdmeq=',Cdmeq
-c         write(6,*)'Cdfeq=',Cdfeq
-c         write(6,*)'cx(m)=',cx(m)
-c         write(6,*)'cx(m+1)=',cx(m+1)
-c         write(6,*)'inc(m)=',inc(m)
-c         write(6,*)'inc(m+1)=',inc(m+1)
-c write(6,*)'Cmeq:',Cmeq,'xcg',xcg,'Cweq',Cweq,'aleq',aleq
-c write(6,*)'beteq',beteq,'lref',lref
-c         write(6,*)'ac=',ac,'Cdceq=',Cdceq,'aref=',aref,'Cdic',Cdic
-         write(6,*)'Cdc0',Cdc0
-c       Cdceq is infinite
+         write(6,*),'Cleq=',Cleq,'Cdeq=',Cdeq,' Cteq=',Cteq
+     &        ,'CM,ac=',Cmac
          write(24,1002)
          write(24,*)'aleq=',aleq,' Ueq=',Ueq,'beteq=',beteq
          write(24,*),'Cleq=',Cleq,'Cdeq=',Cdeq,' Cteq=',Cteq
@@ -605,7 +596,6 @@ c     alpha at equilibrium, lift and moment
       iter=0
 c*****iterations
       do 9 it=1,itx
-         write(6,*)'i = ',it,'reseq0',reseq0,'reseq',reseq
 c     engine operating point
          call thrust(ndatx,ndat,Ueq,vr,tr,T,dTdv)
          dynaref=0.5*rho*aref*Ueq**2
@@ -640,7 +630,7 @@ c     add flap influence on Clm
          Clm0=Clm0+dClmdtf*tf
 c     moment coefficients of the main wing Cmacm and Cmmo
          dCmacdam=(cq(m+1)-cq(m))/(inc(m+1)-inc(m))
-         Cmac0=cq(m)+dCmacdam*(-inc(m))
+         Cmacm0=cq(m)+dCmacdam*(-inc(m))
          dCmdam=dCmacdam-xacm*dCldam/cam
          Cmm0=Cmac0-xacm*Clm0/cam
 c     add flap influence on Cmm
