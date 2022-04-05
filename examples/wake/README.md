@@ -1,24 +1,32 @@
 # Canard Wake
 
-Please inspect the wake.data file for configurational settings. The following is a showcase of how to run the canard wake executable. Essential files to have in your directory include the following.
+Please inspect the wake.data file for configurational settings. The following is a showcase of how to run the canard wake executable. 
+**Required files to have in your working directory** are as follows:
 
-* wake.data       (input parameter file)
+* wake.data 
 * polarbl.dat
-* wing.yxlexte
+* wing.yxlexte 
 * geocanard.xzmses
 
-## Running the code:
+***wake.data***: is your input parameter file
 
+***polarbl.dat***: is your input polar file
+
+***wing.yxlexte***: is your wing geometry
+
+***geocanard.xzmses***: is your canard geometry
+
+## Running the code:
 Basic usage (assumes input filename is "wake.data")
 
 ```
-./wake
+./../../build/wake
 ```
 
 Custom usage (user defined input filename is "custom.data")
 
 ```
-./wake -in custom.data
+./../../build/wake -in custom.data
 ```
 
 ## Results:

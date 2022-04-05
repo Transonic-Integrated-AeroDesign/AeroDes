@@ -26,6 +26,12 @@ include_directories(src/prandtline)
 include_directories(src/wake)
 
 # executables
+add_executable(cfmactu
+        src/variables.hpp
+        src/propulsion/cfmactu.cpp
+        src/propulsion/cfmactu.hpp
+        src/propulsion/main.cpp)
+
 add_executable(prandtl
         src/variables.hpp
         src/prandtline/prandtline.cpp
@@ -45,3 +51,8 @@ add_executable(canary
         src/canareq/canareq.cpp
         src/canareq/canareq.hpp
         src/canareq/main.cpp)
+
+install(TARGETS cfmactu)
+install(TARGETS prandtl)
+install(TARGETS wake)
+install(TARGETS canary)
