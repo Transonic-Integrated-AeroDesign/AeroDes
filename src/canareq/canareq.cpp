@@ -7,6 +7,7 @@
 #include <iostream> // std
 #include <iomanip>  // setw
 #include <stdio.h>  // strcpy
+#include <cstring>
 
 #include "config.hpp"
 #include "canareq.hpp"
