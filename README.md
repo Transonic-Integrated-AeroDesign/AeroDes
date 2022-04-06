@@ -61,10 +61,10 @@ Here are the executables for various design tasks. Each will of course require t
 respective examples directory. 
 
 ```
-./build/canareq
-./build/cfmactu
-./build/prandtl
-./build/wake
+canareq
+cfmactu
+prandtl
+wake
 ```
 
 See the examples/ directory for more details in running each example with these
