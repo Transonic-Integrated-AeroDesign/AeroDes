@@ -10,6 +10,7 @@
 #include <fstream>  // fopen
 #include <string>
 #include <math.h>   // pow
+#include <cstring>
 
 #include "prandtline.hpp"
 
