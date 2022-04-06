@@ -13,6 +13,8 @@ CXM         39.0		    # cxm root chord of main wing (m)
 CAM         22.3		    # cam aerodynamic chord (m)
 AM          351.0		    # am wing area (m**2)
 XACM        33.7		    # xacm location of aerodynamic center of main wing (m)
+dClmda0     3.792		    # dClmda0 wing lift slope
+ARMEFF      4.345		    # armeff wing effective aspect ratio
 DM          0.01	        # dm relative camber of main wing
 EM          0.76	        # em efficiency coefficient of main wing
 ACW         -1.7		    # acw influence of canard on wing
@@ -23,29 +25,21 @@ dCmmdtf     -0.4708		    # dCmmdtf empennage sensitivity on pitching moment
 dCdtf0      -0.009807	    # dCdtf0 flap influence on Cd independent of alfa
 dCdtf1      -0.1142     	# dCdtf1 flap influence on Cd linear in alfa
 dCdtf2      0.0836		    # dCdtf2 flap influence on Cd quadratic in alfa
-
-ARCEFF      6.1		        # arceff canard effective aspect ratio
-ARMEFF      4.345		    # armeff wing effective aspect ratio
-dClmda0     3.792		    # dClmda0 wing lift slope
-dClcda0     4.79            # dClcda0 canard lift slope
-
 LF          39.0		    # lf length of fuselage (m)
 RF          2.0		        # rf radius of fuselage (m)
-
 BC          18.0		    # bc canar span (m)
 CXC         3.2		        # cxc root chord of canard (m)
 CAC         2.5		        # cac mean aerodynamic chord of canard (m)
 AC         25.5	    	    # ac canard planform area (m**2)(for 2 canards)
 XACC        6.27	        # xacc location of aerodynamic center of canard (m)
+dClcda0     4.79            # dClcda0 canard lift slope
+ARCEFF      6.1		        # arceff canard effective aspect ratio
 DC          0.0		        # dc relative camber of canard
 EC          0.96	        # ec efficiency coefficient of canard
 AWC         -0.3		    # awc influence of wing on canard
-
 CdBRAKE     0.0		        # Cdbrake airbrake drag coefficient
-
 RAV         3.0		        # rav rudder average chord (m)
 RUH         4.0		        # ruh rudder height (m)
-
 ZENG        -1.0		    # zeng z-coordinate of engine (m)
 DNA         1.75		    # dna diameter of nacelle (m)
 LNA         4.0		        # lna length of nacelle (m)
