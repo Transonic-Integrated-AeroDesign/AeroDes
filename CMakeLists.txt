@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.17)
+#cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.05)
 
 # set the project name and version
 project(aerolib VERSION 1.0.0 DESCRIPTION "open source aero design")
