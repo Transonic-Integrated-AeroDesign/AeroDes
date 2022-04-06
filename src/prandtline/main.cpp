@@ -28,25 +28,20 @@ int main(int argc, char** argv) {
     variables *vars = new variables();
     prandtline *prants = new prandtline(argc, argv, vars);
 
+    // input
     prants->readInputParams();
-    prants->printInputParams();
+    prants->readInputPolarMulti("polarbl.dat");
 
-    prants->readInputPolar("polarbl1.dat");
-    prants->readInputPolar("polarbl2.dat");
-    prants->readInputPolar("polarbl3.dat");
-    prants->readInputPolar("polarbl4.dat");
-    prants->readInputPolar("polarbl5.dat");
-    prants->readInputPolar("polarbl6.dat");
-    prants->readInputPolar("polarbl7.dat");
-    prants->readInputPolar("polarbl8.dat");
-    prants->readInputPolar("polarbl9.dat");
-    prants->printXFoilMaxValues();
-
+    // solve lifting line problem
     prants->setMesh();
-    prants->printGeomSummary();
-
     prants->solveLiftingLine();
+
+    // prints
+    prants->printInputParams();
+    prants->printInputPolar();
+    prants->printSetupSummary();
     prants->printDistributions();
+    prants->printResults();
 
     delete prants;
 }

@@ -44,6 +44,7 @@ public:
     void printSetupSummary();
     void printInputPolar();
     void printDistributions();
+    void printResults();
 
 private:
     int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;

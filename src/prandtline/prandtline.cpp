@@ -1247,3 +1247,22 @@ void prandtline::printDistributions() {
                 << right << setw(12) << j << endl;
     }
 }
+
+void prandtline::printResults() {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::printResults()" << endl << endl;
+
+    cout << "results:" << endl << endl;
+
+    cout << right << setw(32) << "        inviscid contribution CDi = " << cdi << endl;
+    cout << right << setw(32) << "              oswald efficiency e = " << em << endl;
+    cout << right << setw(32) << "         viscous contribution CDv = " << cdv << endl;
+    cout << right << setw(32) << "                global results CD = " << cd << endl;
+    cout << right << setw(32) << "              lift coefficient CL = " << cl << endl;
+    cout << right << setw(32) << " pitching moment coefficient CM,0 = " << cm0 << endl;
+    cout << right << setw(32) << "                            CM,ac = " << cmac << endl;
+    cout << right << setw(32) << "             aerodynamic center x,ac = " << xac << endl;
+    cout << right << setw(32) << "          center of pressure x,cp = " << xcp << endl;
+    cout << right << setw(32) << "   root bending moment coef. CM,x = " << -cmf[jx2] << endl;
+    cout << right << setw(32) << "   root torsion moment coef. CM,y = " << -cmt[jx2] << endl;
+}
