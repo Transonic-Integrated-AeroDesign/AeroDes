@@ -19,12 +19,12 @@ You may run this example using two methods. Using the executables or with the Ae
 ### Using PrandtLine Exectuable
 automatically reads in parameter file *prandtline.data*:
 ```
-./../../prandtl
+prandtl
 ```
 
 specify the parameter file *prandtline.data* or whatever file you want:
 ```
-./../../prandtl -in_prandtline prandtline.data
+prandtl -in_prandtline prandtline.data
 ```
 
 ### Using AeroDes-PrandtLine Functions
