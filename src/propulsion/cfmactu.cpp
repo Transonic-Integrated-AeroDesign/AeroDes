@@ -13,6 +13,7 @@
 #include <stdio.h>  // strcpy
 //#include <string.h>
 #include "cfmactu.hpp"
+#include <cstring>
 
 using namespace std; // g++ cfmactu.cpp -c
 

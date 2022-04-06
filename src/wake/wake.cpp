@@ -11,6 +11,7 @@
 #include <stdio.h>  // strcpy
 #include <math.h>   // copysign
 #include "wake.hpp"
+#include <cstring>
 
 #ifndef DBG
 #define DBG 0
