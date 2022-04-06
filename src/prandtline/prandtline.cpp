@@ -10,7 +10,12 @@
 #include <math.h>   // copysign
 #include <cstring>
 
+#include "config.hpp"
 #include "prandtline.hpp"
+
+#ifndef DBG
+#define DBG 0
+#endif
 
 using namespace std; // g++ prandtline.cpp -c
 /*
@@ -175,19 +180,20 @@ prandtline::~prandtline() {
 
 
 void prandtline::setMesh() {
+    //
     // set mesh, geometry, and flow along wing-span
-    cout << endl << "=========================================\n";
-    cout << "point distribution, geometry and flow:" << endl;
-    cout << "=========================================\n";
-    cout << left << setw(16) << "y(j) "
-            << left << setw(16) << "eta(j) "
-            << left << setw(16) << "c(j) "
-            << left << setw(16) << "t(j) "
-            << left << setw(16) << "d(j) "
-            << left << setw(16) << "g(j) "
-            << left << setw(16) << "w(j) "
-            << left << setw(16) << "at(j) "
-            << left << setw(16) << "polar(j) " << endl;
+    //
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::solveLiftingLine()" << endl;
+    if (DBG) cout << left << setw(12) << "y(j) "
+                  << left << setw(12) << "eta(j) "
+                  << left << setw(12) << "c(j) "
+                  << left << setw(12) << "t(j) "
+                  << left << setw(12) << "d(j) "
+                  << left << setw(12) << "g(j) "
+                  << left << setw(12) << "w(j) "
+                  << left << setw(12) << "at(j) "
+                  << left << setw(12) << "polar(j) " << endl;
 
     amdum=0.;
     cavdum=0.;
@@ -196,32 +202,32 @@ void prandtline::setMesh() {
 
     for (int j = 0; j < jx; ++j) {
         //do 6 j=1,jx
-        tetj = j * dtet; //(j - 1) * dtet;
-        yj = -cos(tetj);
-        y[j] = yj;
-        etaj = -cos(tetj + .5 * dtet);
-        eta[j] = etaj;
+        tetj=j*dtet;
+        yj=-cos(tetj);
+        y[j]=yj;
+        etaj=-cos(tetj+.5*dtet);
+        eta[j]=etaj;
 
         //
         if (j==0) {
-            etajm = -1.;
+            etajm=-1.;
         } else {
-            etajm = eta[j - 1];
+            etajm=eta[j-1];
         }
 
         // reached last point
         if (j==jx) {
-            etaj = eta[j - 1];
+            etaj=eta[j-1];
         }
-        dem[j] = dm;
-        t[j] = tm;
-        g[j] = 0.;
-        w[j] = 0.;
-        at[j] = 0.;
-        a0[j] = -pi * dm;
-        a1[j] = 0.;
-        b0[j] = 2. * pi * (2. * dem[j]);
-        b1[j] = 2. * pi;
+        dem[j]=dm;
+        t[j]=tm;
+        g[j]=0.;
+        w[j]=0.;
+        at[j]=0.;
+        a0[j]=-pi*dm;
+        a1[j]=0.;
+        b0[j]=2.*pi*(2.*dem[j]);
+        b1[j]=2.*pi;
         // elliptic wing
         if (iwing==0) {
             c[j] = cxm * sin(tetj);
@@ -288,19 +294,15 @@ void prandtline::setMesh() {
 
         polar[j] = n;
         cout << std::setprecision(7);
-        cout << left << setw(16) << y[j]
-                << left << setw(16) << eta[j]
-                << left << setw(16) << c[j]
-                << left << setw(16) << t[j]
-                << left << setw(16) << dem[j]
-                << left << setw(16) << g[j]
-                << left << setw(16) << w[j]
-                << left << setw(16) << at[j]
-                << left << setw(16) << polar[j]  << j << endl;
-
-        //write(17, *) y(j), c(j), dem(j), t(j)
-        //write(29, *) y(j), xle(j), xte(j), xacm(j)
-        //if (j>=2) write(33, *) eta(j - 1), xiac(j - 1)
+        cout << left << setw(12) << y[j]
+                << left << setw(12) << eta[j]
+                << left << setw(12) << c[j]
+                << left << setw(12) << t[j]
+                << left << setw(12) << dem[j]
+                << left << setw(12) << g[j]
+                << left << setw(12) << w[j]
+                << left << setw(12) << at[j]
+                << left << setw(12) << polar[j]  << j << endl;
     }
 
     // geometric summary
@@ -314,31 +316,29 @@ void prandtline::setMesh() {
 }
 
 void prandtline::solveLiftingLine() {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::solveLiftingLine()" << endl;
+
     int jp, jm;
     int n = 0;  // polar index
     //ivis=0;
     //vis=0.;
 
-    cout << endl << endl << "solveLiftingLine() " << endl;
-    cout << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
-    cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
-    cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
+    if (DBG) cout << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
+    if (DBG) cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
+    if (DBG) cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
 
-    // setup angular distribution
+    // setup incidence angle
     if (alstep==0) nsteps = 1;
     else nsteps=1+(alphafi-alphain)/alstep;
     alphad = alphain-alstep;
-    cout << " nsteps = " << nsteps << endl;
+
     if((nsteps <= 0.) || (nsteps>lxx)) {
         cout << " Error in solveLiftingLine()" << endl;
         cout << " (bad sequence, exit)" << endl;
         cout << " (more steps than memory allocated by lxx)" << endl;
         abort();
     }
-
-    // save polar filename
-    title = "test.dat";
-    cout << "name of saved polar? = " << title << endl;
 
     // loop over incidence angles
     for (int nstep = 0; nstep < nsteps; nstep++) {
@@ -444,7 +444,6 @@ void prandtline::solveLiftingLine() {
                                / pow((pow((xacm[j] - xacm[k + 1]), 2) + pow((y[j] - y[k + 1]), 2) +
                                       10.0 * (eta[k + 1] - eta[k])), 1.5);
                         sum = sum + dwkj;
-                        //endif
                     }
                     //11 continue
                 }
@@ -716,7 +715,9 @@ void prandtline::delete_2d_double_array(double **array) {
 }
 
 void prandtline::readInputParams() {
-    // open input file
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::readInputParams()" << endl;
+
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
         cout << "\n\tCannot Read " << filenameInputData;
@@ -797,7 +798,22 @@ void prandtline::readInputParams() {
 }
 
 void prandtline::readInputPolar(std::string filename) {
-    // open input file
+    // read given input polar filename:
+    //
+    // input polars should be structured columnwise with a single breakpoint at the end.
+    // all header information is scraped out.
+    //
+    //  [alpha]  [cz]   [cx]    [dummyval]      [cq]
+    //    ...     ...    ...        ...         ...
+    //    ...     ...    ...        ...         ...
+    //
+    //    ...     ...    ...        ...         ...
+    //  [breakpoint]
+    //
+
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::readInputPolar()" << endl;
+
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
         cout << "\n\tCannot Read " << filename;
@@ -810,9 +826,6 @@ void prandtline::readInputPolar(std::string filename) {
         cout << " exiting polar is [off]" << endl;
         return;
     }
-
-    //if(DBG) cout << endl << "=================" << endl;
-    //if(DBG) cout << "profile polar:" << nx << endl;
 
     double c1, c2, c3, c4, c5;
     int kdum = 0, km, kp;
@@ -828,7 +841,6 @@ void prandtline::readInputPolar(std::string filename) {
     prod = 1.;
     kfirst = 0;     // start flag for reading polar
     for (int j = 0; j < lxx; ++j) {
-        //do 1 k = 1, lxx
         std::getline(polarfile, line);
         if (line.empty()) continue; // blank line
         std::istringstream iss(line);
@@ -840,14 +852,15 @@ void prandtline::readInputPolar(std::string filename) {
         if (!polarfile.eof() && !iss.fail()) {
             kp = kdum + 1;
             if(kdum > 0) km = kdum - 1;
-            /*if(DBG) cout << "nx = "
-                    << left << setw(12) << i << " j = "
-                    << left << setw(12) << kdum << " c1 = "
-                    << left << setw(12) << c1 << " c2 = "
-                    << left << setw(12) << c2 << " c3 = "
-                    << left << setw(12) << c3 << " c4 = "
-                    << left << setw(12) << c4 << " c5 = "
-                    << left << setw(12) << c5 << endl;*/
+            if (DBG) cout << "nx = "
+                          << left << setw(12) << i << " j = "
+                          << left << setw(12) << kdum << " c1 = "
+                          << left << setw(12) << c1 << " c2 = "
+                          << left << setw(12) << c2 << " c3 = "
+                          << left << setw(12) << c3 << " c4 = "
+                          << left << setw(12) << c4 << " c5 = "
+                          << left << setw(12) << c5 << endl;
+
             inc[i][kdum] = c1;
             cz[i][kdum] = c2;
             cx[i][kdum] = c3;
@@ -884,7 +897,6 @@ void prandtline::readInputPolar(std::string filename) {
 
         // done reading input polar
         if (polarfile.eof()==1) {
-            //cout << "break" << endl;
             break;
         }
 
@@ -902,7 +914,6 @@ void prandtline::readInputPolar(std::string filename) {
         cout << " increase the size of lxx" << endl;
     }
 
-    //cout << "*************profile data from Xfoil:" << endl;
     int jm, jp;
     for (int j = 0; j < kx[i]; ++j) {
         //do 3 k = 1, kx(n)
@@ -936,6 +947,162 @@ void prandtline::readInputPolar(std::string filename) {
     cout << right << setw(12) << " kx[ " << i << "] = " << left << setw(12) << kx[i] << " # maximum number of incidence angles for particular polar" << endl;
     cout << right << setw(12) << " rbreak[" << i << "] = " << left << setw(12) << rbreak[i] << " # break point location" << endl;
 
+    nx++;
+}
+
+void prandtline::readInputPolarMulti(std::string filename) {
+    // read multiple input polars in single filename:
+    //
+    // input polars should be structured columnwise with a single breakpoint at the end.
+    // all header information is scraped out.
+    //
+    //  [alpha]  [cz]   [cx]    [dummyval]      [cq]
+    //    ...     ...    ...        ...         ...
+    //    ...     ...    ...        ...         ...
+    //
+    //    ...     ...    ...        ...         ...
+    //  [breakpoint]
+    //
+
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::readInputPolarMulti()" << endl;
+
+    ifstream polarfile(filename);
+    if (!polarfile.is_open()) {
+        cout << "\n\tCannot Read " << filename;
+        cout << " File - Error in: readInputPolar()" << endl;
+        abort();
+    }
+
+    // polar data
+    if(polarBool==false) {
+        cout << " exiting polar is [off]" << endl;
+        return;
+    }
+
+    if(nx >= nxx) {
+        cout << "!! nx > nxx !!" << endl;
+        cout << "TOO MANY POLARS: EXITING!" << endl;
+        abort();
+    }
+
+    double c1, c2, c3, c4, c5;
+    int kdum = 0, km, kp;
+    int i = nx;
+    std::string line;
+    bool pBool=false, bBool=false;
+
+    prod = 1.;
+    kfirst = 0;     // start flag for reading polar
+    for (int i = 0; i < 2; ++i) {
+        if (DBG) cout << "read polar i = " << i << endl;
+        for (int j = 0; j < lxx; ++j) {
+            std::getline(polarfile, line);
+            if (line.empty()) continue; // blank line
+            std::istringstream iss(line);
+            std::istringstream issl(line);
+            iss >> c1 >> c2 >> c3 >> c4 >> c5;
+            issl >> c1;
+
+            // read [alpha] [CL] [CD] [CDp] [CM]
+            if (!polarfile.eof() && !iss.fail()) {
+                kp = kdum + 1;
+                if (kdum > 0) km = kdum - 1;
+                if (DBG)
+                    cout << "nx = "
+                         << left << setw(12) << i << " j = "
+                         << left << setw(12) << kdum << " c1 = "
+                         << left << setw(12) << c1 << " c2 = "
+                         << left << setw(12) << c2 << " c3 = "
+                         << left << setw(12) << c3 << " c4 = "
+                         << left << setw(12) << c4 << " c5 = "
+                         << left << setw(12) << c5 << endl;
+
+                inc[i][kdum] = c1;
+                cz[i][kdum] = c2;
+                cx[i][kdum] = c3;
+                dum = c4;
+                cq[i][kdum] = c5;
+                kx[i] = kp;
+                pBool = true;
+
+                // extrema values
+                kxtrm[i][j] = 0;
+                if (kdum > 0) {
+                    km = kdum - 1;
+                    dcz = cz[i][kdum] - cz[i][km];
+                    prod = prod * dcz;
+                    if (prod < (-eps)) {
+                        //if(DBG) cout << "==================================" << endl;
+                        //if(DBG) cout << "extrema of the cl(alpha) function:" << endl;
+                        //if(DBG) cout << "kxtrm[" << i << "] = " << km << " cz[i][kxtrm] = " << cz[i][km] << endl;
+                        kxtrm[i][j] = km;
+                        if (kfirst <= 0) {
+                            mxtrm[i] = km;   // index for first polar value
+                            kfirst = 1;
+                        }
+                    }
+                    prod = copysign(1., dcz);
+                }
+                kdum = kdum + 1;
+            }
+
+                // read [breakpoint]
+            else if (!issl.fail()) {
+                //cout << "c1 = " << c1 << " eof = " << polarfile.eof() << endl;
+                rbreak[i] = c1;
+                pBool = false;
+                bBool = true;
+            }
+
+            // done reading input polar
+            if (polarfile.eof() == 1) {
+                break;
+            }
+        }
+    }
+
+    if (kx[i]==(lxx - 1)) {
+        cout << " attention: check if all data has been read; continuing/exiting=1/0?" << endl;
+        cout << " increase the size of lxx" << endl;
+    }
+
+    int jm, jp;
+    for (int j = 0; j < kx[i]; ++j) {
+        //do 3 k = 1, kx(n)
+        jp = j + 1;
+        if (jp > kx[i]) jp = kx[i];
+        jm = j - 1;
+        if (jm < 0.0) jm = 0;
+        prod = 1.;
+        if ((j > 0) && (j < kx[i])) {
+            dcxm = ((cx[i][j] - cx[i][jm]) * (cz[i][jp] - cz[i][j]) * (cz[i][j] + cz[i][jp] - 2. * cz[i][jm]) -
+                    (cx[i][jp] - cx[i][j]) * pow((cz[i][j] - cz[i][jm]),2)) /
+                   ((cz[i][jp] - cz[i][j]) * (cz[i][jp] - cz[i][jm]) * (cz[i][j] - cz[i][jm]));
+
+            dcxp = ((cx[i][j] - cx[i][jp]) * (cz[i][jm] - cz[i][j]) * (cz[i][j] + cz[i][jm] - 2. * cz[i][jp]) -
+                    (cx[i][jm] - cx[i][j]) * pow((cz[i][j] - cz[i][jp]),2)) /
+                   ((cz[i][jm] - cz[i][j]) * (cz[i][jm] - cz[i][jp]) * (cz[i][j] - cz[i][jp]));
+            prod = dcxm * dcxp;
+        }
+        if ((prod < (-eps)) && ((kxtrm[i][jm] != 0) || (kxtrm[i][jp] != 0))) {
+            cout << "bad data distribution: interpolate a new data i = " << nx << endl;
+        }
+        incd = inc[i][j];
+        inc[i][j] = degrad * inc[i][j];
+        //cout << " i=" << i << " j = " << j << " inc[i][j] = " << inc[i][j] << " cz[k][n]=" << cz[i][j] << " cx[i][j] = " << cx[i][j]
+        //     << " cq[i][j] = " << cq[i][j] << endl;
+    }
+
+    if (DBG) {
+        cout << "extrema pointer + break point" << endl;
+        cout << right << setw(12) << " mxtrm[" << i << "] = " << left << setw(12) << mxtrm[i]
+             << " # index for extrema location" << endl;
+        cout << right << setw(12) << " kx[ " << i << "] = " << left << setw(12) << kx[i]
+             << " # maximum number of incidence angles for particular polar" << endl;
+        cout << right << setw(12) << " rbreak[" << i << "] = " << left << setw(12) << rbreak[i]
+             << " # break point location" << endl << endl;
+    }
     nx++;
 }
 
@@ -1028,16 +1195,16 @@ void prandtline::printGeomSummary() {
     cout << right << setw(32) << "average aerodynamic chord cav = " << left << setw(10) << cav << " (ref. B/2)" << endl;
 }
 
-void prandtline::printXFoilMaxValues() {
-    cout << endl << "======================================" << endl;
-    cout << " profile data from Xfoil:" << endl;
-    cout << "======================================" << endl;
+void prandtline::printInputPolar() {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::printInputPolar()" << endl;
     cout << right << setw(12) << " n"
-            << right << setw(12) << " k"
-            << right << setw(12) << " inc[n][k]"
-            << right << setw(12) << " cz[n][k]"
-            << right << setw(12) << " cx[k][n]"
-            << right << setw(12) << " cq[n][k]";
+         << right << setw(12) << " k"
+         << right << setw(12) << " inc[n][k]"
+         << right << setw(12) << " cz[n][k]"
+         << right << setw(12) << " cx[k][n]"
+         << right << setw(12) << " cq[n][k]";
+
     for (int n = 0; n < nx; ++n) {
         cout << endl;
         for (int k = 0; k < kx[n]; ++k) {
@@ -1052,6 +1219,9 @@ void prandtline::printXFoilMaxValues() {
 }
 
 void prandtline::printDistributions() {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::printDistributions()" << endl;
+
     cout << endl << right << setw(12) << " y(j)"
             << right << setw(12) << "c(j)"
             << right << setw(12) << " t(j)"

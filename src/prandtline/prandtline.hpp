@@ -20,12 +20,12 @@ class prandtline : virtual public variables {
 public:
     variables *vars;
     prandtline(int argc, char** argv, variables *);
-    //prandtline(int argc, char** argv);
     ~prandtline();
 
     // inputs
     void readInputParams();
     void readInputPolar(std::string);
+    void readInputPolarMulti(std::string filename);
     void readInputDownwash();
 
     // specific
@@ -42,14 +42,13 @@ public:
     // prints
     void printInputParams();
     void printGeomSummary();
-    void printXFoilMaxValues();
+    void printInputPolar();
     void printDistributions();
 
 private:
     int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
     int jx2,is,iwing,nsteps,ivis,iter,it,mj,jdx;
     int itx;
-    //parameter(jxx=201,lxx=101,nxx=10)
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
     double B,cxm,dm,tmd,Rho,Vinf,Amu,tm,alpha,Re,amdum;
     double cavdum,dtet,tetj,yj,etaj,etajm,am,cav,arm;

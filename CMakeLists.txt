@@ -9,14 +9,15 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # should we use debug mode
-option(DBG_ENABLE "debug mode" OFF)
+option(DBG "debug mode" OFF)
 
-if(DBG_ENABLE)
+if(DBG)
     set(DBG_VALUE 1)
 endif()
 
 configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/wake/config.hpp" @ONLY)
 configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/canareq/config.hpp" @ONLY)
+configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/prandtline/config.hpp" @ONLY)
 
 # add module libraries
 add_subdirectory(src)
