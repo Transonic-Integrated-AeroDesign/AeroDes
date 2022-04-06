@@ -41,7 +41,7 @@ public:
 
     // prints
     void printInputParams();
-    void printGeomSummary();
+    void printSetupSummary();
     void printInputPolar();
     void printDistributions();
 
@@ -51,7 +51,7 @@ private:
     int itx;
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
     double B,cxm,dm,tmd,Rho,Vinf,Amu,tm,alpha,Re,amdum;
-    double cavdum,dtet,tetj,yj,etaj,etajm,am,cav,arm;
+    double camdum,dtet,tetj,yj,etaj,etajm,am,cam,arm;
     double alphain,alphafi,alstep, alphad; // alphad;
     double vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;

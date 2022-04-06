@@ -1,13 +1,13 @@
 JX          101		    # jx number of points along wing span (<202)
 ITX         1000	    # itx maximum number of iterations
 OMEGA       0.2		    # omega relaxation factor
-AVIS        10.0	    # avis viscosity coefficient
+AVIS        0.0	        # avis viscosity coefficient
 B           36.0	    # B wing span (m)
-CX0         30.0	    # Cx0 root chord of wing or fuselage length (m)
+CX0         39.0	    # Cx0 root chord of wing or fuselage length (m)
 LAMBD       0.0		    # Lambd a.c. sweep angle (deg)
 RSTR0       5.4		    # Rstr0 half strake span (m)
 RF0         2.0		    # Rf0 diameter of fuselage (m)
-DM          0.01	    # dm relative camber of wing (ref.=C)
+DM          0.0 	    # dm relative camber of wing (ref.=C)
 TM          0.		    # tm setting angle at root (typically zero)
 IWING       2		    # iwing elliptic/rectangular/general shape/0/1/2
 ALPHAD      0.0		    # alphad geometric incidence (deg)
