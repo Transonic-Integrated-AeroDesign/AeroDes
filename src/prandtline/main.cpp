@@ -37,9 +37,9 @@ int main(int argc, char** argv) {
     prants->solveLiftingLine();
 
     // prints
-    prants->printInputParams();
-    prants->printInputPolar();
-    prants->printSetupSummary();
+    //prants->printInputParams();   // optional
+    //prants->printInputPolar();    // optional
+    //prants->printSetupSummary();  // optional
     prants->printDistributions();
     prants->printResults();
 

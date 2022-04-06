@@ -208,12 +208,8 @@ void prandtline::setMesh() {
         etaj=-cos(tetj+.5*dtet);
         eta[j]=etaj;
 
-        //
-        if (j==0) {
-            etajm=-1.;
-        } else {
-            etajm=eta[j-1];
-        }
+        if (j==0) etajm=-1.;
+        else etajm=eta[j-1];
 
         // reached last point
         if (j==jx) {
@@ -291,16 +287,19 @@ void prandtline::setMesh() {
         else { n = 0; }
 
         polar[j] = n;
-        cout << std::setprecision(7);
-        cout << left << setw(12) << y[j]
-                << left << setw(12) << eta[j]
-                << left << setw(12) << c[j]
-                << left << setw(12) << t[j]
-                << left << setw(12) << dem[j]
-                << left << setw(12) << g[j]
-                << left << setw(12) << w[j]
-                << left << setw(12) << at[j]
-                << left << setw(12) << polar[j]  << j << endl;
+
+        if (DBG) {
+            cout << std::setprecision(7);
+            cout << left << setw(12) << y[j]
+                 << left << setw(12) << eta[j]
+                 << left << setw(12) << c[j]
+                 << left << setw(12) << t[j]
+                 << left << setw(12) << dem[j]
+                 << left << setw(12) << g[j]
+                 << left << setw(12) << w[j]
+                 << left << setw(12) << at[j]
+                 << left << setw(12) << polar[j] << j << endl;
+        }
     }
 
     // geometric summary
@@ -329,7 +328,7 @@ void prandtline::solveLiftingLine() {
     // setup incidence angle
     if (alstep==0) nsteps = 1;
     else nsteps=1+(alphafi-alphain)/alstep;
-    alphad = alphain-alstep;
+    alphad=alphain-alstep;
 
     if((nsteps <= 0.) || (nsteps>lxx)) {
         cout << " Error in solveLiftingLine()" << endl;
@@ -347,8 +346,9 @@ void prandtline::solveLiftingLine() {
             abort();
         }
         iter = 0;
-        cout << endl << " solution:" << endl;
-        cout << " alpha = " << alphad << " (degrees)" << endl;
+
+        cout << endl << " start solution: alpha = " << alphad << " (degrees)" << endl;
+
         if (ivis == 0) {
             cout << "do you want to introduce viscous effects?" << endl;
             cout << "viscous/inviscid=1/0   choose ivis=" << endl;
@@ -367,16 +367,16 @@ void prandtline::solveLiftingLine() {
         int j = 0;
         for (int it = 0; it < itx; ++it) {
             //do 200 it = 1, itx
-            iter = iter + 1;
+            iter=iter+1;
 
             if (polarBool) {
                 // search for point on polar and polar coefficients
-                for (j = 1; j < (jx - 1); ++j) {
-                    n = polar[j];
-                    atj = at[j];
-                    atj = atj + acwash * wcanar[j];
-                    mj = 1;
-                    prod = 1.57 - atj;
+                for (j = 1; j < (jx-1); ++j) {
+                    n=polar[j];
+                    atj=at[j];
+                    atj=atj+acwash*wcanar[j];
+                    mj=1;
+                    prod=1.57-atj;
 
                     // loop over wingspan mesh points
                     for (int k = 1; k < (kx[n] - 1); ++k) {
@@ -406,6 +406,7 @@ void prandtline::solveLiftingLine() {
                 m[0] = m[1];
                 l[0] = l[1] + (l[2] - l[1]) * (y[0] - y[1]) / (y[2] - y[1]);
                 d[0] = d[1] + (d[2] - d[1]) * (y[0] - y[1]) / (y[2] - y[1]);
+
                 m[j] = m[j - 1];
                 l[j] = l[j - 1] + (l[j - 1] - l[j - 2]) * (y[j] - y[j - 1])
                                   / (y[j - 1] - y[j - 2]);
@@ -416,13 +417,13 @@ void prandtline::solveLiftingLine() {
 
 
             // fixed point iteration
-            g[0] = 0.;
-            g[jx - 1] = 0.; // the last element in vectors is jx-1
-            dgx = 0.;
-            jdx = 0;
+            g[0]=0.;
+            g[jx-1]=0.; // the last element in vectors is jx-1
+            dgx=0.;
+            jdx=0;
 
             // downwash & gamma integral
-            for (j = 1; j < jx - 1; ++j) {
+            for (j = 1; j < (jx-1); ++j) {
                 //do 12 j = 2, jx - 1
                 sum = 0.;
 
@@ -433,7 +434,15 @@ void prandtline::solveLiftingLine() {
                     sum = sum + (g[k + 1] - g[k]) * (1.0 - sin(phi0)) / (y[j] - eta[k]);
                     cout << std::setprecision(10);
                     //cout << "xacm = " << xacm[j] << " xiac = " << xiac[k] << " y = " << y[j] << " eta = " << eta[k] << " r = " << (xacm[j] - xiac[k]) / (y[j] - eta[k]) << endl;
-                    //cout << "j = " << j << " k = " << k << " g[k+1] = " << g[k+1] << " eta[k] = " << eta[k] << " sum = " << sum << " phi0 = " << phi0 << endl;
+
+                    if (DBG) {
+                        cout << endl << "j = " << j << endl;
+                        cout << "k = " << k << endl;
+                        cout << " g[k+1] = " << g[k + 1] << endl;
+                        cout << " eta[k] = " << eta[k] << endl;
+                        cout << " sum = " << sum << endl;
+                        cout << " phi0 = " << phi0 << endl;
+                    }
 
                     // downwash due to lifting line
                     if (((k + 1) != j) && (k < jx - 1)) {
@@ -485,10 +494,10 @@ void prandtline::solveLiftingLine() {
                 }
             }
             // boundary conditions
-            w[0] = w[1] + (w[2] - w[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-            w[j] = w[j - 1] + (w[j - 2] - w[j - 1]) * (y[j] - y[j - 1]) / (y[j - 2] - y[j - 1]);
-            at[0] = at[1] + (at[2] - at[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-            at[j] = at[j - 1] + (at[j - 2] - at[j - 1]) * (y[j] - y[j - 1]) / (y[j - 2] - y[j - 1]);
+            w[0]=w[1]+(w[2]-w[1])*(y[0]-y[1]) / (y[2]-y[1]);
+            w[j]=w[j-1]+(w[j-2]-w[j-1])*(y[j]-y[j-1]) / (y[j-2]-y[j-1]);
+            at[0]=at[1]+(at[2]-at[1])*(y[0]-y[1]) / (y[2]-y[1]);
+            at[j]=at[j-1]+(at[j-2]-at[j-1])*(y[j]-y[j-1]) / (y[j-2]-y[j-1]);
 
             if (iter == 1) res0 = dgx;
             alogres = log10(abs(dgx / res0) + eps);
@@ -499,15 +508,15 @@ void prandtline::solveLiftingLine() {
 
         // check if results converged
         cout << std::setprecision(6);
-        cout << "it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
+        if (DBG) cout << "it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
         if (abs(dgx) > eps) {
-            cout << " NOT CONVERGED!" << endl;
+            cout << "\033[1;41m NOT CONVERGED! ENDING PROGRAM \033[0m" << endl;
             abort();
         }
 
         // results
         jx2=(jx / 2)-1;
-        is=jx % 2 - 1;
+        is=jx % 2;
         si=is;
         cl=0.;
         cm0=0.;
@@ -523,24 +532,28 @@ void prandtline::solveLiftingLine() {
         cmt[jx-1]=0.;
 
         // calculate bending moment
-        for (j = 1; j < (jx - 1); ++j) {
+        for (j = 1; j < (jx-1); ++j) {
             //do 13 j = 2, jx - 1
+            if(j==1) eta[j-1]=-1.0; // initial boundary condition
+            if(j==(jx-2)) eta[j]=1.0;   // final boundary condition
+
             cl=cl+g[j]*(eta[j]-eta[j-1]);
 
             // if polar is [off] on
             if (!polarBool) {
                 at[j]=alpha+atan2(w[j], 1.)+t[j];
                 q[j]=c0[j]+c1[j]*at[j];
-                xac=xac+(xle[j]+0.25*c[j])*c[j]*(eta[j]-eta[j-1]);
+                //xac=xac+(xle[j]+0.25*c[j])*c[j]*(eta[j]-eta[j-1]);
+                xac=xac+xacm[j]*c[j]*(eta[j]-eta[j-1]);
                 cmac=cmac+pow(c[j],2)*q[j]*(eta[j]-eta[j-1]);
 
-                if (j == (jx2 + 1)) cmt[j] = -cmt[j - 1] + (1. - si) * pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
-                else cmt[j] = cmt[j - 1] + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+                if (j == (jx2+1)) cmt[j]=-cmt[j - 1]+(1.-si)*pow(c[j],2)*q[j]*(eta[j]-eta[j-1]);
+                else cmt[j]=cmt[j-1]+pow(c[j],2)*q[j]*(eta[j]-eta[j-1]);
             }
             else {
-                amdum = amdum + c[j] * (eta[j] - eta[j - 1]);
-                xac = xac + xacm[j] * c[j] * (eta[j] - eta[j - 1]);
-                cmac = cmac + pow(c[j],2) * q[j] * (eta[j] - eta[j - 1]);
+                //amdum=amdum+c[j]*(eta[j]-eta[j-1]);
+                xac=xac+xacm[j]*c[j]*(eta[j]-eta[j-1]);
+                cmac=cmac+pow(c[j],2)*q[j]*(eta[j]-eta[j-1]);
             }
 
             if (j == (jx2+1)) {
@@ -548,15 +561,22 @@ void prandtline::solveLiftingLine() {
                 cmt[j]=-cmt[j-1]+(1.-si)*pow(c[j],2)
                           *(q[j]+(xacm[j+1]-xacm[j])*fz[j] / cam)
                           *(eta[j]-eta[j-1]);
+                if (DBG) cout << endl << " j* = " << j << " cmt = " << cmt[j] << endl;
             }
             else {
                 fz[j]=fz[j-1]+g[j]*(eta[j]-eta[j-1]);
                 cmt[j]=cmt[j-1]+pow(c[j],2)
                           * (q[j]+(xacm[j+1]-xacm[j])*fz[j] / cam)
                           * (eta[j]-eta[j-1]);
+                if (DBG) {
+                    cout << endl << " j = " << j << " cmt = " << cmt[j] << endl;
+                    cout << " xacm = " << xacm[j] << " fz = " << fz[j] << endl;
+                    cout << " g = " << g[j] << " eta = " << eta[j] << endl;
+                    cout << " cam = " << cam << " etam = " << eta[j - 1] << endl;
+                }
             }
 
-            cmf[j + 1] = cmf[j] - fz[j] * (eta[j + 1] - eta[j]);
+            cmf[j + 1]=cmf[j]-fz[j]*(eta[j+1]-eta[j]);
             //13 continue
         }
 
@@ -585,23 +605,36 @@ void prandtline::solveLiftingLine() {
                 if (rey < 1.0e5) rey=1.0e5;
                 cd0=1.328 / sqrt(rey);
                 if (rey > 1.0e5) cd0=.072 / pow(rey,.2);
-                cd0 = 2. * cd0;
-                sum0 = sum0 + cd0 * (eta[j] - eta[jm]);
+                cd0=2.*cd0;
+                sum0=sum0+cd0*(eta[j]-eta[jm]);
                 //sum1 = 0.;
                 //sum2 = 0.;
-                l[j] = b0[j] + b1[j] * at[j];
-                d[j] = vis * cd0;
+                l[j]=b0[j]+b1[j]*at[j];
+                d[j]=vis*cd0;
             }
             else {
-                sum0 = sum0 + c[j] * d[j] * (eta[j] - eta[jm]);
-                sum1 = 0.;
-                sum2 = 0.;
+                rey=c[j]*Re;
+                if(rey<1.0e5) rey=1.0e5;
+                cd0=1.328 / sqrt(rey);
+                if(rey>1.0e5) cd0=.072 / pow(rey,.2);
+                sum0=sum0+c[j]*d[j]*(eta[j]-eta[jm]);
+                sum1=0.;
+                sum2=0.;
             }
             //14 continue
         }
 
         cdi=-0.5*arm*sum;
         cdv=vis*(0.25*arm*sum0+2.0*pi*rf*cxm*cd0/am);
+
+        if (DBG) {
+            cout << "it = " << it << endl;
+            cout << "arm = " << arm << endl;
+            cout << "sum0 = " << sum0 << endl;
+            cout << "cxm = " << cxm << endl;
+            cout << "cd0 = " << cd0 << endl;
+            cout << "am = " << am << endl;
+        }
 
         if (abs(cdi) < eps) em=1.0;
         else em=cl*cl / (pi*arm*cdi);
@@ -624,21 +657,21 @@ void prandtline::solveLiftingLine() {
         vars->cq_of_alpha[nstep] = cmac;
 
         // print results
-        cout << " results:" << endl;
+        /*cout << "results:" << endl;
         cout << right << setw(38) << " alpha = " << alphad << endl;
         cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
         cout << right << setw(38) << " oswald efficiency e = " << em << endl;
         cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
-        cout<< " Global results:  " << endl;
+        cout<< "global results:  " << endl;
         cout << right << setw(38) << "CD = " << cd << endl;
         cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
         cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
         cout << right << setw(38) << " CM,ac = " << cmac << endl;
         cout << right << setw(38) << " aerodynamic center x,ac = " << xac << endl;
         cout << right << setw(38) << " center of pressure x,cp = " << xcp << endl;
-        cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jx2 + 1] << endl;
-        cout << right << setw(38) << " root torsion moment coef. CM,y = " << - cmt[jx2 + 1] << endl;
-        cout << right << setw(38) << " ivis = " << ivis << endl;
+        cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jx2] << endl;
+        cout << right << setw(38) << " root torsion moment coef. CM,y = " << - cmt[jx2] << endl;
+        cout << right << setw(38) << " ivis = " << ivis << endl;*/
 
         // results
         alphares[nstep] = alphad;
@@ -1233,7 +1266,7 @@ void prandtline::printDistributions() {
             << right << setw(12) << " polar(j)"
             << right << setw(12) << " j" << endl;
 
-    cout << std::setprecision(6);
+    cout << std::setprecision(4);
     for (int j = 0; j < jx; ++j) {
         cout << right << setw(12) << y[j]
                 << right << setw(12) << c[j]
@@ -1250,18 +1283,20 @@ void prandtline::printDistributions() {
 
 void prandtline::printResults() {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::printResults()" << endl << endl;
+    if (DBG) cout << " prandtline::printResults()" << endl;
 
-    cout << "results:" << endl << endl;
+    cout << endl << "\033[1;42m results: \033[0m" << endl << endl;
 
     cout << right << setw(32) << "        inviscid contribution CDi = " << cdi << endl;
     cout << right << setw(32) << "              oswald efficiency e = " << em << endl;
-    cout << right << setw(32) << "         viscous contribution CDv = " << cdv << endl;
-    cout << right << setw(32) << "                global results CD = " << cd << endl;
+    cout << right << setw(32) << "         viscous contribution CDv = " << cdv << endl << endl;
+
+    cout << "\033[1;42m global results \033[0m" << endl << endl;
+    cout << right << setw(32) << "              drag coefficient CD = " << cd << endl;
     cout << right << setw(32) << "              lift coefficient CL = " << cl << endl;
     cout << right << setw(32) << " pitching moment coefficient CM,0 = " << cm0 << endl;
     cout << right << setw(32) << "                            CM,ac = " << cmac << endl;
-    cout << right << setw(32) << "             aerodynamic center x,ac = " << xac << endl;
+    cout << right << setw(32) << "          aerodynamic center x,ac = " << xac << endl;
     cout << right << setw(32) << "          center of pressure x,cp = " << xcp << endl;
     cout << right << setw(32) << "   root bending moment coef. CM,x = " << -cmf[jx2] << endl;
     cout << right << setw(32) << "   root torsion moment coef. CM,y = " << -cmt[jx2] << endl;
