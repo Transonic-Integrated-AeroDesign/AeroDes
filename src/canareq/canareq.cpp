@@ -193,15 +193,6 @@ void canareq::linearModel() {
     aleq=-(Cmac0+(xcg-xac)*Cl0/lref)
             /(dCmacda+(xcg-xac)*dClda/lref);
 
-    if (DBG) {
-        cout << endl << " Cmac0 = " << Cmac0 << endl << endl;
-        cout << endl << " xcg = " << xcg << endl << endl;
-        cout << endl << " xac = " << xac << endl << endl;
-        cout << endl << " Cl0 = " << Cl0 << endl << endl;
-        cout << endl << " lref = " << lref << endl << endl;
-        cout << endl << " dCmacda = " << dCmacda << endl << endl;
-    }
-
     Cleq=Cl0+dClda*aleq;
     Cweq=Cleq;
     if(Cleq <= 0.) {
@@ -212,18 +203,8 @@ void canareq::linearModel() {
     Ueq=sqrt(2.*mg/(rho*aref*Cleq));
     reyeq=Ref*Ueq/100.;
     dynaref=0.5*rho*pow(Ueq,2)*aref;
-
     dTdv = thrust(ndat,Ueq);
-
     Cteq=rcor*(T+dTdv*Ueq)/dynaref;
-    if (DBG) {
-        cout << endl << " aleq = " << aleq << endl << endl;
-        cout << endl << " Cleq = " << Cleq << endl << endl;
-        cout << endl << " dTdv = " << dTdv << endl << endl;
-        cout << endl << " Ueq = " << Ueq << endl << endl;
-        cout << endl << " ndat = " << ndat << endl << endl;
-        cout << endl << " ndatx = " << ndatx << endl << endl;
-    }
 
     //     search for point on wing polar and interpolate Cd
     m=0;
@@ -285,14 +266,6 @@ void canareq::linearModel() {
     cout << " given best design parameters:" << endl;
     cout << "aleq = " << left << setw(10) << aleqB << " Ueq  = " << left << setw(10) << UeqB << " beteq = " << left << setw(10) <<  beteqB << endl;
     cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl << endl;
-
-    // new best parameters (calculated by linear model)
-    //aleqB=aleq; //aleq;
-    //UeqB=Ueq; //Ueq;
-    //beteqB=beteq; //beteq;
-    //CleqB=Cleq; // Cleq;
-    //CdeqB=Cdeq; // Cdeq;
-    //CmacB=Cmac; // Cmac;
 }
 
 void canareq::nonlinearModel() {
@@ -336,36 +309,37 @@ void canareq::nonlinearModel() {
     int iter=1;
 
     // iterations
+    cout << std::setprecision(6);
     for (int i = 0; i < itx; ++i) {
         // engine operating point
-        dTdv = thrust(ndat, Ueq);
-        dynaref = 0.5*rho*aref*pow(Ueq,2);
-        Cteq = rcor * (T + dTdv * Ueq) / dynaref;
-        Cweq = mg / dynaref;
-        reyeq = Ref * Ueq / 100.;
+        dTdv=thrust(ndat, Ueq);
+        dynaref=0.5*rho*aref*pow(Ueq,2);
+        Cteq=rcor*(T+dTdv*Ueq) / dynaref;
+        Cweq=mg / dynaref;
+        reyeq=Ref*Ueq / 100.;
         // lift coefficient of canar
-        dCldac = 2.0 * pi / (1.0 + 2.0 / arc);
-        Clc0 = dCldac * tc;
-        Clceq = Clc0 + dCldac * aleq;
+        dCldac=2.0*pi / (1.0+2.0 / arc);
+        Clc0=dCldac*tc;
+        Clceq=Clc0+dCldac*aleq;
         // moment coefficients of single canard Cmacc and Cmco
-        dCmacdac = 0.;
-        Cmacc0 = 0.;
-        dCmdac = dCmacdac - xacc * dCldac / cac;
-        Cmc0 = Cmacc0 - xacc * Clc0 / cac;
+        dCmacdac=0.;
+        Cmacc0=0.;
+        dCmdac=dCmacdac-xacc*dCldac / cac;
+        Cmc0=Cmacc0-xacc*Clc0 / cac;
         // search for point on polar of wing
-        m = 0;
-        prod = aleq + .5 * pi;
+        m=0;
+        prod=aleq+.5*pi;
         for (int j = 1; j < kx; ++j) {
             //do 7 k = 2, kx - 1
-            prod = prod * (aleq - inc[j]);
-            if (prod <= eps) break;//goto 8
-            prod = 1.;
-            m = j;
+            prod=prod*(aleq-inc[j]);
+            if (prod <= eps) break;
+            prod=1.;
+            m=j;
         }
 
         // lift coefficients of main wing
-        dCldam = (cz[m+1] - cz[m]) / (inc[m+1] - inc[m]);
-        Clm0 = cz[m] + dCldam * (-inc[m]);
+        dCldam=(cz[m+1]-cz[m]) / (inc[m+1]-inc[m]);
+        Clm0=cz[m]+dCldam*(-inc[m]);
 
         // add canar influence on Clm
         Clm0=Clm0+acw*dCldalind*Clceq / (pi*arc);
@@ -460,11 +434,11 @@ void canareq::nonlinearModel() {
 
         // daleq = 0.
         // update global coefficients
-        aleqd=radeg * aleq;
-        Cleq=Cl0 + dClda * aleq;
-        Cmeq=Cm0 + dCmda * aleq;
-        Cmac=Cmac0 + dCmacda * aleq;
-        Cmcg=Cmeq + xcg * Cweq * cos(aleq + beteq) / lref;
+        aleqd=radeg*aleq;
+        Cleq=Cl0+dClda*aleq;
+        Cmeq=Cm0+dCmda*aleq;
+        Cmac=Cmac0+dCmacda*aleq;
+        Cmcg=Cmeq+xcg*Cweq*cos(aleq+beteq) / lref;
 
         // equation 2 for dUeq
         dUeq=-(Cleq - Cweq * cos(beteq) + Cteq * sin(aleq))
@@ -473,14 +447,14 @@ void canareq::nonlinearModel() {
 
         // dUeq = 0.
         // velocity and Reynolds number at equilibrium
-        Ueq=Ueq + omega * dUeq;
-        reyeq=rho * Ueq * cam / amu;
+        Ueq=Ueq+omega*dUeq;
+        reyeq=rho*Ueq*cam / amu;
 
         // wing Reynolds number, wing induced drag estimation
         reym=reyeq;
-        Clmeq=Clm0 + dCldam * aleq;
-        Cdim=pow(Clmeq,2) / (pi * em * arm);
-        Cdm0=Cdmeq - Cdim;
+        Clmeq=Clm0+dCldam*aleq;
+        Cdim=pow(Clmeq,2) / (pi*em*arm);
+        Cdm0=Cdmeq-Cdim;
 
         // fuselage viscous drag
         reyf = reyeq * lf / cam;    // this can become negative -Cp 3/9/22
@@ -516,7 +490,7 @@ void canareq::nonlinearModel() {
         }
         Cdneq = 2.0 * Cdn0;
 
-        // - total drag
+        // total drag
         Cdeq = (am * Cdmeq + af * Cdfeq + ac * Cdceq + ar * Cdreq + an * Cdneq) / aref;
         Cdeq = Cdeq + Cdbrake;
 
@@ -603,13 +577,13 @@ void canareq::nonlinearModel() {
 
     // non-linear equations residuals
     if(inewton==0) {
-        cout << std::setprecision(3);
+        cout << std::setprecision(4);
         cout << "\033[1;42m relaxation: \033[0m" << endl;
         cout << left << setw(10) << "daleq = " << left << setw(10) << daleq << " dUeq=" << left << setw(10) << dUeq << " dbeteq = " << left << setw(10) << dbeteq << endl;
         cout << left << setw(10) << " equ1 = " << left << setw(10) << bb[0] << " equ2=" << left << setw(10) << bb[1] << "  equ3 = " << left << setw(10) << bb[2] << endl;
     }
     else if(inewton==1) {
-        cout << std::setprecision(3);
+        cout << std::setprecision(4);
         cout << "\033[1;42m newton: \033[0m" << endl;
         cout << left << setw(10) << "  det = " << left << setw(10) << det << endl;
         cout << left << setw(10) << "daleq = " << left << setw(10) << bb[0] << " dUeq = " << left << setw(10) << bb[1] << " dbeteq = " << left << setw(10) << bb[2] << endl;
@@ -637,7 +611,8 @@ void canareq::nonlinearModel() {
     reyc=reyeq*cac/cam;
     tr0=rcor*(T+dTdv*Ueq);
 
-    cout <<"        canard setting angle = " << tc << " (rd) = " << tcd << " (deg)" << endl << endl;
+    cout << std::setprecision(4);
+    cout <<" canard setting angle = " << tc << " (rd) = " << tcd << " (deg)" << endl << endl;
 
     //     aerodynamic center moment coefficient from design data:
     cout << "\033[1;42m design parameters: \033[0m" << endl;
@@ -808,8 +783,9 @@ void canareq::readInputParams() {
             arc = arceff;
         }
         if(a.compare("ARMEFF")==0) {
-            armeff = b;
-            arm = armeff;
+            armeff=b;
+            arm=armeff;
+            cout << endl << "!! ARM = " << arm << endl << endl;
         }
         //if(a.compare("TCD")==0) tcd = b;
         
@@ -887,7 +863,6 @@ void canareq::readInputParams() {
     rcor=rcor*pow((Pcent*Pcent/10000.0), us3);
     tr0=rcor*(T+dTdv*Ueq);
     dtrdv=rcor*dTdv;
-    arm=bm*bm/am;
 
     if(statmarg >0.) xcg=xac-statmarg*lref;
     
