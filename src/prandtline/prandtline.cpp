@@ -8,6 +8,7 @@
 #include <iomanip>  // setw
 #include <sstream>  // istream
 #include <math.h>   // copysign
+#include <cstring>
 
 #include "prandtline.hpp"
 
