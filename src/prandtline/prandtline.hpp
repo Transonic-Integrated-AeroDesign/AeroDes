@@ -58,6 +58,7 @@ private:
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;
     double rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
+    double base, expn, realpart, imagpart, denom;
     double *c, *g, *dg, *y, *eta;
     double *w, *t, *dem;
     double *a0, *a1, *b0, *b1, *c0, *c1;

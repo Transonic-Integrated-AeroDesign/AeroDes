@@ -204,6 +204,7 @@ void prandtline::setMesh() {
         //do 6 j=1,jx
         tetj=j*dtet;
         yj=-cos(tetj);
+        y[j]=0; // initialize with zero
         y[j]=yj;
         etaj=-cos(tetj+.5*dtet);
         eta[j]=etaj;
@@ -326,7 +327,7 @@ void prandtline::solveLiftingLine() {
     if (DBG) cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
 
     // setup incidence angle
-    if (alstep==0) nsteps = 1;
+    if (alstep==0) nsteps=1;
     else nsteps=1+(alphafi-alphain)/alstep;
     alphad=alphain-alstep;
 
@@ -339,17 +340,17 @@ void prandtline::solveLiftingLine() {
 
     // loop over incidence angles
     for (int nstep = 0; nstep < nsteps; nstep++) {
-        alphad = alphad + alstep;
-        alpha = degrad * alphad;
+        alphad=alphad+alstep;
+        alpha=degrad*alphad;
         if (abs(alphad) >= 91.0) {
             cout << "alphad>91 deg, stop" << endl;
             abort();
         }
-        iter = 0;
+        iter=0;
 
-        cout << endl << " start solution: alpha = " << alphad << " (degrees)" << endl;
+        if (DBG) cout << endl << " solution: alpha = " << alphad << " (degrees)" << endl;
 
-        if (ivis == 0) {
+        if (ivis==0) {
             cout << "do you want to introduce viscous effects?" << endl;
             cout << "viscous/inviscid=1/0   choose ivis=" << endl;
             //read(5, *) ivis
@@ -372,11 +373,14 @@ void prandtline::solveLiftingLine() {
             if (polarBool) {
                 // search for point on polar and polar coefficients
                 for (j = 1; j < (jx-1); ++j) {
-                    n=polar[j];
-                    atj=at[j];
-                    atj=atj+acwash*wcanar[j];
-                    mj=1;
-                    prod=1.57-atj;
+                    n=polar[j]; //
+
+                    // unnecessary if statement
+                    //if (n!=0) {
+                    atj = at[j];
+                    atj = atj + acwash * wcanar[j];
+                    mj = 1;
+                    prod = 1.57 - atj;
 
                     // loop over wingspan mesh points
                     for (int k = 1; k < (kx[n] - 1); ++k) {
@@ -391,30 +395,39 @@ void prandtline::solveLiftingLine() {
                     a0[j] = cx[n][mj] - a1[j] * inc[n][mj];
                     b1[j] = (cz[n][mj + 1] - cz[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
                     b0[j] = cz[n][mj] - b1[j] * inc[n][mj];
-                    c1[j] = (cq[n][mj + 1] - cq[n][mj]) / (inc[n][mj + 1] - inc[n][mj]);
-                    c0[j] = cq[n][mj] - c1[j] * inc[n][mj];
-                    cxj = a0[j] + a1[j] * atj;
-                    czj = b0[j] + b1[j] * atj;
-                    qj = c0[j] + c1[j] * atj;
-                    m[j] = mj;
-                    l[j] = czj;
-                    d[j] = vis * cxj;
-                    q[j] = qj;
+                    c1[j]=(cq[n][mj+1]-cq[n][mj]) / (inc[n][mj+1]-inc[n][mj]);
+                    c0[j]=cq[n][mj]-c1[j]*inc[n][mj];
+                    cxj=a0[j]+a1[j]*atj;
+                    czj=b0[j]+b1[j]*atj;
+                    qj=c0[j]+c1[j]*atj;
+                    m[j]=mj;
+                    l[j]=czj;
+                    d[j]=vis*cxj;
+                    q[j]=qj;
+                    //}
+                    //else {
+                    //    l[j]=2.0*g[j]/c[j];
+                    //    d[j]=0.0;
+                    //    q[j]=0.0;
+                    //    c1[j]=0.0;
+                    //    c0[j]=-pi*dm;
+                    //}
                 }
 
                 // boundary conditions
-                m[0] = m[1];
-                l[0] = l[1] + (l[2] - l[1]) * (y[0] - y[1]) / (y[2] - y[1]);
-                d[0] = d[1] + (d[2] - d[1]) * (y[0] - y[1]) / (y[2] - y[1]);
+                m[0]=m[1];
+                l[0]=l[1]+(l[2]-l[1])*(y[0]-y[1]) / (y[2]-y[1]);
+                d[0]=d[1]+(d[2]-d[1])*(y[0]-y[1]) / (y[2]-y[1]);
+                q[0]=q[1]+(q[2]-q[1])*(y[0]-y[1]) / (y[2]-y[1]);
 
-                m[j] = m[j - 1];
-                l[j] = l[j - 1] + (l[j - 1] - l[j - 2]) * (y[j] - y[j - 1])
-                                  / (y[j - 1] - y[j - 2]);
-                d[j] = d[j - 1] + (d[j - 1] - d[j - 2]) * (y[j] - y[j - 1])
-                                  / (y[j - 1] - y[j - 2]);
+                m[j]=m[j-1];
+                l[j]=l[j-1]+(l[j-1]-l[j-2])*(y[j]-y[j-1])
+                                  / (y[j-1]-y[j-2]);
+                d[j]=d[j-1]+(d[j-1]-d[j-2])*(y[j]-y[j-1])
+                                  / (y[j-1]-y[j-2]);
+                q[j]=q[j-1]+(q[j-1]-q[j-2])*(y[j]-y[j-1])
+                           /(y[j-1]-y[j-2]);
             }
-
-
 
             // fixed point iteration
             g[0]=0.;
@@ -430,10 +443,9 @@ void prandtline::solveLiftingLine() {
                 for (int k = 0; k < jx - 1; ++k) {
                     // downwash for non-straight lifting line, trailed vorticity
                     // (end at k-1 indice since we are performing forward derivative)
-                    phi0 = copysign(1.0, y[j] - eps) * atan((xacm[j] - xiac[k]) / (y[j] - eta[k]));
-                    sum = sum + (g[k + 1] - g[k]) * (1.0 - sin(phi0)) / (y[j] - eta[k]);
+                    phi0=copysign(1.0,y[j]-eps)*atan((xacm[j]-xiac[k]) / (y[j]-eta[k]));
+                    sum=sum+(g[k+1]-g[k])*(1.0-sin(phi0)) / (y[j]-eta[k]);
                     cout << std::setprecision(10);
-                    //cout << "xacm = " << xacm[j] << " xiac = " << xiac[k] << " y = " << y[j] << " eta = " << eta[k] << " r = " << (xacm[j] - xiac[k]) / (y[j] - eta[k]) << endl;
 
                     if (DBG) {
                         cout << endl << "j = " << j << endl;
@@ -445,52 +457,58 @@ void prandtline::solveLiftingLine() {
                     }
 
                     // downwash due to lifting line
-                    if (((k + 1) != j) && (k < jx - 1)) {
-                        dwkj = -g[k + 1] * ((xiac[k + 1] - xiac[k]) * (y[j] - y[k + 1])
-                                            - (xacm[j] - xacm[k + 1]) * (eta[k + 1] - eta[k]))
-                               / pow((pow((xacm[j] - xacm[k + 1]), 2) + pow((y[j] - y[k + 1]), 2) +
-                                      10.0 * (eta[k + 1] - eta[k])), 1.5);
-                        sum = sum + dwkj;
+                    if (((k+1) != j) && (k < jx-2)) {
+                        base = (pow((xacm[j]-xacm[k+1]),2) + pow((y[j]-y[k+1]), 2) + 10.0*(eta[k+1]-eta[k]));
+                        expn = 1.5;
+                        realpart = pow(abs(base),expn)*cos(expn*M_PI);
+                        imagpart = pow(abs(base),expn)*sin(expn*M_PI);
+
+                        if (base < 0) denom = imagpart;
+                        else denom = pow(abs(base),expn);
+
+                        dwkj=-g[k+1]*((xiac[k+1]-xiac[k])*(y[j]-y[k+1]) - (xacm[j]-xacm[k+1])*(eta[k+1]-eta[k])) / denom;
+                        if (DBG) cout << "dwkj = " << dwkj << " k = " << k << " j = " << j << " denom = " << denom << endl;
+                        sum=sum+dwkj;
+                        if(isnan(dwkj)) abort();
                     }
                     //11 continue
                 }
-
-                wj = -sum / (4. * pi);
-                atj = alpha + atan2(wj, 1.);
-                atj = atj + acwash * wcanar[j];
-                attj = atj + t[j];
-                czj = b0[j] + b1[j] * attj;
+                if (DBG) cout << " sum = " << sum << endl;
+                wj=-sum / (4.*pi);
+                atj=alpha+atan2(wj, 1.);
+                atj=atj+acwash*wcanar[j];
+                attj=atj+t[j];
+                czj=b0[j]+b1[j]*attj;
 
                 if (polarBool) {
                     reg = 0.;
                     if (m[j] >= mxtrm[n]) {
-                        reg = -c[j] * b1[j]
-                              * (1. / (y[j] - eta[j - 1]) - 1. / (y[j] - eta[j]))
-                              / (16. * pi * (1.0 + wj * wj));
-                        if (reg < eps) reg = 0.;
+                        reg=-c[j]*b1[j]
+                              * (1. / (y[j]-eta[j-1])-1. / (y[j]-eta[j]))
+                              / (16.*pi*(1.0+wj*wj));
+                        if (reg < eps) reg=0.;
                         //endif
                     }
                     //endif
                 }
 
-                dg[j] = (0.5 * c[j] * czj - g[j]
-                         + (avis + reg) * (g[j + 1] - 2. * g[j] + g[j - 1]))
-                        / (1. + c[j] * b1[j] * (1. / (y[j] - eta[j - 1]) - 1. / (y[j] - eta[j]))
-                                / (8. * pi * (1.0 + wj * wj)) + 2. * (avis + reg));
-                w[j] = wj;
-                at[j] = attj;
+                dg[j]=(0.5*c[j]*czj-g[j]
+                         +(avis+reg)*(g[j+1]-2.*g[j]+g[j-1]))
+                        / (1.+c[j]*b1[j]*(1./(y[j]-eta[j-1])-1. / (y[j]-eta[j]))
+                        / (8.*pi*(1.0+wj*wj))+2.*(avis+reg));
+                w[j]=wj;
+                at[j]=attj;
 
-                if (abs(y[j]) <= rf) {
-                    dg[j] = g[j - 1] + 2.0 * rf * sin(3.0 * alpha) / 3.0 * ((1.0 - pow((y[j] / rf), 2))
-                                                                            / (1.0 + pow((y[j] / rf), 2)) -
-                                                                            (1.0 - pow((y[j - 1] / rf), 2))
-                                                                            / (1.0 + pow((y[j - 1] / rf), 2))) - g[j];
+                if ((iwing==2) && abs(y[j]) <= rf) {
+                    dg[j]=g[j-1]+2.0*rf*sin(3.0*alpha) / 3.0*((1.0-pow((y[j] / rf),2))
+                            / (1.0+pow((y[j] / rf),2))-(1.0-pow((y[j-1] / rf), 2))
+                            / (1.0+pow((y[j-1] / rf),2)))-g[j];
                 }
 
-                g[j] = g[j] + omega * dg[j];
+                g[j]=g[j]+omega*dg[j];
                 if (abs(dgx) < abs(dg[j])) {
-                    dgx = dg[j];
-                    jdx = j;
+                    dgx=dg[j];
+                    jdx=j;
                 }
             }
             // boundary conditions
@@ -501,17 +519,20 @@ void prandtline::solveLiftingLine() {
 
             if (iter == 1) res0 = dgx;
             alogres = log10(abs(dgx / res0) + eps);
-            //cout << "it = " << it << " dgx = " << abs(dgx) << " eps = " << eps << endl;
 
             if (abs(dgx) < eps) break; // goto 300
+
+            if (isnan(dgx)) {
+                cout << endl << "NaN error:" << endl;
+                return;
+            }
         }
 
         // check if results converged
         cout << std::setprecision(6);
-        if (DBG) cout << "it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
         if (abs(dgx) > eps) {
             cout << "\033[1;41m NOT CONVERGED! ENDING PROGRAM \033[0m" << endl;
-            abort();
+            //abort();
         }
 
         // results
@@ -650,11 +671,11 @@ void prandtline::solveLiftingLine() {
         }
 
         // set shared variables
-        vars->inc_of_alpha[nstep] = alpha; // would have to do a search... to find out where you are.
-        vars->al_of_alpha[nstep] = alphad;
-        vars->cl_of_alpha[nstep] = cl;
-        vars->cd_of_alpha[nstep] = cd;
-        vars->cq_of_alpha[nstep] = cmac;
+        //vars->inc_of_alpha[nstep] = alpha; // would have to do a search... to find out where you are.
+        //vars->al_of_alpha[nstep] = alphad;
+        //vars->cl_of_alpha[nstep] = cl;
+        //vars->cd_of_alpha[nstep] = cd;
+        //vars->cq_of_alpha[nstep] = cmac;
 
         // print results
         /*cout << "results:" << endl;
@@ -674,11 +695,14 @@ void prandtline::solveLiftingLine() {
         cout << right << setw(38) << " ivis = " << ivis << endl;*/
 
         // results
-        alphares[nstep] = alphad;
-        czres[nstep] = cl;
-        cxres[nstep] = cd;
-        dum = 0.;
-        cqres[nstep] = cmac;
+        //alphares[nstep] = alphad;
+        //czres[nstep] = cl;
+        //cxres[nstep] = cd;
+        //dum = 0.;
+        //cqres[nstep] = cmac;
+
+        printResults();
+        //printDistributions();
     }
 
     // set shared variable
@@ -1285,19 +1309,22 @@ void prandtline::printResults() {
     if (DBG) cout << endl << "=========================================\n";
     if (DBG) cout << " prandtline::printResults()" << endl;
 
-    cout << endl << "\033[1;42m results: \033[0m" << endl << endl;
+    cout << endl << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
 
+    //cout << right << setw(32) << "                            alpha = " << alphad << endl;
+    cout << right << setw(32) << "                               it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
     cout << right << setw(32) << "        inviscid contribution CDi = " << cdi << endl;
     cout << right << setw(32) << "              oswald efficiency e = " << em << endl;
     cout << right << setw(32) << "         viscous contribution CDv = " << cdv << endl << endl;
 
-    cout << "\033[1;42m global results \033[0m" << endl << endl;
+    cout << "\033[1;42m global results: " << alphad << " (deg) \033[0m" << endl;
+
     cout << right << setw(32) << "              drag coefficient CD = " << cd << endl;
     cout << right << setw(32) << "              lift coefficient CL = " << cl << endl;
     cout << right << setw(32) << " pitching moment coefficient CM,0 = " << cm0 << endl;
     cout << right << setw(32) << "                            CM,ac = " << cmac << endl;
     cout << right << setw(32) << "          aerodynamic center x,ac = " << xac << endl;
     cout << right << setw(32) << "          center of pressure x,cp = " << xcp << endl;
-    cout << right << setw(32) << "   root bending moment coef. CM,x = " << -cmf[jx2] << endl;
-    cout << right << setw(32) << "   root torsion moment coef. CM,y = " << -cmt[jx2] << endl;
+    cout << right << setw(32) << "   root bending moment coef. CM,x = " << -cmf[jx2+1] << endl;
+    cout << right << setw(32) << "   root torsion moment coef. CM,y = " << -cmt[jx2+1] << endl;
 }

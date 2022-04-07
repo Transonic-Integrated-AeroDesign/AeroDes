@@ -40,8 +40,8 @@ int main(int argc, char** argv) {
     //prants->printInputParams();   // optional
     //prants->printInputPolar();    // optional
     //prants->printSetupSummary();  // optional
-    prants->printDistributions();
-    prants->printResults();
+    //prants->printDistributions();
+    //prants->printResults();
 
     delete prants;
 }
