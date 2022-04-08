@@ -33,6 +33,9 @@ public:
     void readInputParams();
     void readInputPolar(std::string); // read main wing polar
 
+    // sets
+    void setTCD(double);
+
     // memory
     double* create_1d_double_array(int n1, double *array);
     double** create_2d_double_array(int n1, int n2, double **array);
@@ -44,8 +47,6 @@ public:
     void linearModel(); // generate 'best' values
     void nonlinearModel();
     void mainwingModel();
-
-
 
     // screen output
     void printInputParams();
