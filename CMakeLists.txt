@@ -54,6 +54,12 @@ add_executable(canary
         src/canareq/canareq.hpp
         src/canareq/main.cpp)
 
+add_executable(smooth
+        src/variables.hpp
+        src/smoothpolar/smoothpolar.cpp
+        src/smoothpolar/smoothpolar.hpp
+        src/smoothpolar/main.cpp)
+
 install(TARGETS cfmactu)
 install(TARGETS prandtl)
 install(TARGETS wake)
