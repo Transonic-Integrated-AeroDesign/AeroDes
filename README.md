@@ -1,35 +1,35 @@
 # AeroDesign
 The original version of this software was written by Dr. Jean-Jacques Chattot in Fortran.  This C++ implementation has been created with the permission of Dr. Chattot.
 
-The work done herein is based solely on the lattice-vortex sheet method outlined by Professors JJ. Chattot and MM. Hafez [1].
+The work done herein is based solely on the vortex line method outlined by Professors J.J. Chattot and M.M. Hafez [1].
 The point of contact for questions should be directed to Carlos Pereyra.
 
 Follow the sections below for compiling and using this package.
 
 * [Build](#Build)
-* [Code Usage](#Usage)
+* [How to Use](#Usage)
 * [References](#References)
 ## <a name="Build"></a> Build Instructions
 
 Below are the steps required to compile this project.
 
-**step one:** clone the code repository,
+**step one**, clone the repository
 ```
-git clone https://github.com/carlos-pereyra/AeroDes
+git clone https://github.com/Transonic-Integrated-AeroDesign/AeroDes
 ```
 
-**step two:** change directory into AeroDes,
+**step two**, change directory into AeroDes
 ```
 cd AeroDes
 ```
 
-**step three:** make a new build directory and change into it,
+**step three**, make a new build directory and change into it
 ```
 mkdir build 
 cd build
 ```
 
-**step four:** build code with cmake utility and install to your system,
+**step four**, build code with cmake utility and install to your system
 ```
 cmake ../.
 make
@@ -48,10 +48,16 @@ git pull origin master
 
 In order to compile the executables and the shared libraries, you will need the following packages on your computer.
 
+**Mac OS X**
 * cmake https://cmake.org/install/
 * g++ https://developer.apple.com/xcode/
   
-## <a name="Usage"></a> Code Usage
+**Windows**
+* WSL 2
+* cmake
+* g++
+
+## <a name="Usage"></a> How to Use
 
 There are two methods of using this code in your design process. You may either use the direct executables in linear fashion where you run each program separately. Or you may import the shared library resource. Lets go through both so you know how to use either of these resources.
 
@@ -148,5 +154,5 @@ You absolutely must have the ```-laerolib``` flag in the compile line in order f
 
 ## <a name="References"></a> References
 
-[1] JJ. Chattot and MM. Hafez. 2015. Theoretical and Applied Aerodynamics: And Related Numerical Methods.
+[1] J.J. Chattot and M.M. Hafez. 2015. Theoretical and Applied Aerodynamics: And Related Numerical Methods.
 Springer Netherlands, Dordrecht
