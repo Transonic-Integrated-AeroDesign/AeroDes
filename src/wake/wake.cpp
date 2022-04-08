@@ -173,7 +173,7 @@ void wake::setMesh() {
     //       this may in turn effect the resulting distributions. this is likely due to switching
     //       to double precision instead of float. -cp 3/28/22
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::setMesh()" << endl;
+    if (DBG) cout << " wake::setMesh()" << endl;
     if (DBG) cout << " (point distribution, geometry and flow)" << endl;
 
     if(DBG) {
@@ -275,13 +275,13 @@ void wake::setMesh() {
         // when polar is [on] off
         if (polarBool) {
             if (y[j]>(rbreak[n]-eps)) {
-                //if(DBG) cout << "rbreak(n) = " << rbreak[n] << endl;
-                n = n + 1;
+                if (DBG) cout << " rbreak(n) = " << rbreak[n] << endl;
+                n=n+1;
             }
         }
-        else { n = 0; }
+        else { n=0; }
 
-        polar[j] = n;
+        polar[j]=n;
 
         if(DBG) {
             cout << std::setprecision(7);
@@ -332,7 +332,6 @@ void wake::setMesh() {
     }
 
     // geometric values
-    // summarized in printGeomSummary()
     ac=acdum;
     cac=cacdum/ac;
     arc=0.5*pow(bc,2)/ac;
@@ -373,15 +372,15 @@ void wake::solveLiftingLine() {
 
     // loop over incidence angles
     for (int nstep = 0; nstep < nsteps; nstep++) {
-        alphad = alphad + alstep;
-        alpha = degrad * alphad;
+        alphad=alphad+alstep;
+        alpha=degrad*alphad + eps; // why is eps added?
         if (abs(alphad) >= 91.0) {
             cout << "alphad>91 deg, stop" << endl;
             abort();
         }
         iter = 0;
 
-        cout << " solution complete: alpha " << alphad << " (degrees)" << endl;
+        if (DBG) cout << " solution complete: " << alphad << " (deg)" << endl;
 
         if (ivis == 0) {
             cout << "do you want to introduce viscous effects?" << endl;
@@ -477,6 +476,7 @@ void wake::solveLiftingLine() {
 
             // downwash & gamma integral
             for (j = 1; j < jxs2-1; ++j) {
+                //printDistributions();
                 //do 12 j = 2, jx - 1
                 sum = 0.;
 
@@ -484,25 +484,31 @@ void wake::solveLiftingLine() {
                     // downwash for non-straight lifting line, trailed vorticity
                     // (end at k-1 indice since we are performing forward derivative)
                     if(k!=jxs2-1) {
-                        phi0 = copysign(1.0, y[j] - eps) * atan((xacc[j] - xiac[k]) / (y[j] - eta[k]));
-                        sum = sum + (g[k + 1] - g[k]) * (1.0 - sin(phi0)) / (y[j] - eta[k]);
+                        phi0=copysign(1.0, y[j] - eps) * atan((xacc[j]-xiac[k]) / (y[j]-eta[k]));
+                        sum=sum+(g[k+1]-g[k])*(1.0-sin(phi0)) / (y[j]-eta[k]);
                         //cout << std::setprecision(10);
-                        //cout << "j = " << j << " k = " << k << " g[k+1] = " << g[k+1] << " eta[k] = " << eta[k] << " sum = " << sum << " phi0 = " << phi0 << endl;
 
-                        // downwash due to lifting line
-                        if (((k + 1) != j) && (k < jx - 1)) {
-                            dwkj = -g[k + 1] * ((xiac[k + 1] - xiac[k]) * (y[j] - y[k + 1])
-                                                - (xacc[j] - xacc[k + 1]) * (eta[k + 1] - eta[k]))
-                                   / pow((pow((xacc[j] - xacc[k + 1]), 2) + pow((y[j] - y[k + 1]), 2) +
-                                          10.0 * (eta[k + 1] - eta[k])), 1.5);
-                            sum = sum + dwkj;}
+                        // downwash due to lifting line (nan denominator)
+                        if (((k + 1) != j) && (k < jx-2)) {
+                            base=pow((xacc[j]-xacc[k+1]),2) + pow((y[j]-y[k+1]),2)+10.0*(eta[k+1]-eta[k]);
+                            expn=1.5;
+                            realpart = pow(abs(base),expn)*cos(expn*M_PI);
+                            imagpart = pow(abs(base),expn)*sin(expn*M_PI);
+
+                            if (base < 0) denom = imagpart;
+                            else denom = pow(abs(base),expn);
+
+                            dwkj=-g[k+1]*((xiac[k+1]-xiac[k])*(y[j]-y[k+1])-(xacc[j]-xacc[k+1])*(eta[k+1]-eta[k])) / denom;
+                            sum = sum + dwkj;
+                        }
                     }
                 }
 
+                if (DBG) cout << " dwkj = " << dwkj << " sum = " << sum << endl;
                 wj=-sum / (4.*pi);
                 atj=alpha+atan2(wj,1.);
-                //atj=atj + acwash*wcanar[j];
                 attj=atj+t[j];
+                if (DBG) cout << " atj " << atj << " al " << alpha << " t_j " << t[j] << endl;
                 czj=b0[j]+b1[j]*attj;
 
                 if (polarBool) {
@@ -514,13 +520,13 @@ void wake::solveLiftingLine() {
                         if (reg<eps) reg=0.;
                     }
                 }
-
-                dg[j]=(0.5*c[j]*czj-g[j]
-                         +(avis+reg)*(g[j+1]-2.*g[j]+g[j-1]))
+                if (DBG) cout << "czj = " << czj << " b0 " << b0[j] << " b1 " << b1[j] << " attj = " << attj << endl;
+                dg[j]=(0.5*c[j]*czj-g[j] + (avis+reg)*(g[j+1]-2.*g[j]+g[j-1]))
                         / (1.+c[j]*b1[j]*(1./(y[j]-eta[j-1])-1./(y[j]-eta[j]))
-                                / (8.*pi*(1.0+wj*wj))+2.*(avis+reg));
+                        / (8.*pi*(1.0+wj*wj))+2.*(avis+reg));
                 w[j]=wj;
                 at[j]=attj;
+                if (DBG) cout << " g_j = " << g[j] << " dg = " << dg[j] << endl;
 
                 if (abs(y[j])<=rf) {
                     dg[j]=g[j-1]+2.0*rf*sin(3.0*alpha) / 3.0*((1.0-pow((y[j] / rf), 2))
@@ -536,6 +542,7 @@ void wake::solveLiftingLine() {
                     dgx = dg[j];
                     jdx = j;
                 }
+                if (DBG) cout << "* g_j = " << g[j] << " dg = " << dg[j] << " dgx = " << dgx << " jdx = " << jdx << endl;
 
                 // mirror side
                 g[jx-j-1]=g[j];
@@ -550,14 +557,13 @@ void wake::solveLiftingLine() {
             // final edge boundary condition
             g[jx-1]=0.0;
             w[jx-1]=w[0];
+            at[jx-1]=at[0];
 
             // middle edge boundary condition
             w[jxs2-1]=w[jxs2-2]+(w[jxs2-3]-w[jxs2-2])*(y[jxs2-1]-y[jxs2-2]) / (y[jxs2-3] - y[jxs2-2]);
             w[jxs2]=w[jxs2-1];
-
-            //at[jxs2]=at[jxs2-1]+(at[jxs2-2]-at[jxs2-1])*(y[jxs2]-y[jxs2-1]) / (y[jxs2-2]-y[j-1]);
-            //at[jxs2+1]=at[jxs2];
-            //at[jx]=at[0];
+            at[jxs2-1]=at[jxs2-2]+(at[jxs2-3]-at[jxs2-2])*(y[jxs2-1]-y[jxs2-2]) / (y[jxs2-3]-y[jxs2-2]);
+            at[jxs2]=at[jxs2-1];
 
             if (iter == 0) res0 = dgx;
             alogres = log10(abs(dgx / res0) + eps);
@@ -567,7 +573,7 @@ void wake::solveLiftingLine() {
         }
 
         // check if results converged
-        cout << std::setprecision(6);
+        cout << fixed << std::setprecision(5);
         if (abs(dgx) > eps) {
             cout << " NOT CONVERGED!" << endl;
             abort();
@@ -587,7 +593,7 @@ void wake::solveLiftingLine() {
         for (j = 1; j < (jxs2 - 1); ++j) {
             //do 13 j = 2, jx - 1
             cl=cl+g[j]*(eta[j]-eta[j-1]);
-
+            if (DBG) cout << "cl = " << cl << " eta_j = " << eta[j] << " eta_j_1 = " << eta[j-1] << " g_j = " << g[j]  << " j = " << j << endl;
             // if polar is [off] on
             if (!polarBool) {
                 at[j]=alpha+atan2(w[j], 1.)+t[j];
@@ -624,16 +630,17 @@ void wake::solveLiftingLine() {
         cl=0.5*arc*cl;
 
         if(alphad == 0.0) {
-            cl0 = cl + eps;
+            cl0=cl+eps;
         }
         if(alphad==1.0) {
-            cl1 = cl;
+            cl1=cl;
         }
 
         xac=xac/ac;
         cmac=cmac/(ac*cac);
         cm0=cmac-xac*cl/cac;
         xcp=xac-cac*cmac/cl;
+        if (DBG) cout << " xac = " << xac << " cac = " << cac << " cmac = " << cmac << " cl = " << cl << endl;
         cd0=0.;
         sum=0.;
         sum0=0.;
@@ -644,7 +651,7 @@ void wake::solveLiftingLine() {
         for (j = 0; j<jxs2; ++j) {
             //do 14 j=1,jxs2
             jm=j-1;
-            if (j==0)jm = 1;
+            if (j==0)jm=0;
             czj=b0[j]+b1[j]*at[j];
             sum=sum+g[j]*w[j]*(eta[j]-eta[jm]);
             if (!polarBool) {
@@ -694,6 +701,8 @@ void wake::solveLiftingLine() {
         //vars->cl_of_alpha[nstep] = cl;
         //vars->cd_of_alpha[nstep] = cd;
         //vars->cq_of_alpha[nstep] = cmac;
+
+        printResults();
     }
     // set breakpoints in y-distribution
     y[46] = -0.11111;
@@ -729,7 +738,7 @@ void wake::integrate_canard() {
     // fortran version outputs to "canarwake.xz"
 
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::integrate_canard()" << endl;
+    if (DBG) cout << " wake::integrate_canard()" << endl;
 
     // integration of wake trajectory in canard coordinates (ref Bc0/2)
     ixw=1+log(1.0+(str-1.0)*(lf/dxm)) / log(str);
@@ -778,14 +787,12 @@ void wake::integrate_canard() {
 
     // second section
     for (int i = ix; i<=ix+ixw; ++i) {
-        //do 23 i=ix+1,ix+ixw
         xc[i]=xc[ix-1]+Bc0*xc[i] / B;
         zc[i]=zcanar+Bc0*zc[i] / B;
         //write(36,*)xc(i),zc(i) // output to canarwake.xz
         //cout << right << setw(12) << xc[i]
         //     << right << setw(12) << zc[i]
         //     << right << setw(12) << i << endl;
-        //23   continue
     }
 }
 
@@ -795,7 +802,6 @@ void wake::integrate_wing() {
     //
     // note: readInputWingGeom() must be executed first
     // fortran version outputs to "canarwash.ylwl"
-
     jx=101;
     dtet=pi/(jx-1);
 
@@ -820,40 +826,27 @@ void wake::integrate_wing() {
         }
         wj=-sum / (2.*pi);
         ww[j]=wj;
-        //write(32, *) yj, wj // output to canarwash.ylwl
-        //25   continue
     }
 
     // output to "canaredge.xy"
     double dum;
 
-    //     point A
+    // point A
     dum=-1.;
     acdum=0.5115;
-    //     point C
+    // point C
     cacdum=0.7972;
-    //write(37,*)dum,acdum
-    //write(37,*)dum,cacdum
-    //     point D
+    // point D
     dum=-0.2857;
     cacdum=0.6072;
-
-    //     point B
+    // point B
     acdum=0.1786;
-    //write(37,*)dum,cacdum
-    //write(37,*)dum,acdum
-    //write(37,*)-dum,acdum
-    //write(37,*)-dum,cacdum
     dum=0.2857;
     acdum=0.1786;
     cacdum=0.6072;
-    //write(37,*)dum,acdum
-    //write(37,*)dum,cacdum
     dum=1.;
     acdum=0.5115;
     cacdum=0.7972;
-    //write(37,*)dum,cacdum
-    //write(37,*)dum,acdum
 }
 
 int **wake::create_2d_int_array(int n1, int n2, int **array) {
@@ -916,7 +909,7 @@ void wake::readInputParams() {
     // add the ability to read any input filename -cp 3/29/22
 
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::readInputParams()" << endl;
+    if (DBG) cout << " wake::readInputParams()" << endl;
 
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -1067,6 +1060,15 @@ void wake::readInputPolar(std::string filename) {
             cq[i][kdum] = c5;
             kx[i] = kp;
 
+            // incidence 90 deg
+            if(inc[i][kdum]>89.0) {
+                //rbreak(n)
+                if (n>=nx) rbreak[n]=1.0+eps;
+                kdum=k+1;
+                //goto 2
+                //endif
+            }
+
             // extrema values
             kxtrm[i][j] = 0;
             if (kdum>0) {
@@ -1210,7 +1212,7 @@ void wake::readInputCanardGeom(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::readInputCanardGeom()" << endl;
+    if (DBG) cout << " wake::readInputCanardGeom()" << endl;
 
     // open input file
     ifstream inputfile(filename);
@@ -1262,8 +1264,8 @@ void wake::readInputWingGeom(std::string filename) {
     //  ...  ...   ...     ...
     //
 
-    cout << endl << "=========================================\n";
-    cout << " wake::readInputWingGeom()" << endl;
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " wake::readInputWingGeom()" << endl;
 
     // open input file
     ifstream inputfile(filename);
@@ -1467,24 +1469,23 @@ void wake::printResults() {
 
     // essential formula
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::printResults()" << endl << endl;
-    cout << "                      Y=0.5*Bc0*y" << endl;
-    cout << "                      C=0.5*Bc0*c" << endl;
-    cout << "                      A=0.25*Bc0**2*ac" << endl;
-    cout << "                      D=C*d" << endl;
-    cout << "                      W=U*w" << endl;
-    cout << "                   GAMA=0.5*U*Bc0*g" << endl;
-    cout << "                   LIFT=0.5*RHO*U**2*A*Cl" << endl;
-    cout << "                   DRAG=0.5*RHO*U**2*A*Cd" << endl;
-    cout << "               MOMENT,0=0.5*RHO*U**2*A*Cac*Cm0" << endl;
-    cout << "               REYNOLDS=RHO*U*C/AMU" << endl;
-    cout << "                     Fz=0.5*RHO*U**2*A*fz" << endl;
-    cout << "                     Mf=0.25*RHO*U**2*A*Bc0*cmf" << endl;
-    cout << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
+    if (DBG) cout << " wake::printResults()" << endl << endl
+                  << "                      Y=0.5*Bc0*y" << endl
+                  << "                      C=0.5*Bc0*c" << endl
+                  << "                      A=0.25*Bc0**2*ac" << endl
+                  << "                      D=C*d" << endl
+                  << "                      W=U*w" << endl
+                  << "                   GAMA=0.5*U*Bc0*g" << endl
+                  << "                   LIFT=0.5*RHO*U**2*A*Cl" << endl
+                  << "                   DRAG=0.5*RHO*U**2*A*Cd" << endl
+                  << "               MOMENT,0=0.5*RHO*U**2*A*Cac*Cm0" << endl
+                  << "               REYNOLDS=RHO*U*C/AMU" << endl
+                  << "                     Fz=0.5*RHO*U**2*A*fz" << endl
+                  << "                     Mf=0.25*RHO*U**2*A*Bc0*cmf" << endl
+                  << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
 
-    // results
-    cout << endl << "\033[1;42m results: \033[0m" << endl;
-    cout << right << setw(38) << " alpha = " << alphad << " (deg) " << endl;
+    cout << fixed << std::setprecision(4);
+    cout << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
     cout << right << setw(38) << " oswald efficiency e = " << em << endl;
@@ -1492,7 +1493,7 @@ void wake::printResults() {
     cout << right << setw(38) << " arceff = " << arceff << endl;
     cout << right << setw(38) << " dClcda0 = " << dClcda0 << endl << endl;
 
-    cout<< "\033[1;42m global results: \033[0m" << endl;
+    cout<< "\033[1;42m global results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "CD = " << cd << endl;
     cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
     cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;

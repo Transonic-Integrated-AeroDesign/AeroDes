@@ -29,27 +29,30 @@ int main(int argc, char** argv) {
     wake *wk = new wake(vars);
 
     wk->cmdInput(argc, argv);
-    wk->readInputParams();
-    wk->printInputParams();
 
-    wk->readInputPolar("polarbl.dat");
+    // input
+    wk->readInputParams();
+    wk->readInputPolar("polarbl.dat"); // default polar file for users*
     //wk->printXFoilValues();
 
+    //
     wk->setMesh();
-    //wk->printGeomSummary();
-
     wk->solveLiftingLine();
-    wk->printResults();
     //wk->printDistributions();
 
-    wk->readInputCanardGeom("geocanard.xzmses");
+    wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
     wk->integrate_canard();
-    wk->printCanarWake();
+
+    // prints
+    //wk->printInputParams();
+    //wk->printResults();
+    //wk->printCanarWake();
 
     // output results to file
-    wk->outputGammaDownwash("prandtline.ygw");
-    wk->outputCanardWake("canarwake.xz");
+    //wk->outputGammaDownwash("prandtline.ygw");
+    //wk->outputCanardWake("canarwake.xz");
 
+    //
     wk->readInputWingGeom("wing.yxlexte");
 
     delete wk;

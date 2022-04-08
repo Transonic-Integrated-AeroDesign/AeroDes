@@ -73,6 +73,7 @@ private:
     double em; // shared variable
     double cd,xcp,Bc0,bc,Cc0,cl0,cl1;
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
+    double base, expn, realpart, imagpart, denom;
     double dClcda0,arceff; // shared variables*
     double Dx0,xi,str,dxm,Lf0,lf,Zc0,zcanar,xcim,zcim,zwake;
     double *c,*g,*dg,*y,*eta;

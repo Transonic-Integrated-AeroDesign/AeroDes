@@ -26,6 +26,6 @@ IVIS        1           # do you want to introduce viscous effects? Y/N=1/0
 
 IPOLAR      1           # do you want to use polar data? Y/N=1/0
 
-ALPHAIN     5           # initial angle
+ALPHAIN     0           # initial angle
 ALPHAFI     5           # final angle
-ALPHASTEP   0           # increment in angle
+ALPHASTEP   1           # increment in angle
