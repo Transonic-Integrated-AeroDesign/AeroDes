@@ -719,6 +719,9 @@ void canareq::init() {
         cx[j] = cd_of_alpha[j];
         cq[j] = cq_of_alpha[j];
     }
+
+    cout << " canareq::init()" << endl;
+    cout << " arceff = " << arceff << endl << endl;
 }
 
 void canareq::readInputParams() {
