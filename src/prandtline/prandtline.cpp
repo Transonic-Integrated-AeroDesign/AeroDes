@@ -133,7 +133,6 @@ prandtline::~prandtline() {
     free(t);
     free(dem);
 
-
     free(a0);
     free(a1);
     free(b0);

@@ -44,4 +44,5 @@ int main(int argc, char** argv) {
     //prants->printResults();
 
     delete prants;
+    delete vars;
 }
