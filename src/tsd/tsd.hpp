@@ -27,6 +27,13 @@ public:
     // input
     void readInputParams(std::string);
 
+    // functional
+    void setMesh();
+
+    // prints
+    void printInput();
+
+    // memory
     double **create_2d_double_array(int, int, double **&);
     double ***create_3d_double_array(int, int, int, double ***&);
     void delete_2d_double_array(double **);

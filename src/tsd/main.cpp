@@ -25,6 +25,15 @@ int main(int argc, char** argv) {
     variables *vars = new variables();
     tsd *sonic = new tsd(argc, argv, vars);
 
+    // input
+    sonic->readInputParams("tsd.data");
+
+    // discretization
+    sonic->setMesh();
+
+    // print to screen
+    sonic->printInput();
+
     delete sonic;
     delete vars;
 }
