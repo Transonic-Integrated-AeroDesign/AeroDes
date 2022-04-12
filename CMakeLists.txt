@@ -60,7 +60,14 @@ add_executable(smooth
         src/smoothpolar/smoothpolar.hpp
         src/smoothpolar/main.cpp)
 
+add_executable(tsd
+        src/variables.hpp
+        src/tsd/tsd.cpp
+        src/tsd/tsd.hpp
+        src/tsd/main.cpp)
+
 install(TARGETS cfmactu)
 install(TARGETS prandtl)
 install(TARGETS wake)
 install(TARGETS canary)
+install(TARGETS tsd)
