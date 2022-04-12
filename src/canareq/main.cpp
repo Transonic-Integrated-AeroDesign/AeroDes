@@ -11,8 +11,6 @@
 #include <string>
 #include <math.h>   // pow
 
-//#include "../prandtline/prandtline.hpp"
-//#include "prandtline.hpp"
 #include "variables.hpp"
 #include "wake.hpp"
 #include "canareq.hpp"
@@ -25,8 +23,11 @@
  * 	g++ -o test main.cpp canareq.cpp
  *  ./test
  *
- * run executable with leak-check
- *	valgrind --leak-check=yes ./test
+ *  leak check (linux):
+ *	    valgrind --leak-check=yes canary
+ *
+ *  leak check (mac os x):
+ *      leaks -atExit -- canary
  */
 
 using namespace std;

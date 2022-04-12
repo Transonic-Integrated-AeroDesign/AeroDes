@@ -19,7 +19,12 @@
  * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp algorithmic.cpp
  * 	g++ -o test main.cpp prandtline.cpp
  *  ./test
- *	valgrind --leak-check=yes ./test
+ *
+ *  leak check (linux)
+ *	    valgrind --leak-check=yes ./test
+ *
+ *  leak check (mac os x)
+ *      leaks -atExit -- smooth
  */
 
 using namespace std;

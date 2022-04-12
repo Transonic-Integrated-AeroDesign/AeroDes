@@ -19,7 +19,12 @@
  * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp algorithmic.cpp
  * 	g++ -o test main.cpp wake.cpp
  *  ./test -in wake.data
- *	valgrind --leak-check=yes ./test
+ *
+ *  leak check (linux):
+ *	    valgrind --leak-check=yes wake
+ *
+ *  leak check (mac os x)
+ *      leaks -atExit -- wake
  */
 
 using namespace std;
