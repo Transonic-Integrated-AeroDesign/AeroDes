@@ -1,18 +1,21 @@
-101		=jx number of points along wing span (<202)
-5001		=itx maximum number of iterations
-0.2		=omega relaxation factor
-0.0		=avis viscosity coefficient
-36.0		=B wing span (m)
-39.0		=Cx0 root chord of wing or fuselage length (m)
-0.0		=Lambd a.c. sweep angle (deg)
-5.4		=Rstr0 half strake span (m)
-2.0		=Rf0 diameter of fuselage (m)
-0.0		=dm relative camber of wing (ref.=C)
-0.		=tm setting angle at root (typically zero)
-2		=iwing elliptic/rectangular/general shape/0/1/2
-0.0		=alphad geometric incidence (deg)
-0.0		-0.1		=acwash  reference (-0.1 rd) downwash of canard on main wing
-1.2		=Rho air density (kg/m**3)
-100.		=Vinf  wind velocity (m/s)
-0.0000181	=Amu dynamic viscosity (kg/(m*s))
-
+21		        # jxs2 number of points along one canard span (<103)
+5001		    # itx maximum number of iterations
+0.2		        # omega relaxation factor
+0.0		        # avis viscosity coefficient
+14.0		    # Bc0 canard span (m)
+4.0		        # Cc0 root chord of canard (m)
+1.5		        # Zc0 canard location in z (m)
+0.8889		    # ARceff canard effective aspect ratio
+0.0		        # Lambd a.c. sweep angle (deg)
+2.0		        # Rf0 diameter of fuselage (m)
+0.0		        # dm relative camber of canar (ref.=Cc)
+0.0		        # tcd setting angle of the canard
+2		        # iwing elliptic/rectangular/general shape/0/1/2
+36.0		    # B wing span (m)
+30.0		    # Lf0 fuselage length (m)
+0.2		        # Dx0 wake initial step (m)
+1.1		        # str stretching parameter for wake
+0.03		    # zwake distance of wake above/below wing (ref. B/2)
+0.36		    # Rho air density (kg/m**3)
+100.		    # Vinf  wind velocity (m/s)
+0.0000181	    # Amu dynamic viscosity (kg/(m*s))
