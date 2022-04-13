@@ -176,7 +176,11 @@ prandtline::~prandtline() {
     free(cqres);
 }
 
-
+void prandtline::setAlpha(double al) {
+    // set singular alpha (degrees)
+    alstep=0;
+    alphad=al;
+}
 
 void prandtline::setMesh() {
     //
@@ -727,6 +731,75 @@ void prandtline::delete_2d_double_array(double **array) {
 void prandtline::readInputParams() {
     if (DBG) cout << endl << "=========================================\n";
     if (DBG) cout << " prandtline::readInputParams()" << endl;
+
+    ifstream paramfile(filenameInputData);
+    if (!paramfile.is_open()) {
+        cout << "\nCannot Read " << filenameInputData;
+        cout << "File error in: readInputParams()" << endl;
+        abort();
+    }
+
+    // *****read in data
+    std::string line;
+    std::string a; double b; std::string c;
+    for (int i=0; i<lxx; i++) {
+        std::getline(paramfile, line);
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        if(!(iss >> a >> b >> c)) break;
+
+        if (a.compare("JX") == 0) {
+            jx = b;
+            if (jx > jxx) {
+                cout << "jx=" << jx << " jxx= " << jxx << ", change dimension:exiting!" << endl;
+                abort();
+            }
+        }
+        else if (a.compare("ITX") == 0) itx = b;
+        else if (a.compare("OMEGA") == 0) omega = b;
+        else if (a.compare("AVIS") == 0) avis = b;
+        else if (a.compare("B") == 0) B = b;
+        else if (a.compare("CX0") == 0) Cx0 = b;
+        else if (a.compare("LAMBD") == 0) Lambd = b;
+        else if (a.compare("RSTR0") == 0) Rstr0 = b;
+        else if (a.compare("RF0") == 0) Rf0 = b;
+        else if (a.compare("DM") == 0) dm = b;
+        else if (a.compare("TM") == 0) tmd = b;
+        else if (a.compare("IWING") == 0) iwing = b;
+        else if (a.compare("ALPHAD") == 0) alphad = b;
+        else if (a.compare("ACWASH") == 0) acwash = b;
+        else if (a.compare("RHO") == 0) Rho = b;
+        else if (a.compare("VINF") == 0) Vinf = b;
+        else if (a.compare("AMU") == 0) Amu = b;
+        else if (a.compare("IVIS") == 0) ivis = b;
+        else if (a.compare("IPOLAR") == 0) { polarBool = true; }
+        else if (a.compare("ALPHAIN") == 0) alphain = b;
+        else if (a.compare("ALPHAFI") == 0) alphafi = b;
+        else if (a.compare("ALPHASTEP") == 0) alstep = b;
+        else {
+            cout << " command: " << a << " not known" << endl;
+            abort();
+        }
+        //if (a.compare("NPOLAR") == 0) { nx = b; }
+    }
+
+    cxm=2.0*Cx0/B;
+    lamb=degrad*Lambd;
+    rstr=2.0*Rstr0/B;
+    rf=2.0*Rf0/B;
+    tm=degrad*tmd;
+    alpha=degrad*alphad;
+
+    // optional read-in files
+    if(acwash) readInputDownwash();
+}
+
+void prandtline::readInputParams(std::string filename) {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::readInputParams()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameInputPolar = filename;
 
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
