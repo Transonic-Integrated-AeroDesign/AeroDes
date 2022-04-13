@@ -38,14 +38,15 @@ int main(int argc, char** argv) {
     // input
     wk->readInputParams();
     wk->readInputPolar("polarbl.dat"); // default polar file for users*
+    wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
     //wk->printXFoilValues();
 
-    //
+    // solve lifting line
     wk->setMesh();
     wk->solveLiftingLine();
-    //wk->printDistributions();
+    //wk->printDistributions(); // optional
 
-    wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
+    //wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
     wk->integrate_canard();
 
     // prints

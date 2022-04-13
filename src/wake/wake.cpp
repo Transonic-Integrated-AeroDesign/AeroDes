@@ -629,10 +629,10 @@ void wake::solveLiftingLine() {
 
         cl=0.5*arc*cl;
 
-        if(alphad == 0.0) {
+        if(alphad>=0.0-2*eps && alphad<=0.0+2*eps) {
             cl0=cl+eps;
         }
-        if(alphad==1.0) {
+        if(alphad>=1.0-2*eps && alphad<=1+2*eps) {
             cl1=cl;
         }
 
@@ -688,19 +688,17 @@ void wake::solveLiftingLine() {
             fz[j]=0.5*arc*fz[j];
             cmf[j]=0.5*arc*cmf[j];
             cmt[j]=0.25*arc*cmt[j] / cac;
-            //write(26, *)y(j), cmf(j)
-            //write(27, *)eta(j), fz(j)
-            //write(28, *)eta(j), cmt(j)
-            //16   continue
         }
 
-        // set shared variables
-        // for "wake" to "canareq" you would have to do a search... to find out where you are.
-        //vars->inc_of_alpha[nstep] = alpha; // do not use canard-wake-line new polar
-        //vars->al_of_alpha[nstep] = alphad;
-        //vars->cl_of_alpha[nstep] = cl;
-        //vars->cd_of_alpha[nstep] = cd;
-        //vars->cq_of_alpha[nstep] = cmac;
+        if(alstep < eps) {
+            cout << "not enough info to calculate arceff and dClcda0" << endl;
+        }
+        else {
+            dClcda0=180.* (cl1-cl0) / pi;
+            arceff=2.*dClcda0 / (2.*pi-dClcda0);
+            vars->arceff = arceff;
+            vars->dClcda0 = dClcda0;
+        }
 
         printResults();
     }
@@ -714,20 +712,8 @@ void wake::solveLiftingLine() {
     y[54] = 0.11111;
     xle[54] = 1.3;
 
-    // check that AReff has sufficient information
-    // and set shared variables
-    //vars->kx_of_alpha = nsteps; // do not use canard-wake-line new polar
     vars->em = em;
-    if (DBG) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
-    if(alstep < eps) {
-        cout << "not enough info to calculate arceff and dClcda0" << endl;
-    }
-    else {
-        dClcda0=180.* (cl1-cl0) / pi;
-        arceff=2.*dClcda0 / (2.*pi-dClcda0);
-        vars->arceff = arceff;
-        vars->dClcda0 = dClcda0;
-    }
+    if (alstep < eps) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
 }
 
 void wake::integrate_canard() {
