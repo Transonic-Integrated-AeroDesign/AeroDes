@@ -378,7 +378,7 @@ void wake::solveLiftingLine() {
         cout << " (more steps than memory allocated by lxx)" << endl;
         abort();
     }
-    vars->kx_of_alpha = nsteps; // set shared variable
+    //vars->kx_of_alpha = nsteps; // set shared variable
 
     // loop over incidence angles
     for (int nstep = 0; nstep < nsteps; nstep++) {

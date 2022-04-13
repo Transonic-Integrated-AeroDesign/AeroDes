@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     canary->readInputParams();
     canary->printInputParams();
 
-    canary->readInputPolar(""); // by default reads "canarpolar.dat" file
+    canary->readInputPolar(""); // leave empty to read default "canarpolar.dat" file
     canary->printInputPolar();
     canary->printGlobalCoefs();
 

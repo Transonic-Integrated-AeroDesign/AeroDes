@@ -102,13 +102,13 @@ prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) 
 
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
-        if (!strcmp(argv[iarg],"-in_prandtline")){
+        if (!strcmp(argv[iarg],"--prandtl_in")){
             inputBool=true;
             inputFlag=iarg+1;
             filenameInputData = std::string(argv[inputFlag]);
             iarg+=2;
         }
-        else if (!strcmp(argv[iarg],"-bl")){
+        else if (!strcmp(argv[iarg],"--prantl_polar")){
             polarBool=true;
             inputFlag=iarg+1;
             filenameInputPolar = argv[inputFlag];
@@ -553,7 +553,6 @@ void prandtline::solveLiftingLine() {
 
         // calculate bending moment
         for (j = 1; j < (jx-1); ++j) {
-            //do 13 j = 2, jx - 1
             if(j==1) eta[j-1]=-1.0; // initial boundary condition
             if(j==(jx-2)) eta[j]=1.0;   // final boundary condition
 
@@ -595,9 +594,7 @@ void prandtline::solveLiftingLine() {
                     cout << " cam = " << cam << " etam = " << eta[j - 1] << endl;
                 }
             }
-
             cmf[j + 1]=cmf[j]-fz[j]*(eta[j+1]-eta[j]);
-            //13 continue
         }
 
         //at[0] = at[1] + (at[2] - at[1]) * (y[0] - y[1]) / (y[2] - y[1]);
@@ -670,36 +667,13 @@ void prandtline::solveLiftingLine() {
         }
 
         // set shared variables
-        //vars->inc_of_alpha[nstep] = alpha; // would have to do a search... to find out where you are.
-        //vars->al_of_alpha[nstep] = alphad;
-        //vars->cl_of_alpha[nstep] = cl;
-        //vars->cd_of_alpha[nstep] = cd;
-        //vars->cq_of_alpha[nstep] = cmac;
+        vars->alr_of_alpha[nstep] = alpha;
+        vars->ald_of_alpha[nstep] = alphad;
+        vars->cl_of_alpha[nstep] = cl;
+        vars->cd_of_alpha[nstep] = cd;
+        vars->cq_of_alpha[nstep] = cmac;
 
         // print results
-        /*cout << "results:" << endl;
-        cout << right << setw(38) << " alpha = " << alphad << endl;
-        cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
-        cout << right << setw(38) << " oswald efficiency e = " << em << endl;
-        cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
-        cout<< "global results:  " << endl;
-        cout << right << setw(38) << "CD = " << cd << endl;
-        cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
-        cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
-        cout << right << setw(38) << " CM,ac = " << cmac << endl;
-        cout << right << setw(38) << " aerodynamic center x,ac = " << xac << endl;
-        cout << right << setw(38) << " center of pressure x,cp = " << xcp << endl;
-        cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jx2] << endl;
-        cout << right << setw(38) << " root torsion moment coef. CM,y = " << - cmt[jx2] << endl;
-        cout << right << setw(38) << " ivis = " << ivis << endl;*/
-
-        // results
-        //alphares[nstep] = alphad;
-        //czres[nstep] = cl;
-        //cxres[nstep] = cd;
-        //dum = 0.;
-        //cqres[nstep] = cmac;
-
         printResults();
         //printDistributions();
     }

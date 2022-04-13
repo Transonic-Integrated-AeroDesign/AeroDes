@@ -712,12 +712,12 @@ void canareq::init() {
     if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
 
     // prandtline shared vars
-    kx = vars->kx_of_alpha;
+    if (vars->kx_of_alpha) kx = vars->kx_of_alpha;
     for (int j = 0; j < kx; ++j) {
-        inc[j] = vars->inc_of_alpha[j];
+        inc[j] = vars->alr_of_alpha[j];
         cz[j] = vars->cl_of_alpha[j];
-        cx[j] = cd_of_alpha[j];
-        cq[j] = cq_of_alpha[j];
+        cx[j] = vars->cd_of_alpha[j];
+        cq[j] = vars->cq_of_alpha[j];
     }
 
     // print check
