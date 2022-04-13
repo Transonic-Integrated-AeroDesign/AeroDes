@@ -10,7 +10,8 @@ public:
     // absolutely need constructor
     variables() {
         kx_of_alpha = 0;
-        dClmda0 = 0;
+        dClmda0 = 0;    // main wing lift slope
+        dClcda0 = 0;    // canard lift slope
         em = 0;
         jxx=102;
         inc_of_alpha = (double *) malloc(sizeof(double)*jxx);
@@ -30,11 +31,11 @@ public:
     int jxx;
     int kx_of_alpha;
 
-    // canard equilibrium
-    double dClmda0;
-    double em;              // oswald efficiency
-    double arceff, armeff;  // corrected aspect ratio
-    double dClcda0;         // lift slope
+    // for canard equilibrium
+    double dClmda0;         // from: wake,
+    double em;              // from: wake, oswald efficiency
+    double arceff, armeff;  // from: wake, corrected aspect ratio
+    double dClcda0;         // from: wake, canard lift slope
 
     // polar
     double *inc_of_alpha;   // alpha in radians

@@ -19,7 +19,7 @@
 
 using namespace std; // g++ wake.cpp -c
 
-wake::wake(variables *varshr) : vars(varshr) {
+wake::wake(int argc, char** argv, variables *varshr) : vars(varshr) {
     ixx=201;
     lxx=102;
     nxx=10;
@@ -85,12 +85,6 @@ wake::wake(variables *varshr) : vars(varshr) {
 
     create_2d_int_array(lxx, nxx, kxtrm);
 
-    // results array
-    //alphares  = (double *) malloc(sizeof(double)*lxx);
-    //czres  = (double *) malloc(sizeof(double)*lxx);
-    //cxres  = (double *) malloc(sizeof(double)*lxx);
-    //cqres  = (double *) malloc(sizeof(double)*lxx);
-
     // filenames
     filenameInputData = "wake.data";
     inputBool = false;
@@ -100,7 +94,23 @@ wake::wake(variables *varshr) : vars(varshr) {
 
     filenameInputDownwash = "canarwash.ylwl";
 
-    // *****constants
+    // parse commandline input
+    for (int iarg = 0; iarg<argc ; ++iarg) {
+        if (!strcmp(argv[iarg],"--wk_in")){
+            inputBool=true;
+            inputFlag=iarg+1;
+            filenameInputData = std::string(argv[inputFlag]);
+            iarg+=2;
+        }
+        else if (!strcmp(argv[iarg],"--wk_polar")){
+            polarBool=true;
+            inputFlag=iarg+1;
+            filenameInputPolar = argv[inputFlag];
+            iarg+=2;
+        }
+    }
+
+    // constants
     eps=1.e-7;
     pi=2.*asin(1.);
     degrad=pi/180.;
@@ -867,28 +877,6 @@ void wake::delete_2d_double_array(double **array) {
     free(array);
 }
 
-void wake::cmdInput(int argc, char** argv) {
-    //
-    // parse commandline input
-    //
-
-    for (int iarg = 0; iarg<argc ; ++iarg) {
-        if (!strcmp(argv[iarg],"-in")){
-            inputBool=true;
-            inputFlag=iarg+1;
-            filenameInputData = std::string(argv[inputFlag]);
-            iarg+=2;
-        }
-        else if (!strcmp(argv[iarg],"-bl")){
-            polarBool=true;
-            inputFlag=iarg+1;
-            filenameInputPolar = argv[inputFlag];
-            iarg+=2;
-        }
-    }
-
-}
-
 void wake::readInputParams() {
     //
     // open input file
@@ -1471,7 +1459,7 @@ void wake::printResults() {
                   << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
 
     cout << fixed << std::setprecision(4);
-    cout << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
+    cout << endl << "\033[1;42m canar-wake results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
     cout << right << setw(38) << " oswald efficiency e = " << em << endl;
@@ -1479,7 +1467,7 @@ void wake::printResults() {
     cout << right << setw(38) << " arceff = " << arceff << endl;
     cout << right << setw(38) << " dClcda0 = " << dClcda0 << endl << endl;
 
-    cout<< "\033[1;42m global results: " << alphad << " (deg) \033[0m" << endl;
+    cout<< "\033[1;42m canar-wake global results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "CD = " << cd << endl;
     cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
     cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;

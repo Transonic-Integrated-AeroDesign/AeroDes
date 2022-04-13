@@ -21,12 +21,12 @@ class wake : virtual public variables {
 public:
     variables *vars;
 
-    wake(variables *);
+    wake(int argc, char** argv, variables *);
     //wake(int argc, char** argv);
     ~wake();
 
     // inputs
-    void cmdInput(int argc, char** argv);
+    //void cmdInput(int argc, char** argv);
     void readInputParams();
     void readInputPolar(std::string);
     void readInputDownwash();

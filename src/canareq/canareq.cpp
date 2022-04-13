@@ -73,14 +73,14 @@ canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
     // commandline inputs
     for (int iarg = 0; iarg<argc ; ++iarg) {
         // commandline option: for input file
-        if (!strcmp(argv[iarg],"-in")){
+        if (!strcmp(argv[iarg],"--canar_in")){
             inputBool=true;
             inflag=iarg+1;
             filenameEqData = argv[inflag];
             iarg+=2;
         }
         // commandline option: for override of tcd setting angle
-        if (!strcmp(argv[iarg],"-tcd")) {
+        if (!strcmp(argv[iarg],"--canar_tcd")) {
             tcdBool=true;
             tcdflag=iarg+1;
             tcd0 = (double) atof(argv[tcdflag]);
@@ -189,7 +189,7 @@ void canareq::linearModel() {
 
     // check for tcd
     if (!tcdBool) {
-        cout << endl << "\033[1;41m SPECIFICY \'-tcd [angle]\' \033[0m" << endl << endl;
+        cout << endl << "\033[1;41m SPECIFICY \'--canar_tcd [angle]\' \033[0m" << endl << endl;
         abort();
     }
 
@@ -706,13 +706,13 @@ void canareq::init() {
     //
 
     // wake shared vars
-    arceff = vars->arceff;
-    em = vars->em;
-    dCldac0 = vars->dClcda0;
+    if (vars->arceff) arceff=vars->arceff;
+    if (vars->em) em=vars->em;
+    if (vars->dClcda0) dClcda0=vars->dClcda0;
+    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
 
     // prandtline shared vars
     kx = vars->kx_of_alpha;
-    //cout << "kx = " << kx << endl;
     for (int j = 0; j < kx; ++j) {
         inc[j] = vars->inc_of_alpha[j];
         cz[j] = vars->cl_of_alpha[j];
@@ -720,8 +720,13 @@ void canareq::init() {
         cq[j] = cq_of_alpha[j];
     }
 
+    // print check
     cout << " canareq::init()" << endl;
-    cout << " arceff = " << arceff << endl << endl;
+    cout << " arceff = " << arceff << endl;
+    cout << " em = " << em << endl;
+    cout << " dClcda0 = " << dClcda0 << endl;
+    cout << " dClmda0 = " << dClmda0 << endl;
+    cout << " kx = " << kx << endl << endl;
 }
 
 void canareq::readInputParams() {

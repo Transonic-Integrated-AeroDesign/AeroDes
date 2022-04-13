@@ -26,7 +26,7 @@ using namespace std;
 aerodes::aerodes(int argc, char** argv) {
     vars = new variables();
     prants = new prandtline(argc, argv, vars);
-    wk = new wake(vars);
+    wk = new wake(argc, argv, vars);
     canary = new canareq(argc, argv, vars);
 }
 

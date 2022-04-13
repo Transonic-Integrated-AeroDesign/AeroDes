@@ -31,9 +31,9 @@ using namespace std;
 
 int main(int argc, char** argv) {
     variables *vars = new variables();
-    wake *wk = new wake(vars);
+    wake *wk = new wake(argc, argv, vars);
 
-    wk->cmdInput(argc, argv);
+    //wk->cmdInput(argc, argv);
 
     // input
     wk->readInputParams();
