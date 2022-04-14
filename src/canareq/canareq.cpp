@@ -101,6 +101,7 @@ canareq::~canareq() {
     free(cz);
     free(cq);
     if (inc!=NULL) free(inc);
+    if (!file1) file1.close();
 }
 
 double *canareq::create_1d_double_array(int n2, double *array) {
@@ -273,7 +274,7 @@ void canareq::linearModel() {
 
 void canareq::nonlinearModel() {
     if (DBG) cout << endl << "=========================================" << endl;
-    cout << " canareq::nonlinearModel()" << endl;
+    if (DBG) cout << " canareq::nonlinearModel()" << endl;
 
     // read canar setting angle tcd (deg)
     //tcd = 5;
@@ -522,7 +523,7 @@ void canareq::nonlinearModel() {
 
         // check for premature NaNs
         if (isnan(reseq)) {
-            cout << endl << "NaN error:" << endl;
+            cout << endl << "\033[1;41m NaN error: \033[0m" << endl;
             //cout << "reyeq = " << reyeq << " rho = " << rho << " ueq = " << Ueq << " cam = " << cam << " amu = " << amu  << " dUeq = " << dUeq << endl;
             //cout << "am = " << am << " Cdmeq = " << Cdmeq << " af = " << af << " Cdfeq = " << left << setw(10) << Cdfeq << " ac = " << ac << " Cdceq = " << left << setw(10) << Cdceq << " ar = " << ar << " Cdreq = " << left << setw(10) << Cdreq << " an = " << an  << " Cdneq = " << left << setw(10) << Cdneq << " aref = " << aref << endl;
             cout << "reseq0 = " << reseq0 << " reseq = " << reseq << " iteration = " << i << endl;
@@ -721,12 +722,27 @@ void canareq::init() {
     }
 
     // print check
-    cout << " canareq::init()" << endl;
-    cout << " arceff = " << arceff << endl;
-    cout << " em = " << em << endl;
-    cout << " dClcda0 = " << dClcda0 << endl;
-    cout << " dClmda0 = " << dClmda0 << endl;
-    cout << " kx = " << kx << endl << endl;
+    if (1) {
+        cout << fixed << std::setprecision(4);
+        cout << endl;
+        cout << " canareq::init()" << endl
+             << " arceff = " << arceff << endl
+             << " em = " << em << endl
+             << " dClcda0 = " << dClcda0 << endl
+             << " dClmda0 = " << dClmda0 << endl
+             << " kx = " << kx << endl << endl;
+
+        cout << left << setw(10) << "alpha"
+             << left << setw(10) << "cz"
+             << left << setw(10) << "cx"
+             << left << setw(10) << "cq" << endl;
+        for (int i = 0; i < kx; ++i) {
+            cout << left << setw(10) << inc[i]
+                 << left << setw(10) << cz[i]
+                 << left << setw(10) << cx[i]
+                 << left << setw(38) << cq[i] << endl;
+        }
+    }
 }
 
 void canareq::readInputParams() {
@@ -796,7 +812,6 @@ void canareq::readInputParams() {
         if(a.compare("ARMEFF")==0) {
             armeff=b;
             arm=armeff;
-            cout << endl << "!! ARM = " << arm << endl << endl;
         }
         //if(a.compare("TCD")==0) tcd = b;
         
@@ -880,6 +895,162 @@ void canareq::readInputParams() {
     paramfile.close();
 }
 
+void canareq::readInputParams(std::string filename) {
+    // open input file
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::readInputParams()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameInputPolar = filename;
+
+    ifstream paramfile(filenameEqData);
+    if (!paramfile.is_open()) {
+        cout << "\n\tCannot Read " << filenameEqData;
+        cout << " File - Error in: readInputParams()" << endl;
+        abort();
+    }
+
+    std::string line;
+    std::string a; double b; std::string c; double v; double t;
+    for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) break;
+
+        // newton method parameters
+        if(a.compare("ITX")==0) itx = b;
+        if(a.compare("OMEGA")==0) omega = b;
+        if(a.compare("EPSER")==0) epser = b;
+
+        // airflow and weight params
+        if(a.compare("RHO")==0) rho = b;
+        if(a.compare("AMU")==0) amu = b;
+        if(a.compare("MASS")==0) mass = b;
+        if(a.compare("XCG")==0) xcg = b;
+        if(a.compare("STATMARG")==0) statmarg = b;
+
+        // data for wing
+        if(a.compare("BM")==0) bm = b;
+        if(a.compare("CXM")==0) cxm = b;
+        if(a.compare("CAM")==0) cam = b;
+        if(a.compare("AM")==0) am = b;
+        if(a.compare("XACM")==0) xacm = b;
+        if(a.compare("DM")==0) dm = b;
+        if(a.compare("EM")==0) em = b;
+        if(a.compare("ACW")==0) acw = b;
+        if(a.compare("dCldAlfaInd")==0) dCldalind = b;
+        if(a.compare("TFD")==0) tfd = b;
+        if(a.compare("dClmdtf")==0) dClmdtf = b;
+        if(a.compare("dCmmdtf")==0) dCmmdtf = b;
+        if(a.compare("dCdtf0")==0) dCdtf0 = b;
+        if(a.compare("dCdtf1")==0) dCdtf1 = b;
+        if(a.compare("dCdtf2")==0) dCdtf2 = b;
+        if(a.compare("dClmda0")==0) dClmda0 = b; // new
+        if(a.compare("dClcda0")==0) dClcda0 = b; // new
+
+        // data for fuselage
+        if(a.compare("LF")==0) lf = b;
+        if(a.compare("RF")==0) rf = b;
+
+        // data for canard
+        if(a.compare("BC")==0) bc = b;
+        if(a.compare("CXC")==0) cxc = b;
+        if(a.compare("CAC")==0) cac = b;
+        if(a.compare("AC")==0) ac = b;
+        if(a.compare("XACC")==0) xacc = b;
+        if(a.compare("DC")==0) dc = b;
+        if(a.compare("EC")==0) ec = b;
+        if(a.compare("AWC")==0) awc = b;
+        if(a.compare("ARCEFF")==0) {
+            arceff = b;
+            arc = arceff;
+        }
+        if(a.compare("ARMEFF")==0) {
+            armeff=b;
+            arm=armeff;
+        }
+        //if(a.compare("TCD")==0) tcd = b;
+
+        // airbrake data
+        if(a.compare("CdBRAKE")==0) Cdbrake = b;
+
+        // data for rudder
+        if(a.compare("RAV")==0) rav = b;
+        if(a.compare("RUH")==0) ruh = b;
+
+        // engine data
+        if(a.compare("ZENG")==0) zeng = b;
+        if(a.compare("DNA")==0) dna = b;
+        if(a.compare("LNA")==0) lna = b;
+        if(a.compare("HPOWER")==0)hpower = b;
+        if(a.compare("PCENT")==0) Pcent = b;
+        if(a.compare("NDAT")==0) ndat = b;
+        if(a.compare("ENGPERF")==0) {
+            std::getline(paramfile, line);   // read engine name
+            strcpy(prop,line.c_str());
+            //cout << "\n prop: " << prop;
+            std::getline(paramfile, line);   // read header
+            strcpy(title, line.c_str());
+            //cout << "\n title: " << title;
+            for (int i=0; i<20; i++) {
+                std::getline(paramfile, line);
+                std::istringstream iss(line);
+                if(!(iss >> v >> t)) break;
+                vr[i] = v; tr[i] = t;
+            }
+        }
+
+        // best design input params
+        if(a.compare("ALEQ")==0) aleqB = b;
+        if(a.compare("UEQ")==0) UeqB = b;
+        if(a.compare("BETAQ")==0) beteqB = b;
+        if(a.compare("CLEQ")==0) CleqB = b;
+        if(a.compare("CDEQ")==0) CdeqB = b;
+        if(a.compare("CMAC")==0) CmacB = b;
+    }
+
+    // airflow and weight calcs
+    amlb=2.205*mass;
+    mg=mass*9.81;
+
+    // wing calcs
+    tf=degrad*tfd;
+
+    // fuselage calcs
+    hf=2.*pi*rf;
+    af=lf*hf;
+
+    // canard calcs
+    tc=degrad*tcd;
+    //arc=2.0*pow((0.5*bc-rf),2)/ac;
+
+    // data for rudder
+    ar=rav*ruh;
+
+    // reference parameters
+    aref=am+ac;
+    lref=lf;
+    Ueq=100.;
+    Ref=rho*Ueq*cam/amu;
+
+    // engine data
+    an=pi*dna*lna;
+    hpokwatt=745.7*hpower/1000.;
+    Ueq=0.;
+
+    thrust(ndat,Ueq); // initialize dTdv
+
+    // thrust and thrust slope correction with density
+    rcor=pow((rho/1.225),us3);
+    rcor=rcor*pow((Pcent*Pcent/10000.0), us3);
+    tr0=rcor*(T+dTdv*Ueq);
+    dtrdv=rcor*dTdv;
+
+    if(statmarg >0.) xcg=xac-statmarg*lref;
+
+    paramfile.close();
+}
+
 void canareq::readInputPolar(std::string filename) {
     // read given input polar filename:
     //
@@ -895,7 +1066,7 @@ void canareq::readInputPolar(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    cout << " canareq::readInputPolar()" << endl;
+    if (DBG) cout << " canareq::readInputPolar()" << endl;
 
     // polar data
     polarBool = true;
@@ -1069,12 +1240,11 @@ void canareq::readInputPolar(std::string filename) {
         //     aerodynamic center of airplane
         xac=(am*dClmda0*xacm+ac*dClcda0*xacc) / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
     }
-    cout << " xac = " << xac << endl;
     // note: do not change kx after this point
     polarfile.close();
 }
 
-void canareq::setTCD(double tcd) {
+void canareq::setCanardAngle(double tcd) {
     tcd0=tcd;
     tcdBool=true;
 }
@@ -1393,4 +1563,15 @@ int canareq::outputEqList(){
     file << " Cleq = " << Cleq << " Cdeq = " << Cdeq << " Cteq = " << Cteq << " CM,ac=" << Cmac << endl;
 
     return 1;
+}
+
+void canareq::outputResults2Dat(std::string filename) {
+    if(!file1index) file1.open(filename);
+    file1 << fixed << std::setprecision(8);
+    file1 << left << setw(12) << tcd;
+    file1 << left << setw(12) << tr0;
+    file1 << left << setw(12) << Cdneq;
+    file1 << left << setw(12) << Cdfeq;
+    file1 << Cdceq << endl;
+    file1index++;
 }

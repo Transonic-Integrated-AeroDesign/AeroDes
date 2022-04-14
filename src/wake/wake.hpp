@@ -28,6 +28,7 @@ public:
     // inputs
     //void cmdInput(int argc, char** argv);
     void readInputParams();
+    void readInputParams(std::string);
     void readInputPolar(std::string);
     void readInputDownwash();
     void readInputCanardGeom(std::string);

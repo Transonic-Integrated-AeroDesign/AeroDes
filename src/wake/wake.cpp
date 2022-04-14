@@ -957,6 +957,89 @@ void wake::readInputParams() {
     //if(acwash) readInputDownwash();
 }
 
+void wake::readInputParams(std::string filename) {
+    //
+    // open input file
+    // add the ability to read any input filename -cp 3/29/22
+
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " wake::readInputParams()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameInputPolar = filename;
+
+    ifstream paramfile(filenameInputData);
+    if (!paramfile.is_open()) {
+        cout << "\n\tCannot Read " << filenameInputData;
+        cout << " File error in readInputParams()" << endl;
+        abort();
+    }
+
+    std::string line;
+    std::string a; double b; std::string c;
+
+    // read in data
+    for (int i=0; i<lxx; i++) {
+        std::getline(paramfile, line);
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        if(!(iss >> a >> b >> c)) break;
+
+        if (a.compare("JXS2") == 0) {
+            jxs2 = b;
+            if (jxs2 > jxx) {
+                cout << "jxs2 = " << jxs2 << " jxx = " << jxx << ", change dimension:exiting!" << endl;
+                abort();
+            }
+        }
+        else if (a.compare("ITX") == 0) itx = b;
+        else if (a.compare("OMEGA") == 0) omega = b;
+        else if (a.compare("AVIS") == 0) avis = b;
+        else if (a.compare("BC0") == 0) Bc0 = b;
+        else if (a.compare("CC0") == 0) Cc0 = b;
+        else if (a.compare("ZC0") == 0) Zc0 = b;
+        else if (a.compare("ARCEFF") == 0) arceff = b;
+        else if (a.compare("LAMBD") == 0) Lambd = b;
+            //else if (a.compare("RSTR0") == 0) Rstr0 = b;
+        else if (a.compare("RF0") == 0) Rf0 = b;
+        else if (a.compare("DM") == 0) dm = b;
+        else if (a.compare("TCD") == 0) tcd = b;
+        else if (a.compare("IWING") == 0) iwing = b;
+        else if (a.compare("B") == 0) B = b;
+        else if (a.compare("LF0") == 0) Lf0 = b;
+        else if (a.compare("DX0") == 0) Dx0 = b;
+        else if (a.compare("STR") == 0) str = b;
+        else if (a.compare("ZWAKE") == 0) zwake = b;
+        else if (a.compare("RHO") == 0) Rho = b;
+        else if (a.compare("VINF") == 0) Vinf = b;
+        else if (a.compare("AMU") == 0) Amu = b;
+        else if (a.compare("IVIS") == 0) ivis = b;
+        else if (a.compare("IPOLAR") == 0) { polarBool = true; }
+        else if (a.compare("ALPHAIN") == 0) alphain = b;
+        else if (a.compare("ALPHAFI") == 0) alphafi = b;
+        else if (a.compare("ALPHASTEP") == 0) alstep = b;
+        else {
+            cout << " command: " << a << " not known" << endl;
+            abort();
+        }
+        //if (a.compare("NPOLAR") == 0) { nx = b; }
+    }
+
+    // initializations -move this to init() function later -cp 3/27/22
+    jx=2*jxs2;
+    bc=2.0;
+    cxc=2.0*Cc0/Bc0;
+    zcanar=2.0*Zc0/B;
+    lamb=degrad*Lambd;
+    rf=2.0*Rf0/Bc0;
+    tc=degrad*tcd;
+    lf=2.0*Lf0/Bc0;
+    dxm=2.0*Dx0/Bc0;
+
+    // optional read-in files
+    //if(acwash) readInputDownwash();
+}
+
 void wake::readInputPolar(std::string filename) {
     // read given input polar filename:
     //

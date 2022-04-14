@@ -179,7 +179,7 @@ prandtline::~prandtline() {
 void prandtline::setAlpha(double al) {
     // set singular alpha (degrees)
     alstep=0;
-    alphad=al;
+    alphain=al;
 }
 
 void prandtline::setMesh() {
@@ -321,7 +321,7 @@ void prandtline::solveLiftingLine() {
     if (DBG) cout << " prandtline::solveLiftingLine()" << endl;
 
     int jp, jm;
-    int n = 0;  // polar index
+    int n=0;  // polar index
     //ivis=0;
     //vis=0.;
 
@@ -671,29 +671,27 @@ void prandtline::solveLiftingLine() {
         }
 
         // set shared variables
-        vars->alr_of_alpha[nstep] = alpha;
-        vars->ald_of_alpha[nstep] = alphad;
-        vars->cl_of_alpha[nstep] = cl;
-        vars->cd_of_alpha[nstep] = cd;
-        vars->cq_of_alpha[nstep] = cmac;
+        vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
+        vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
+        vars->cl_of_alpha[vars->kx_of_alpha] = cl;
+        vars->cd_of_alpha[vars->kx_of_alpha] = cd;
+        vars->cq_of_alpha[vars->kx_of_alpha] = cmac;
+        vars->kx_of_alpha += 1;
 
         // print results
         printResults();
         //printDistributions();
     }
 
-    // set shared variable
-    vars->kx_of_alpha = nsteps;
-
     // set breakpoints in y-distribution
-    y[46] = -0.11111;
+    /*y[46] = -0.11111;
     xle[46] = 1.3;
     y[47] = -0.11110;
     xle[47] = cxm;
     y[53] = 0.11110;
     xle[53] = cxm;
     y[54] = 0.11111;
-    xle[54] = 1.3;
+    xle[54] = 1.3;*/
 }
 
 int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
@@ -1357,6 +1355,7 @@ void prandtline::printResults() {
 
     cout << endl << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
 
+    cout << fixed << std::setprecision(4);
     //cout << right << setw(32) << "                            alpha = " << alphad << endl;
     cout << right << setw(32) << "                               it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
     cout << right << setw(32) << "        inviscid contribution CDi = " << cdi << endl;

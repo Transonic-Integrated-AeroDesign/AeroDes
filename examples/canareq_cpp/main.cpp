@@ -1,9 +1,21 @@
-# Equilibrium C++ Instructions
+#include <cstdlib>
+#include <cstdio>
+#include <vector>
+#include <iostream> // std
+#include <iomanip>  // setw
+#include <sstream>  // istream
+#include <fstream>  // fopen, ifstream
+#include <string>
+#include <stdio.h>  // strcpy
+#include "aerodes.hpp"
 
-The ```main.cpp``` is a c++ script that will execute all functions included inside the following
-code:
-
-```c++
+/*
+ *  compile:
+ *      g++ -o test -laerolib main.cpp
+ *
+ *  run:
+ *      ./test
+ */
 int main(int argc, char** argv) {
     aerodes *aero = new aerodes(argc, argv);    // create new aero object
 
@@ -24,19 +36,3 @@ int main(int argc, char** argv) {
     delete aero;
     return 1;
 }
-```
-
-**Note:** everything inside the parenthesis is within the scope of code that is executed.
-
-**Note:** the for loop sweeps through various canard setting angles. Afterwards the non-linear solver performs a search for the stability criteria.
-
-## Compiling The Example
-
-In order to compile this code, so that we may run the resulting executable called ```test```, use this command.
-
-```g++ -o test -laerolib main.cpp```
-
-Now we may run the executable like so,
-
-```./test```
-
