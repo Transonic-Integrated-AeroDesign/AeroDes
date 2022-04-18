@@ -49,6 +49,29 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
     cz = (double *) malloc(sizeof(double)*jxx); cx = (double *) malloc(sizeof(double)*jxx);
     cmo = (double *) malloc(sizeof(double)*jxx); xcp = (double *) malloc(sizeof(double)*jxx);
 
+    // filenames
+    filenameInputData = "tsd.data";
+    inputBool = false;
+
+    filenameInputFlow = "tsd.in";
+    inputFlowBool = false;
+
+    // parse commandline input
+    for (int iarg = 0; iarg<argc ; ++iarg) {
+        if (!strcmp(argv[iarg],"--tsd_in")){
+            inputBool=true;
+            inputFlag=iarg+1;
+            filenameInputData=std::string(argv[inputFlag]);
+            iarg+=2;
+        }
+        else if (!strcmp(argv[iarg],"--tsd_it")){
+            iterBool=true;
+            inputFlag=iarg+1;
+            itx=atoi(argv[inputFlag]);
+            iarg+=2;
+        }
+    }
+
     pi=2.0*asin(1.0);
     usdpi=1.0/(2.0*pi);
     degrad=pi/180.0;
@@ -227,6 +250,12 @@ void tsd::readInputParams(std::string filename) {
                 gamach=gamp*pow((mach0*cos(pi*lamb / 180.0)),2);
                 swp=mach0*sin(pi*lamb / 180.0);
             }
+        }
+        else if (a.compare("IWRITE") == 0) iwrite = b;
+        else if (a.compare("IFLOW") == 0) inflow=b;
+        else if (a.compare("ITER") == 0) {
+            iterBool=true;
+            itx=b;
         }
         else {
             cout << " command: " << a << " not known" << endl;
@@ -495,37 +524,131 @@ void tsd::setMesh() {
     zu[ile][2]=0.0;
     zo[ile][2]=0.0;
 
+    // original io 35 = "tsd.xzmses"
     //write(30,*)xii,zo(ile,2)
-/*    do 21 i=ile,ite-1
-    zu(i,2)=d(i)+e(i)
-    zo(i,2)=d(i)-e(i)
-    xii=0.5*(1.0-cos((i-ile+0.5)*dtet))
-    write(30,*)xii,zu(i,2)
-    21   continue
-    xii=1.0
-    zu(ite,2)=0.
-    zo(ite,2)=0.
-    write(30,*)xii,zu(ite,2)
-    write(6,*)
-    write(6,*)'******do you want to write the geometry? Y/N=1/0'
-    read(5,*)iwrite
-            write(6,*)
-    write(6,1003)
-    dp(1,2)=0.
-    ep(1,2)=0.
-    if(iwrite.eq.1)write(6,1004)1,x(1),d(1),dp(1,2),e(1),ep(1,2)
-    do 23 i=2,ix-1
-    do 22 j=1,jtip
-    dp(i,j)=2.0*ratio*(d(i)-d(i-1))/(x(i+1)-x(i-1))
-    ep(i,j)=2.0*ratio*(e(i)-e(i-1))/(x(i+1)-x(i-1))
-    if(i.eq.ite)then
-        dp(i,j)=dp(i-1,j)
-    ep(i,j)=ep(i-1,j)
-    endif
-    22   continue
-    if(iwrite.eq.1)write(6,1004)i,x(i),d(i),dp(i,2)
-                                            &        ,e(i),ep(i,2)
-    23   continue*/
+
+    for (int i = ile; i <= ite-1; ++i) {
+        //do 21 i=ile,ite-1
+        zu[i][2] = d[i] + e[i];
+        zo[i][2] = d[i] - e[i];
+        xii = 0.5 * (1.0 - cos((i - ile + 0.5) * dtet));
+        //write(30,*)xii,zu(i,2)
+        //21   continue
+    }
+
+    xii=1.0;
+    zu[ite][2]=0.0;
+    zo[ite][2]=0.0;
+    //write(30,*)xii,zu(ite,2)
+    //write(6,*)
+    //write(6,*)'******do you want to write the geometry? Y/N=1/0'
+    //read(5,*)iwrite
+
+    //write(6,*)
+    //write(6,1003)
+    dp[1][2]=0.0;
+    ep[1][2]=0.0;
+    if(iwrite && DBG) {
+        //write(6,1004)1,x(1),d(1),dp(1,2),e(1),ep(1,2)
+        cout << left << setw(12) << "1"
+             << left << setw(12) << "x"
+             << left << setw(12) << "d"
+             << left << setw(12) << "dp"
+             << left << setw(12) << "e"
+             << left << setw(12) << "ep" << endl;
+        cout << left << setw(12) << 1
+             << left << setw(12) << x[1]
+             << left << setw(12) << d[1]
+             << left << setw(12) << dp[1][2]
+             << left << setw(12) << e[1]
+             << left << setw(12) << ep[1][2] << endl;
+    }
+
+    for (int i = 2; i <= ix-1; ++i) {
+        //do 23 i=2,ix-1
+        for (int j = 1; j <= jtip; ++j) {
+            //do 22 j=1,jtip
+            dp[i][j]=2.0*ratio*(d[i]-d[i-1]) / (x[i+1]-x[i-1]);
+            ep[i][j]=2.0*ratio*(e[i]-e[i-1]) / (x[i+1]-x[i-1]);
+            if (i == ite) {
+                dp[i][j] = dp[i - 1][j];
+                ep[i][j] = ep[i - 1][j];
+                //endif
+            }
+            //22   continue
+        }
+        if (iwrite && DBG)
+            cout << left << setw(12) << i
+                 << left << setw(12) << x[i]
+                 << left << setw(12) << d[i]
+                 << left << setw(12) << dp[i][2]
+                 << left << setw(12) << e[i]
+                 << left << setw(12) << ep[i][2] << endl;
+        //23   continue
+    }
+
+    xii=1.0;
+    dp[ix][2]=0.0;
+    ep[ix][2]=0.0;
+    //if (iwrite) write(6,1004)ix,x(ix),d(ix),dp(ix,2),e(ix),ep(ix,2)
+    if (iwrite) cout << left << setw(12) << ix
+                     << left << setw(12) << x[ix]
+                     << left << setw(12) << d[ix]
+                     << left << setw(12) << dp[ix][2]
+                     << left << setw(12)  << e[ix]
+                     << left << setw(12) << ep[ix][2] << endl;
+
+    iter=0;
+
+    //
+    // read flow restart file
+    //
+    //write(6,*)' do you want to read-in the flow? Y/N=1/0 '
+    //read(5,*)inflow
+    // read 24 = "tsd.in"
+    if(inflow) {
+        cout << endl << " INFLOW = " << inflow << endl;
+        std::string filename = "tsd.in";
+        std::string line;
+        ifstream inputflow(filename);
+        std::getline(inputflow, line);
+        std::istringstream iss1(line);
+        // read the first line, the indice limits
+        if (!(iss1 >> ixdum)) return;
+        if (!(iss1 >> jxdum)) return;
+        if (!(iss1 >> kxdum)) return;
+        if (DBG) cout << "success: ix = " << ixdum << " jx = " << jxdum << " kx = " << kxdum << endl;
+        // read the second line, fill the ph R^3 matrix
+        std::getline(inputflow, line);
+        std::istringstream iss2(line);
+        double value;
+        for (int i = 1; i <= ixdum ; ++i) {
+            for (int j = 1; j <= jxdum ; ++j) {
+                for (int k = 1; k <= kxdum ; ++k) {
+                    if (iss2 >> value) {
+                        ph[i][j][k]=value;
+                        if (DBG) cout << "i " << i << " j = " << j << " k =" << k << " ph = " << value << endl;
+                    }
+                }
+            }
+        }
+        // read the third line, fill the ga vector
+        std::getline(inputflow, line);
+        std::istringstream iss3(line);
+        iss3 >> iter;
+        iss3 >> rex;
+        for (int j = 1; j <= jx; ++j) {
+            if (iss3 >> value) {
+                ga[j]=value;
+                cout << "j = " << j << " ga = " << ga[j] << endl;
+            }
+        }
+        cout << "iter = " << iter << " rex = " << rex << endl;
+    }
+}
+
+void tsd::solveScheme() {
+
 }
 
 void tsd::printInput() {

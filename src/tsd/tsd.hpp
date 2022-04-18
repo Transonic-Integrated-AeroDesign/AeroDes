@@ -29,6 +29,7 @@ public:
 
     // functional
     void setMesh();
+    void solveScheme();
 
     // prints
     void printInput();
@@ -63,6 +64,12 @@ private:
     double ***cp,***u;
     double *ax,*ay,*xle,*xte,*c,*ga;
     double *cz,*cx,*cmo,*xcp;
+
+    int inputFlag;
+    std::string filenameInputData; bool inputBool;
+    std::string filenameInputFlow; bool inputFlowBool;
+    bool iterBool;
+
     /*data ph/ijkxx*0.0/cp/ijkxx*0.0/u/ijkxx*0.0/
     data cpo/ijxx*0.0/cpu/ijxx*0.0/cpwo/ijxx*0.0/cpwu/ijxx*0.0/
     data gp/ijxx*0.0/zu/ijxx*0.0/zo/ijxx*0.0/dp/ijxx*0.0/ep/ijxx*0.0/

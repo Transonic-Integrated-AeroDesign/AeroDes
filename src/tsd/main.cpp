@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     sonic->setMesh();
 
     // print to screen
-    sonic->printInput();
+    //sonic->printInput();
 
     delete sonic;
     delete vars;
