@@ -1,19 +1,20 @@
-      program prandtline
+      program canarline
       implicit none
       integer jxx,lxx,nxx,ipolar,nx,n,km,kfirst,k,kdum,ice,kp,jx
-      integer jx2,is,iwing,j,nsteps,ivis,nstep,iter,it,mj,jdx,jm
+      integer jx2,is,icanar,j,nsteps,ivis,nstep,iter,it,mj,jdx,jm
       integer itx,jxs2,jc,ixx,i,ix,ixw
       parameter(ixx=201,jxx=102,lxx=102,nxx=10)
       real eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis
-      real B,cxc,dm,tcd,Rho,Vinf,Amu,alphad,tc,alpha,Re,acdum
+      real B,cxc,dc,tcd,Rho,Vinf,Amu,alphad,tc,alpha,Re,acdum
       real cacdum,dtet,tetj,yj,etaj,etajm,ac,cac,arc,alphain
       real alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj
       real reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2
-      real rey,cdi,cdv,em,cd,dum,xcp,Bc0,bc,Cc0,cl0,cl1
+      real rey,cdi,cdv,ec,cd,dum,xcp,Bc0,bc,Cc0,cl0,cl1
       real Rf0,rf,phij,phi0,dwkj,Lambd,lamb,dClcda0,arceff
-      real Dx0,xi,str,dxm,Lf0,lf,Zc0,zcanar,xcim,zcim,zwake
+      real Dx0,xi,str,dxm,Lf0,lf,Zc0,zcanar,xcim,zcim,zwake,eceff
+      real Zw0,zwing,xacmstr,yn,wn,aleqd,aleq,theqd,theq
       real c(jxx),g(jxx),dg(jxx),y(jxx),eta(jxx)
-      real w(jxx),t(jxx),dem(jxx)
+      real w(jxx),t(jxx),dec(jxx)
       real a0(jxx),a1(jxx),b0(jxx),b1(jxx),c0(jxx),c1(jxx)
       real l(jxx),d(jxx),q(jxx),at(jxx)
       real cx(lxx,nxx),cz(lxx,nxx),cq(lxx,nxx),inc(lxx,nxx)
@@ -33,26 +34,26 @@
       open(unit=12,file='geocanard.xzmses',form='formatted')
       open(unit=13,file='polarbl.dat',form='formatted')
       open(unit=14,file='polarbl.cdcl',form='formatted')
-      open(unit=15,file='prandtline.data',form='formatted')
-      open(unit=16,file='prandtline.in',form='formatted')
-      open(unit=17,file='prandtline.ycdt',form='formatted')
-      open(unit=18,file='prandtline.ygw',form='formatted')
-      open(unit=19,file='prandtline.yg',form='formatted')
-      open(unit=20,file='prandtline.yw',form='formatted')
-      open(unit=21,file='prandtline.ycl',form='formatted')
-      open(unit=22,file='prandtline.yat',form='formatted')
-      open(unit=23,file='prandtline.ycd',form='formatted')
-      open(unit=24,file='prandtline.out',form='formatted')
-      open(unit=25,file='prandtline.clcdcq',form='formatted')
-      open(unit=26,file='prandtline.ycmf',form='formatted')
-      open(unit=27,file='prandtline.yfz',form='formatted')
-      open(unit=28,file='prandtline.ycmt',form='formatted')
-      open(unit=29,file='prandtline.yxlexte',form='formatted')
-      open(unit=30,file='prandtline.incld',form='formatted')
-      open(unit=31,file='prandtline.itres',form='formatted')
+      open(unit=15,file='canarline.data',form='formatted')
+      open(unit=16,file='canarline.in',form='formatted')
+      open(unit=17,file='canarline.ycdt',form='formatted')
+      open(unit=18,file='canarline.ygw',form='formatted')
+      open(unit=19,file='canarline.yg',form='formatted')
+      open(unit=20,file='canarline.yw',form='formatted')
+      open(unit=21,file='canarline.ycl',form='formatted')
+      open(unit=22,file='canarline.yat',form='formatted')
+      open(unit=23,file='canarline.ycd',form='formatted')
+      open(unit=24,file='canarline.out',form='formatted')
+      open(unit=25,file='canarline.clcdcq',form='formatted')
+      open(unit=26,file='canarline.ycmf',form='formatted')
+      open(unit=27,file='canarline.yfz',form='formatted')
+      open(unit=28,file='canarline.ycmt',form='formatted')
+      open(unit=29,file='canarline.yxlexte',form='formatted')
+      open(unit=30,file='canarline.incld',form='formatted')
+      open(unit=31,file='canarline.itres',form='formatted')
       open(unit=32,file='canarwash.ylwl',form='formatted')
-      open(unit=33,file='prandtline.etaxiac',form='formatted')
-      open(unit=34,file='prandtline.yxfuse',form='formatted')
+      open(unit=33,file='canarline.etaxiac',form='formatted')
+      open(unit=34,file='canarline.yxfuse',form='formatted')
       open(unit=35,file='prandtline.cdcl',form='formatted')
       open(unit=36,file='canarwake.xz',form='formatted')
       open(unit=37,file='canaredge.xy',form='formatted')
@@ -202,32 +203,36 @@ c*****read in data
       read(15,*)itx
       read(15,*)omega
       read(15,*)avis
+      read(15,*)tcd
+      read(15,*)theqd
       read(15,*)Bc0
       read(15,*)Cc0
       read(15,*)Zc0
-      read(15,*)arceff
       read(15,*)Lambd
       read(15,*)Rf0
-      read(15,*)dm
-      read(15,*)tcd
-      read(15,*)iwing
+      read(15,*)dc
+      read(15,*)arceff
+      read(15,*)icanar
       read(15,*)B
+      read(15,*)xacmstr
+      read(15,*)Zw0
       read(15,*)Lf0
       read(15,*)Dx0
       read(15,*)str
-      read(15,*)zwake
       read(15,*)Rho
       read(15,*)Vinf
       read(15,*)Amu
 c     reference Bc0
+      tc=degrad*tcd
+      theq=degrad*theqd
       bc=2.0
       cxc=2.0*Cc0/Bc0
       zcanar=2.0*Zc0/B
       lamb=degrad*Lambd
       rf=2.0*Rf0/Bc0
-      tc=degrad*tcd
-      lf=2.0*Lf0/Bc0
-      dxm=2.0*Dx0/Bc0
+      zwing=2.0*Zw0/B
+      lf=2.0*Lf0/B
+      dxm=2.0*Dx0/B
 c*****initialization
 c*****mesh, geometry and flow
       write(6,*)' '
@@ -242,27 +247,26 @@ c*****mesh, geometry and flow
          yj=-1.0+(1.0-cos(tetj))*(1.0-rf)/2.0
          y(j)=yj
          etaj=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0
-         if(j.eq.1)the
-         n
+         if(j.eq.1)then
             etajm=-1.0
          else
             etajm=eta(j-1)
          endif
          if(j.eq.jxs2)then
-            etaj=eta(j-1)
+            etaj=y(j)
          endif
          eta(j)=etaj
-         dem(j)=dm
+         dec(j)=dc
          t(j)=tc
          g(j)=0.
          w(j)=0.
          at(j)=0.
-         a0(j)=-pi*dm
+         a0(j)=-pi*dc
          a1(j)=0.
-         b0(j)=2.*pi*(2.*dem(j))
+         b0(j)=2.*pi*(2.*dec(j))
          b1(j)=2.*pi
 c*****elliptic canard
-         if(iwing.eq.0)then
+         if(icanar.eq.0)then
             c(j)=cxc*sin(tetj)
             xacc(j)=0.25*cxc
             xacc(j)=xacc(j)+tan(lamb)*abs(y(j))
@@ -273,7 +277,7 @@ c*****elliptic canard
             cacdum=cacdum+c(j)**2*(etaj-etajm)
          endif
 c*****rectangular canard
-         if(iwing.eq.1)then
+         if(icanar.eq.1)then
             c(j)=cxc
             xle(j)=0.0
             xte(j)=cxc
@@ -283,10 +287,10 @@ c*****rectangular canard
             cacdum=cacdum+c(j)**2*(etaj-etajm)
          endif
 c******canard geometry
-         if(iwing.eq.2)then
+         if(icanar.eq.2)then
             if(abs(yj).ge.rf-eps)then
-               xle(j)=0.5115-0.466*(1.0-abs(y(j)))
-               xte(j)=0.7972-0.266*(1.0-abs(y(j)))
+               xle(j)=0.8497-0.466*(1.0-abs(y(j)))
+               xte(j)=0.9747-0.266*(1.0-abs(y(j)))
                c(j)=xte(j)-xle(j)
                xacc(j)=xle(j)+0.25*c(j)
                if(j.ge.2)then
@@ -306,16 +310,15 @@ c******canard geometry
             n=0
          endif
          polar(j)=n
-         write(6,1003)y(j),eta(j),c(j),t(j),dem(j),g(j),w(j),at(j)
+         write(6,1003)y(j),eta(j),c(j),t(j),dec(j),g(j),w(j),at(j)
      &        ,polar(j)
-         write(17,*)y(j),c(j),dem(j),t(j)
+         write(17,*)y(j),c(j),dec(j),t(j)
          write(29,*)y(j),xle(j),xte(j),xacc(j)
          if(j.ge.2)write(33,*)eta(j-1),xiac(j-1)
          y(jx+1-j)=-y(j)
-         eta(jx-j)=-eta(j)
+         if(j.lt.jxs2)eta(jx-j)=-eta(j)
  6    continue
-      eta(jxs2)=eta(jxs2-1)
-      xiac(jxs2)=xiac(jxs2-1)
+      eta(jxs2)=0.0
       eta(jx)=eta(jx-1)
       do 61 jc=1,jxs2
          j=jxs2+jc
@@ -327,6 +330,7 @@ c******canard geometry
          write(29,*)y(j),xle(j),xte(j),xacc(j)
          if(j.ge.jxs2+2)write(33,*)eta(j-1),xiac(j-1)
  61   continue
+      xiac(jxs2)=xiac(jxs2-1)
       xiac(jx)=xiac(jx-1)
       write(6,*)' '
       ac=acdum
@@ -339,22 +343,26 @@ c******canard geometry
       write(6,*)' max number of iterations itx=',itx
       write(6,*)'                        omega=',omega
       write(6,*)'   viscosity coefficient avis=',avis
+      write(6,*)'     canard setting angle tcd=',tcd,' (deg) ='
+     &     ,tc,' (rd)'
+      write(6,*)' airplane setting angle theqd=',theqd,' (deg) ='
+     &     ,theq,' (rd)'
       write(6,*)'canard data:'
       write(6,*)'              canard span Bc0=',Bc0,' (m)'
       write(6,*)'        canard root chord Cc0=',Cc0,' (m)'
       write(6,*)'        canard z location Zc0=',Zc0,' (m)'
-      write(6,*)'   canard effective AR arceff=',arceff
       write(6,*)'   0/1 a.c. sweep angle Lambd=',Lambd,'(deg)'
       write(6,*)'          fuselage radius Rf0=',Rf0,' (m)'
-      write(6,*)'    relative camber height dm=',dm,' (ref. C)'
-      write(6,*)'      canard setting angle tc=',tc,' (rd) ='
-     &     ,tcd,' (deg)'
-      write(6,*)'           canard shape 0/1/2=',iwing
+      write(6,*)'    relative camber height dc=',dc,' (ref. C)'
+      write(6,*)'     canard efficiency arceff=',arceff
+     &     ,' initial value 1 to be recalculated'
+      write(6,*)'           canard shape 0/1/2=',icanar
       write(6,*)'                  wing span B=',B,' (m)'
+      write(6,*)'wing strake end x-loc xacmstr=',xacmstr,' (ref. B/2)'
+      write(6,*)'wing  z-location wrt fuse Zw0=',Zw0,' (m)'
       write(6,*)'          fuselage length Lf0=',Lf0,' (m)'
       write(6,*)'    inital wake mesh step Dx0=',Dx0,' (m)'
       write(6,*)'  wake stretch paprameter str=',str
-      write(6,*)' wake location wrt wing zwake=',zwake
       write(6,*)'air data:'
       write(6,*)'              air density Rho=',Rho,' (kg/m**3)'
       write(6,*)'           wind velocity Vinf=',Vinf,' (m/s)'
@@ -362,12 +370,13 @@ c******canard geometry
       write(6,*)'        reference Reynolds Re=',Re
       write(6,*)'****************'
       write(6,*)'calculated data:'
-      write(6,*)'               canard area ac=',ac,' (ref. Bc0**2/4)'
-      write(6,*)'      canard aspect ratio arc=',arc
+      write(6,*)'        single canard area ac=',ac,' (ref. Bc0**2/4)'
+      write(6,*)'theo. canard aspect ratio arc=',arc
       write(6,*)'average aerodynamic chord cac=',cac,' (ref. Bc0/2)'
       write(6,*)' '
 c*****iterations
-      write(6,*)' alphain alphafi alstep ?'
+      write(6,*)' alphain alphafi alstep'
+     &     ,'or aleqd,aleqd,0 from canareq.f for wake calculation?'
       read(5,*)alphain,alphafi,alstep
       if(alstep.eq.0)then
          nsteps=1
@@ -471,7 +480,6 @@ c     downwash for non-straight lifting line
 c     trailed vorticity
             phi0=sign(1.0,y(j)-eps)
      &           *atan((xacc(j)-xiac(k))/(y(j)-eta(k)))
-c            phi0=0.
             sum=sum+(g(k+1)-g(k))*(1.0-sin(phi0))/(y(j)-eta(k))
 c     downwash due to lifting line
             if(k+1.ne.j.and.k.lt.jx-1)then
@@ -501,7 +509,7 @@ c     downwash due to lifting line
      &        /(8.*pi*(1.0+wj*wj))+2.*(avis+reg))
          w(j)=wj
          at(j)=attj
-         if(abs(y(j)).le.rf)then
+         if(icanar.eq.2.and.abs(y(j)).le.rf)then
            dg(j)=g(j-1)+2.0*rf*sin(3.0*alpha)/3.0*((1.0-(y(j)/rf)**2)
      &           /(1.0+(y(j)/rf)**2)-(1.0-(y(j-1)/rf)**2)
      &           /(1.0+(y(j-1)/rf)**2))-g(j)
@@ -539,8 +547,10 @@ c     downwash due to lifting line
       write(6,*)'************NOT CONVERGED!!!!!'
  300  continue
 c*****results
-      write(6,*)'alphad=',alphad,' deg','alpha=',alpha,' (rd)'
-      write(6,*)'iter=',iter,' dgx=',dgx,' jdx=',jdx
+      write(6,*)
+      write(6,*)'alphad=',alphad,' (deg)','   alpha=',alpha,' (rd)'
+      write(6,*)'  iter=',iter,'                dgx=',dgx,' jdx=',jdx
+      write(6,*)
       write(6,*)'m(j)=',(m(j),j=1,jxs2)
       cl=0.
       cm0=0.
@@ -574,7 +584,7 @@ c*****results
       cmt(jxs2)=cmt(jxs2-1)
      &     +(cmt(jxs2-2)-cmt(jxs2-1))*(y(jxs2)-y(jxs2-1))
      &     /(y(jxs2-2)-y(jxs2-1))
-      cl=0.5*arc*cl
+      cl=arc*cl
       if(alphad.eq.0.)then
           cl0=cl+eps
       endif
@@ -612,25 +622,25 @@ c*****results
             sum2=0.
          endif
  14   continue
-      cdi=-0.5*arc*sum
+      cdi=-arc*sum
       cdv=vis*0.25*arc*(sum0+sum1+sum2)
       if(abs(cdi).lt.eps)then
-         em=1.0
+         ec=1.0
       else
-         em=cl*cl/(pi*arc*cdi)
+         ec=cl*cl/(pi*arc*cdi)
       endif
       cd=cdi+cdv
 c*****distributions
       write(6,1004)
       do 15 j=1,jx
-         write(6,1003)y(j),c(j),t(j),dem(j),g(j),w(j),l(j),d(j),polar(j)
+         write(6,1003)y(j),c(j),t(j),dec(j),g(j),w(j),l(j),d(j),polar(j)
          write(18,*)y(j),g(j),w(j)
          write(19,*)y(j),g(j)
          write(20,*)y(j),w(j)
          write(21,*)y(j),l(j)
          write(22,*)y(j),at(j)
          write(23,*)y(j),d(j)
-         write(24,*)y(j),eta(j),c(j),t(j),dem(j),g(j),w(j)
+         write(24,*)y(j),eta(j),c(j),t(j),dec(j),g(j),w(j)
  15   continue
 c*****force and moment
       do 16 j=1,jxs2
@@ -644,7 +654,7 @@ c*****force and moment
       write(6,*)
       write(6,*)'********'
       write(6,*)'results:'
-      write(6,1005)cdi,em
+      write(6,1005)cdi,ec
       write(6,1006)cdv
       write(6,1007)cd,cl
       write(6,1008)cm0,cmac,xac
@@ -673,15 +683,15 @@ c*****force and moment
  400  continue
       write(6,*)
       write(6,*)'run alpha=0 to 1 deg to get effective'
-     &     ,' aspect ratio of canard arceff and dClcda0'
+     &     ,' parameters of canard dClcda0, arceff and eceff'
       if(alstep.lt.eps)then
          write(6,*)'********************************'
-     &        ,'not enough info to calculate arceff and dClcda0'
+     &        ,'not enough info to calculate dClcda0, arceff and eceff'
       else
-         dClcda0=180.*(cl1-cl0)/pi
+         dClcda0=(cl1-cl0)/degrad
          arceff=2.*dClcda0/(2.*pi-dClcda0)
-         write(6,*)'*********************************************'
-     &        ,'****************arceff=',arceff,'dClcda0=',dClcda0
+         eceff=cl**2/(pi*arceff*cdi)
+         write(6,*)'dClcda0=',dClcda0,'arceff=',arceff,'eceff=',eceff
       endif
 c     canard profile
       do 17 i=1,ixx
@@ -690,12 +700,12 @@ c     canard profile
  17   continue
  18   continue
       write(6,*)' ix=',ix
-c     integration of wake trajectory in canard coordinates (ref Bc0/2)
-      ixw=1+alog(1.0+(str-1.0)*(lf/dxm))/alog(str)
+c     integration of wake trajectory in airplane coordinates (ref Bc0/2)
+      ixw=1+alog(1.0+(str-1.0)*((lf-cxc)/dxm))/alog(str)
       write(6,*)'ixw=',ixw
       do 19 i=1,ix
-         xc(i)=0.055555+0.2*xc(i)
-         zc(i)=0.2*zc(i)
+         xc(i)=Bc0*(xle(jxs2)+cxc*xc(i))/B
+         zc(i)=Bc0*cxc*zc(i)/B
  19   continue
       xcim=0.0
       zcim=0.0
@@ -707,71 +717,85 @@ c     integration of wake trajectory in canard coordinates (ref Bc0/2)
             tetj=(j-1)*dtet
             sum=sum+dtet/sqrt(1.+(cos(tetj)/xi)**2)
  20      continue
-c         write(6,*)'sum=',sum
          xc(i)=xi
-         sum=alpha+tc-cl/(pi*arceff)*(1.0+sum/pi)
+         sum=theq-cl*(1.0+sum/pi)/(pi*arc)
          zc(i)=zcim+sum*(xc(i)-xcim)
          xcim=xc(i)
          zcim=zc(i)
-c     transfer to airplane coordinates (ref B/2)
+c     canard coordinates
  21   continue
       do 22 i=1,ix
          zc(i)=zcanar+zc(i)
          write(36,*)xc(i),zc(i)
          zc(i)=zc(i)-zcanar
  22   continue
+c     attach wake to the canard trailing edge
+      zwake=0.
       do 23 i=ix+1,ix+ixw
-         xc(i)=xc(ix)+Bc0*xc(i)/B
-         zc(i)=zcanar+Bc0*zc(i)/B
+         xc(i)=xc(ix)+xc(i)
+         zc(i)=zcanar+zc(i)
+         if(xc(i-1).lt.xacmstr.and.xc(i).gt.xacmstr)then
+            zwake=zc(i)-zwing
+            write(6,*)'i=',i,'xacmstr=',xacmstr,'zc(i)=',zc(i)
+     &           ,'zcanar=',zcanar,'zwake=',zwake
+         endif
          write(36,*)xc(i),zc(i)
  23   continue
-c     downwash on wing
-      jx=101
-      dtet=pi/(jx-1)
-      do 25 j=1,jx
-         read(11,*)dum,dum,dum,xacw(j)
-         tetj=(j-1)*dtet
-         yj=-B*cos(tetj)/Bc0
+      write(6,*)'zwake=',zwake,' (ref. B/2)'
+c     downwash on wing in airplane coordinate
+      nx=101
+      dtet=pi/(nx-1)
+      do 25 n=1,nx
+         read(11,*)dum,dum,dum,xacw(n)
+         tetj=(n-1)*dtet
+         yn=-cos(tetj)
          sum=0.
          do 24 k=1,jx-1
-            if(k.eq.jx)goto 24
-            phi0=sign(1.0,yj-eps)
-     &           *atan((xacw(j)-xiac(k))
-     &           /sqrt(zwake**2+(yj-eta(k))**2))
-            phi0=0.
-            sum=sum+(g(k+1)-g(k))*(1.0-sin(phi0))
-     &           *(yj-eta(k))/(zwake**2+(yj-eta(k))**2)
+            if(k.lt.jxs2)then
+               phi0=(xacw(n)-Bc0*xiac(k)/B)
+     &           /sqrt(zwake**2+(yn-Bc0*eta(k)/B)**2)
+            else
+               phi0=(xacw(n)-Bc0*xiac(jx+1-k)/B)
+     &           /sqrt(zwake**2+(yn+Bc0*eta(jx+1-k)/B)**2)
+            endif
+            phi0=atan(phi0)
+            sum=sum+(g(k+1)-g(k))*(1.0+sin(phi0))*(yn-Bc0*eta(k)/B)
+     &           /(zwake**2+(yn-Bc0*eta(k)/B)**2)
  24      continue
-         wj=-sum/(2.*pi)
-         write(32,*)yj,wj
+         wn=-sum/(2.*pi)
+         write(32,*)yn,wn
  25   continue
       write(6,*)
 c     point A
       dum=-1.
-      acdum=0.5115
-c     point C
-      cacdum=0.7972
+      acdum=0.8497
+c     point B
+      cacdum=0.9747
       write(37,*)dum,acdum
       write(37,*)dum,cacdum
+c     point C
+      dum=-0.25
+      cacdum=0.7752
 c     point D
-      dum=-0.2857
-      cacdum=0.6072
-c     point B
-      acdum=0.1786
+      acdum=0.5
       write(37,*)dum,cacdum
       write(37,*)dum,acdum
       write(37,*)-dum,acdum
       write(37,*)-dum,cacdum
-      dum=0.2857
-      acdum=0.1786
-      cacdum=0.6072
+c     point E
+      dum=0.25
+      acdum=0.5
+c     point F
+      cacdum=0.7752
       write(37,*)dum,acdum
       write(37,*)dum,cacdum
+c     point G
       dum=1.
-      acdum=0.5115
-      cacdum=0.7972
-      write(37,*)dum,cacdum
+      acdum=0.9747
+c     point H
+      cacdum=0.8497
       write(37,*)dum,acdum
+      write(37,*)dum,cacdum
 c*****files
       write(6,*)'******data file:'
       write(6,*)'polarbl.dat           :profile polar from Xfoil'
@@ -779,21 +803,21 @@ c*****files
       write(6,*)'prandtline.in         :restart file'
       write(6,*)'******output files:'
       write(6,*)'polarbl.cdcl          :profile polar cd,cl,cq,inc'
-      write(6,*)'prandtline.ycdt       :y,c(y),d(y) and t(y)'
-      write(6,*)'prandtline.ygw        :y,g(y) and w(y)'
-      write(6,*)'prandtline.yg         :y,g(y) circulation gama'
-      write(6,*)'prandtline.yw         :y,w(y) downwash'
-      write(6,*)'prandtline.ycl        :y,cl(y)local lift coefficient' 
-      write(6,*)'prandtline.yat        :y,at(y) angle of attack'
-      write(6,*)'prandtline.ycd        :y(j),cd(j)'
-      write(6,*)'prandtline.clcdcq     :alpha,CL,CD,CM,0'
-      write(6,*)'prandtline.out        :save results for restart'
-      write(6,*)'prandtline.ycmf       :y,cmf(y)'
-      write(6,*)'prandtline.yfz        :y,fz(y)'
-      write(6,*)'prandtline.ycmt       :y,cmt(y)'
-      write(6,*)'prandtline.yxlexte    :y,xle(y),xte(y)'
-      write(6,*)'prandtline.incld      :inc,L/D'
-      write(6,*)'prandtline.itres      :iter,alog(residue)' 
+      write(6,*)'canarline.ycdt        :y,c(y),d(y) and t(y)'
+      write(6,*)'canarline.ygw         :y,g(y) and w(y)'
+      write(6,*)'canarline.yg          :y,g(y) circulation gama'
+      write(6,*)'canarline.yw          :y,w(y) downwash'
+      write(6,*)'canarline.ycl         :y,cl(y)local lift coefficient' 
+      write(6,*)'canarline.yat         :y,at(y) angle of attack'
+      write(6,*)'canarline.ycd         :y(j),cd(j)'
+      write(6,*)'canarline.clcdcq      :alpha,CL,CD,CM,0'
+      write(6,*)'canarline.out         :save results for restart'
+      write(6,*)'canarline.ycmf        :y,cmf(y)'
+      write(6,*)'canarline.yfz         :y,fz(y)'
+      write(6,*)'canarline.ycmt        :y,cmt(y)'
+      write(6,*)'canarline.yxlexte     :y,xle(y),xte(y)'
+      write(6,*)'canarline.incld       :inc,L/D'
+      write(6,*)'canarline.itres       :iter,alog(residue)' 
  1000 format(18a4)
  1001 format(1x,i4,4x,f8.4,4x,f8.4,4x,f8.4,4x,f8.4)
  1002 format(7x,'y(j)=',5x,'eta(j)=',7x,'c(j)=',7x,'t(j)='
