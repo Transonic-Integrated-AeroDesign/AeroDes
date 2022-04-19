@@ -242,7 +242,8 @@ c*****mesh, geometry and flow
          yj=-1.0+(1.0-cos(tetj))*(1.0-rf)/2.0
          y(j)=yj
          etaj=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0
-         if(j.eq.1)then
+         if(j.eq.1)the
+         n
             etajm=-1.0
          else
             etajm=eta(j-1)
