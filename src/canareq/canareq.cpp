@@ -73,14 +73,21 @@ canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
     // commandline inputs
     for (int iarg = 0; iarg<argc ; ++iarg) {
         // commandline option: for input file
-        if (!strcmp(argv[iarg],"--canar_in")){
+        if (!strcmp(argv[iarg],"--ceq_in")){
             inputBool=true;
             inflag=iarg+1;
             filenameEqData = argv[inflag];
             iarg+=2;
         }
+        // commandline option: for override of canard equilibrium polar file
+        if (!strcmp(argv[iarg],"--ceq_polar")) {
+            tcdBool=true;
+            inflag=iarg+1;
+            filenameInputPolar = argv[inflag];
+            iarg+=2;
+        }
         // commandline option: for override of tcd setting angle
-        if (!strcmp(argv[iarg],"--canar_tcd")) {
+        if (!strcmp(argv[iarg],"--ceq_tcd")) {
             tcdBool=true;
             tcdflag=iarg+1;
             tcd0 = (double) atof(argv[tcdflag]);
@@ -190,7 +197,7 @@ void canareq::linearModel() {
 
     // check for tcd
     if (!tcdBool) {
-        cout << endl << "\033[1;41m SPECIFICY \'--canar_tcd [angle]\' \033[0m" << endl << endl;
+        cout << endl << "\033[1;41m SPECIFICY \'--ceq_tcd [angle]\' \033[0m" << endl << endl;
         abort();
     }
 
