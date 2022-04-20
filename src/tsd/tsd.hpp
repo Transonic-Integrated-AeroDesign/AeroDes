@@ -26,6 +26,7 @@ public:
 
     // input
     void readInputParams(std::string);
+    void readInputProfile(std::string);
 
     // functional
     void setMesh();
@@ -43,6 +44,9 @@ public:
     void printInput();
 
     // output io
+    void outputMesh1(std::string);
+    void outputMesh2(std::string);
+    void outputGeom(std::string);
     void outputLift(std::string);
 
     // memory
@@ -53,7 +57,8 @@ public:
 
 private:
     int ixx,kxx,ikxx,ithick,ile,klo,kup,kpt,kx,iprof,ite;
-    int ipt,ix,k,kc,i,ic,iter,inflow,itx,idx,kdx,iwrite;
+    int ipt,ix,k,kc,i,ic,iter,inflow,itx,idx,kdx;
+    int iwrite, imesh;
     int it,jxx,ijkxx,j,jx,ijxx,ixdum,jxdum,kxdum,idum,inprof;
     int jtip,jpt,jc,jstr,jdx,jj,jtipp,n;
 
@@ -81,7 +86,10 @@ private:
     std::string filenameInputFlow; bool inputFlowBool;
     bool iterBool;
 
-    std::ofstream file1;
+    std::string filenameMesh1; std::ofstream fileMesh1; bool meshBool;
+    std::string filenameMesh2; std::ofstream fileMesh2;
+    std::string filenameGeom; std::ifstream fileinGeom; std::ofstream fileoutGeom;
+
     std::ofstream file2;
 };
 

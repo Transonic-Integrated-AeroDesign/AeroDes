@@ -97,6 +97,11 @@ public:
         char title[38],prop[20]; // these are not large enough there will be issues w/ strings
         char nc[5],yw[5];
 
+        // Cl/Cd
+        // thrust
+        // slope
+        // Cl (canard)
+
         // input resulting polar from smoothpolar or prandtline
         double *alphares, *czres, *cxres, *cqres;
         int nsteps;

@@ -57,6 +57,12 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
     filenameInputFlow = "tsd.in";
     inputFlowBool = false;
 
+    filenameMesh1 = "tsd.xymesh1";
+    meshBool = false;
+    filenameMesh2 = "tsd.xymesh2";
+
+    filenameGeom = "geoprofortsd.xde";
+
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
         if (!strcmp(argv[iarg],"--tsd_in")){
@@ -149,8 +155,8 @@ void tsd::readInputParams(std::string filename) {
 
     ifstream paramfile(filename);
     if (!paramfile.is_open()) {
-        cout << "\n\tCannot Read " << filename;
-        cout << " File error in readInputParams()" << endl;
+        cout << "\n\tCannot read: " << filename << endl;
+        cout << "\tFile error in readInputParams()" << endl;
         abort();
     }
 
@@ -161,7 +167,10 @@ void tsd::readInputParams(std::string filename) {
         std::getline(paramfile, line);
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if (!(iss >> a >> b >> c)) break;
+        if (!(iss >> a >> b >> c)) {
+            cout << "readInputParams(): error" << endl;
+            break;
+        }
 
         if (a.compare("DX0") == 0) dx0 = b;
         else if (a.compare("DY0") == 0) dy0 = b;
@@ -252,6 +261,10 @@ void tsd::readInputParams(std::string filename) {
                 swp=mach0*sin(pi*lamb / 180.0);
             }
         }
+        else if (a.compare("IMESH") == 0) {
+            meshBool = true;
+            imesh = b;
+        }
         else if (a.compare("IWRITE") == 0) iwrite = b;
         else if (a.compare("IFLOW") == 0) inflow=b;
         else if (a.compare("ITER") == 0) {
@@ -269,6 +282,33 @@ void tsd::readInputParams(std::string filename) {
     gamach=gamp*pow(mach0,2);
     bet0=1.0-pow(mach0,2)+pow(swp,2);
     ucr=bet0/gamach;
+}
+
+void tsd::readInputProfile(std::string filename) {
+    // profile geometry
+    // originally the legacy code read in 14
+    // which corresponds to "geoprofortsd.xde"
+    fileinGeom.open(filename);
+    if (!fileinGeom.is_open()) {
+        cout << "\n\tCannot Read: " << filename << endl;
+        cout << "\tFile error in readInputProfile()" << endl;
+        abort();
+    }
+
+    std::string line; double c1, c2, c3;
+    for (int i = ile; i <= ite-1; ++i) {
+        //do 19 i=ile,ite-1
+        std::getline(fileinGeom, line);
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        if (!(iss >> c1 >> c2 >> c3)) break;
+        dum = c1;
+        d[i] = c2;
+        e[i] = c3;
+        //read(14, *)dum, d(i), e(i)
+        //19   continue
+    }
+
 }
 
 void tsd::setMesh() {
@@ -458,45 +498,14 @@ void tsd::setMesh() {
         //14   continue
     }
 
-    // original io 34 = "tsd.xymesh1"
-    cout << fixed << std::setprecision(5);
-    for (int j = 1; j <= jx; ++j) {
-        //do 16 j=1,jx
-        for (int i = 1; i <= ix; ++i) {
-            //do 15 i = 1, ix
-            ic=ix+1-i;
-            if ( j%2 == 1 ) cout << left << setw(10) << xi[i][j] << left << setw(10) << y[j] << endl;
-            else cout << left << setw(10) << xi[ic][j] << left << setw(10) << y[j] << endl;
-            //15 continue
-        }
-        //16   continue
-    }
+    // originally 34 = "tsd.xymesh1"
+    if (meshBool) outputMesh1(filenameMesh1);
 
-    // original io 35 = "tsd.xymesh2"
-    cout << fixed << std::setprecision(5);
-    for (int i = 1; i <= ix; ++i) {
-        //do 18 i=1,ix
-        for (int j = 1; j <= jx; ++j) {
-            //do 17 j=1,jx
-            jc=jx+1-j;
-            if ( i%2 == 1 ) cout << left << setw(10) << xi[i][j] << left << setw(10) << y[j] << endl;
-            else cout << left << setw(10) << xi[i][jc] << left << setw(10) << y[jc] << endl;
-            //17      continue
-        }
-        //18   continue
-    }
+    // originally 35 = "tsd.xymesh2"
+    if (meshBool) outputMesh2(filenameMesh2);
 
-    // profile geometry
-    // original io 14 = "geoprofortsd.xde"
-    // create function to read in geoprofortsd.xde file -cp 4/12/22
-    for (int i = ile; i <= ite-1; ++i) {
-        //do 19 i=ile,ite-1
-        if (inprof != 0) {
-            //read(14, *)dum, d(i), e(i)
-            //endif
-        }
-        //19   continue
-    }
+    // originally 14 = "geoprofortsd.xde"
+    if (inprof) readInputProfile(filenameGeom);
 
     dtet=pi/(ite-ile);
     xii=1.0;
@@ -1264,5 +1273,78 @@ void tsd::outputLift(std::string filename) {
         file2 << left << setw(12) << k;
         file2 << left << setw(12) << z[k] << endl;
         //35   continue
+    }
+}
+
+void tsd::outputMesh1(std::string filename) {
+    // originally the legacy code output to 34
+    // which corresponds to "tsd.xymesh1"
+    fileMesh1.open(filename);
+    fileMesh1 << left << setw(14) << "# xi[i][j]"
+              << left << setw(14) << "y[j]"
+              << left << setw(14) << "zdum" << endl;
+    fileMesh1 << fixed << std::setprecision(5);
+    double zdum = 0;
+    for (int j = 1; j <= jx; ++j) {
+        for (int i = 1; i <= ix; ++i) {
+            //do 15 i = 1, ix
+            ic=ix+1-i;
+            if ( j%2 == 1 ) {
+                fileMesh1 << left << setw(14) << xi[i][j]
+                          << left << setw(14) << y[j]
+                          << left << setw(14) << zdum << endl;
+            }
+            else {
+                fileMesh1 << left << setw(14) << xi[ic][j]
+                          << left << setw(14) << y[j]
+                          << left << setw(14) << zdum << endl;
+            }
+        }
+    }
+}
+
+void tsd::outputMesh2(std::string filename) {
+    // originally the legacy code output to 35
+    // which corresponds to "tsd.xymesh2"
+    fileMesh2.open(filename);
+    fileMesh2 << left << setw(14) << "# xi[i][j]"
+              << left << setw(14) << "y[j]" << endl;
+    fileMesh2 << fixed << std::setprecision(5);
+    double zdum = 0;
+    for (int i = 1; i <= ix; ++i) {
+        for (int j = 1; j <= jx; ++j) {
+            jc=jx+1-j;
+            if ( i%2 == 1 ) {
+                fileMesh2 << left << setw(14) << xi[i][j]
+                          << left << setw(14) << y[j]
+                          << left << setw(14) << zdum << endl;
+            }
+            else {
+                fileMesh2 << left << setw(14) << xi[i][jc]
+                          << left << setw(14) << y[jc]
+                          << left << setw(14) << zdum << endl;
+            }
+        }
+    }
+}
+
+void tsd::outputGeom(std::string filename) {
+    // output profile geometry
+    // originally the legacy code output to 14
+    // which corresponds to "geoprofortsd.xde"
+    fileoutGeom.open(filename);
+    fileoutGeom << left << setw(10) << "i"
+                << left << setw(10) << "d[i]"
+                << left << setw(10) << "e[i]" << endl;
+    for (int i = ile; i <= ite-1; ++i) {
+        //do 19 i=ile,ite-1
+        if (inprof != 0) {
+            fileoutGeom << left << setw(10) << i
+                        << left << setw(10) << d[i]
+                        << left << setw(10) << e[i] << endl;
+            //read(14, *)dum, d(i), e(i)
+            //endif
+        }
+        //19   continue
     }
 }
