@@ -36,6 +36,7 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
     bb = (double *) malloc(sizeof(double)*kxx);
     cc = (double *) malloc(sizeof(double)*kxx);
     dd = (double *) malloc(sizeof(double)*kxx);
+    ff = (double *) malloc(sizeof(double)*kxx);
     d = (double *) malloc(sizeof(double)*ixx); e = (double *) malloc(sizeof(double)*ixx);
     create_2d_double_array(ixx, jxx, dp); create_2d_double_array(ixx, jxx, ep);
     create_2d_double_array(ixx, jxx, cpo); create_2d_double_array(ixx, jxx, cpu); create_2d_double_array(ixx, jxx, gp);
@@ -82,7 +83,7 @@ tsd::~tsd() {
     free(x); free(y); free(z);
     delete_2d_double_array(xi);
     delete_3d_double_array(ph);
-    free(aa); free(bb); free(cc); free(dd);
+    free(aa); free(bb); free(cc); free(dd); free(ff);
     free(d); free(e);
     delete_2d_double_array(dp); delete_2d_double_array(ep);
     delete_2d_double_array(cpo); delete_2d_double_array(cpu); delete_2d_double_array(gp);
@@ -648,7 +649,427 @@ void tsd::setMesh() {
 }
 
 void tsd::solveScheme() {
+    //do 300 it=1,itx
+    iter=iter+1;
+    cdw=0.0;
+    // scheme
+    // x-sweep
+    rex=0.0;
+    idx=0;
+    jdx=0;
+    kdx=0;
+    // y-sweep
+    //do 200 jj=2,jx-1
+    if(iter%2==1) j=jj;
+    else {
+        j=jx+1-jj;
+        j=jj;
+    }
+    // boundary condition at i=1
+    for (int k = 1; k <= kx; ++k) {
+        //do 24 k=1,kx
+        if (mach0 < 1.0-eps) ph[1][j][k]=usdpi*ga[j]*atan2(z[k],-(xi[1][j]-xle[j])) / sqrt(bet0);
+        else ph[1][j][k]=0.0;
+        //24   continue
+    }
 
+    for (int n = 1; n <= 1; ++n) {
+        for (int i = 2; i <= ix - 1; ++i) {
+            //do 27 n=1,1
+            //do 27 i=2,ix-1
+            // boundary condition at k=1 and k=kx
+            if(mach0 < 1.0-eps) {
+                aa[1]=0.0;
+                bb[1]=1.0;
+                cc[1]=0.0;
+                dd[1]=0.0;
+                ph[i][j][1]=usdpi*ga[j]*atan2(z[1],-(xi[i][j]-xle[j])) / sqrt(bet0);
+                aa[kx]=0.0;
+                bb[kx]=1.0;
+                cc[kx]=0.0;
+                dd[kx]=0.0;
+                ph[i][j][kx]=usdpi*ga[j]*atan2(z[kx],-(xi[i][j]-xle[j])) / sqrt(bet0);
+            }
+            else {
+                aa[1]=0.0;
+                bb[1]=1.0;
+                cc[1]=0.0;
+                dd[1]=0.0;
+                aa[kx]=0.0;
+                bb[kx]=1.0;
+                cc[kx]=0.0;
+                dd[kx]=0.0;
+            }
+
+            // z-sweep interior points
+            for (int k = 2; k <= kx-1; ++k) {
+                //do 25 k=2,kx-1
+                um=(ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]);
+                if (i > 2) um=0.5*(um + (ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]));
+
+                u[i-1][j][k]=um;
+                ui=0.5*((ph[i+1][j][k]-ph[i][j][k]) / (xi[i+1][j]-xi[i][j])
+                            + (ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]));
+                u[i][j][k]=ui;
+
+                if (k<klo || k>kup || i>ile || j>jtip) {
+                    jjscheme(i, j, k);
+                }
+                else {
+                    if (k==klo && i<=ite && j<=jtip) {
+                        jjscheme(i, j, k);
+                        bb[k]=bb[k]-(1.0 / (z[k+1]-z[k]))*0.5*(xi[i+1][j]-xi[i-1][j]);
+                        cc[k]=0.0;
+                        dd[k]=dd[k]
+                                +(dp[i][j]-ep[i][j]-alpha
+                                -(ph[i][j][k+1]-ph[i][j][k]) / (z[k+1]-z[k]))
+                                *0.5*(xi[i+1][j]-xi[i-1][j]);
+                    }
+
+                    if (k==klo && i>ite) {
+                        jjscheme(i, j, k);
+                        dd[k]=dd[k]
+                                +(-ga[j]/(z[k+1]-z[k]))
+                                *0.5*(xi[i+1][j]-xi[i-1][j]);
+                    }
+
+                    if (k==kup && i<=ite && j<=jtip) {
+                        jjscheme(i, j, k);
+                        aa[k]=0.0;
+                        bb[k]=bb[k]
+                                -(1.0 / (z[k]-z[k-1]))
+                                *0.5*(xi[i+1][j]-xi[i-1][j]);
+                        dd[k]=dd[k]
+                                +(-(dp[i][j]+ep[i][j]-alpha)
+                                +(ph[i][j][k]-ph[i][j][k-1]) / (z[k]-z[k-1]))
+                                *0.5*(xi[i+1][j]-xi[i-1][j]);
+                    }
+
+                    if (k==kup && i>ite) {
+                        jjscheme(i,j,k);
+                        dd[k]=dd[k]
+                              +(ga[j] / (z[k]-z[k-1]))
+                              *0.5*(xi[i+1][j]-xi[i-1][j]);
+                    }
+                }
+
+                if(ui<ucr-eps) dd[k]=omega*dd[k];
+                else if (i>2 && i<ix-1) {
+                    dd[k]=dd[k]-0.0*(u[i-1][j][k]-2.0*u[i][j][k]
+                            + u[i+1][j][k]);
+                }
+
+                if(abs(dd[k]) > abs(rex)) {
+                    rex=dd[k];
+                    idx=i;
+                    jdx=j;
+                    kdx=k;
+                }
+            }
+            tridiag(1,kx);
+
+            for (int k = 1; k <= kx; ++k) {
+                //do 26 k=1,kx
+                ph[i][j][k]=ph[i][j][k]+dd[k];
+                //26      continue
+            }
+
+            if(i==ite && j<=jtip) {
+                dga=ph[ite][j][kup]-ph[ite][j][klo]
+                        +(ph[ite][j][kup+1]-ph[ite][j][kup])*(0.0-z[kup])
+                        /(z[kup+1]-z[kup])
+                        -(ph[ite][j][klo]-ph[ite][j][klo-1])*(0.0-z[klo])
+                        /(z[klo]-z[klo-1])-ga[j];
+                ga[j]=ga[j]+omega*dga;
+                //endif
+            }
+            //27   continue
+        }
+    }
+
+    // boundary condition at i=ix
+    /*do 28 k=1,kx
+    ph(ix,j,k)=ph(ix-1,j,k)
+    28   continue
+    200  continue
+    c     first j-plane  and last j-plane
+    do 30 i=1,ix
+    do 29 k=1,kx
+    ph(i,1,k)=ph(i,2,k)
+    ph(i,jx,k)=ph(i,jx-1,k)
+    29      continue
+    30   continue
+    ga(1)=ga(2)
+    ga(jx)=ga(jx-1)
+    do 31 j=jtip+1,jx
+    ga(j)=0.0
+    cx(j)=0.0
+    cmo(j)=0.0
+    31   continue
+    c     calculate lift, drag and moment
+    if(iter.eq.1)then
+            rex1=rex
+    endif
+            tenlog=log10(abs(rex/rex1)+eps*eps)
+    write(16,*)iter,tenlog
+    cl=0.0
+    yjm=0.0
+    do 32 j=2,jtip
+    if(j.eq.jtip)then
+                cl=cl+ga(j)*(y(jtip)-yjm)
+            else
+    cl=cl+ga(j)*(0.5*(y(j+1)+y(j))-yjm)
+    endif
+            yjm=0.5*(y(j+1)+y(j))
+    32   continue
+    cl=2.0*cl/am
+    cdw=-gamach*cdw/(6.0*am)*/
+    //write(27,*)iter,cl
+    //300  continue
+}
+
+void tsd::jjscheme(int i, int j, int k) {
+    int jtip, ile, ite;
+    double ddkm;
+
+    //common/constants/pi,eps,gamp,mach0,ucr,bet0,gamach,piv,cdw
+    if (um > ucr+eps) {
+        if (ui > ucr+eps) {
+            // supersonic point
+            aa[k]=-1.0 / (z[k]-z[k-1]) * 0.5*(xi[i+1][j]-xi[i-1][j]);
+            bb[k]=-(bet0-gamach*um) / (xi[i][j]-xi[i-1][j]) / (xi[i][j]-xi[i-1][j])
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +(1.0 / (y[j+1]-y[j])+1.0 / (y[j]-y[j-1]))
+                  / (y[j+1]-y[j-1])
+                  *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +(1.0 / (z[k+1]-z[k])+1.0 / (z[k]-z[k-1]))
+                  *0.5*(xi[i+1][j]-xi[i-1][j])
+                  +piv / (xi[i][j]-xi[i-1][j])
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            cc[k]=-1.0 / (z[k+1]-z[k])
+                    *0.5*(xi[i+1][j]-xi[i-1][j]);
+            ddkm=dd[k];
+            dd[k]=0.0;
+            if(i > 2) {
+                bb[k]=bb[k]-(bet0-gamach*um) / (xi[i][j]-xi[i-1][j])
+                        / (xi[i][j]-xi[i-2][j])
+                        *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                        +(bet0-gamach*um)/(xi[i][j]-xi[i-1][j])
+                        / (xi[i][j]-xi[i-1][j])
+                        *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+                dd[k]=(bet0-gamach*um)
+                        *((ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j])
+                        -(ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]))
+                        / (xi[i][j]-xi[i-2][j])
+                        *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            }
+            dd[k]=dd[k]
+                  +((ph[i][j+1][k]-ph[i][j][k]) / (y[j+1]-y[j])
+                  -(ph[i][j][k]-ph[i][j-1][k]) / (y[j]-y[j-1]))
+                  / (y[j+1]-y[j-1])
+                  *0.5*(xi[i][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +((ph[i][j][k+1]-ph[i][j][k]) / (z[k+1]-z[k])
+                  -(ph[i][j][k]-ph[i][j][k-1]) / (z[k]-z[k-1]))
+                  *0.5*(xi[i+1][j]-xi[i-1][j])
+                  -((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                  +(xi[i][j]-xi[i][j-1]) / (y[j]-y[j-1]))
+                  *(ph[i+1][j+1][k]-ph[i+1][j-1][k]
+                  -ph[i-1][j+1][k]+ph[i-1][j-1][k])
+                  / (y[j+1]-y[j-1])
+                  / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                  -xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  -2.0*((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                  -(xi[i][j]-xi[i][j-1]) / (y[j]-y[j-1]))
+                  / (y[j+1]-y[j-1])*(ph[i+1][j][k]-ph[i-1][j][k])
+                  / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                  - xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +piv*ddkm / (xi[i][j]-xi[i-1][j])
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+        }
+        else {
+            // shock point
+            aa[k]=-1.0/(z[k]-z[k-1])
+                  *0.5*(xi[i+1][j]-xi[i-1][j]);
+            bb[k]=-(bet0-gamach*um)/(xi[i][j]-xi[i-1][j])
+                  /(xi[i][j]-xi[i-1][j])
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +(1.0/(y[j+1]-y[j])+1.0/(y[j]-y[j-1]))
+                   /(y[j+1]-y[j-1])
+                   *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +(1.0/(z[k+1]-z[k])+1.0/(z[k]-z[k-1]))
+                   *0.5*(xi[i+1][j]-xi[i-1][j])
+                  +piv/(xi[i][j]-xi[i-1][j])
+                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            cc[k]=-1.0/(z[k+1]-z[k])
+                  *0.5*(xi[i+1][j]-xi[i-1][j]);
+            ddkm=dd[k];
+            dd[k]=0.0;
+
+            if(i > 2) {
+                bb[k]=bb[k]-(bet0-gamach*um)/(xi[i][j]-xi[i-1][j])
+                            / (xi[i][j]-xi[i-2][j])
+                            *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                      +(bet0-gamach*um) / (xi[i][j]-xi[i-1][j])
+                       / (xi[i][j]-xi[i-1][j])
+                       *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+
+                dd[k]=(bet0-gamach*um)*((ph[i][j][k]-ph[i-1][j][k])
+                                        / (xi[i][j]-xi[i-1][j])
+                                        -(ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]))
+                      / (xi[i][j]-xi[i-2][j])
+                      *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]); }
+
+            dd[k]=dd[k]
+                  +(bet0-gamach*ui)*((ph[i+1][j][k]-ph[i][j][k])
+                                     / (xi[i+1][j]-xi[i][j])-(ph[i][j][k]-ph[i-1][j][k])
+                                                             / (xi[i][j]-xi[i-1][j]))*0.5*(z[k+1]-z[k-1])
+                  +((ph[i][j+1][k]-ph[i][j][k]) / (y[j+1]-y[j])
+                    -(ph[i][j][k]-ph[i][j-1][k]) / (y[j]-y[j-1]))
+                   / (y[j+1]-y[j-1])
+                   *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +((ph[i][j][k+1]-ph[i][j][k]) / (z[k+1]-z[k])
+                    -(ph[i][j][k]-ph[i][j][k-1]) / (z[k]-z[k-1]))
+                   *0.5*(xi[i+1][j]-xi[i-1][j])
+                  -((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                    +(xi[i][j]-xi[i][j-1]) / (y[j]-y[j-1]))
+                   *(ph[i+1][j+1][k]-ph[i+1][j-1][k]
+                     -ph[i-1][j+1][k]+ph[i-1][j-1][k])
+                   / (y[j+1]-y[j-1])
+                   / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                                             -xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  -2.0*((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                        -(xi[i][j]-xi[i][j-1]) / (y[j]-y[j-1]))
+                   / (y[j+1]-y[j-1])*(ph[i+1][j][k]-ph[i-1][j][k])
+                   / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                                             -xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +piv*ddkm / (xi[i][j]-xi[i-1][j])
+                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            cdw=cdw+2.0*pow(ucr-um,3)*(z[k+1]-z[k-1])*(y[j+1]-y[j-1]);
+        }
+    }
+    else {
+        if(ui > ucr+eps) {
+            // sonic point
+            aa[k]=-1.0/(z[k]-z[k-1])
+                  *0.5*(xi[i+1][j]-xi[i-1][j]);
+
+            bb[k]=gamach*(ui-um)/(xi[i][j]-xi[i-1][j])
+                  / (xi[i][j]-xi[i-1][j])
+                  *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +(1.0/(y[j+1]-y[j])+1.0/(y[j]-y[j-1]))
+                   / (y[j+1]-y[j-1])
+                   *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +(1.0 / (z[k+1]-z[k])+1.0/(z[k]-z[k-1]))
+                   *0.5*(xi[i+1][j]-xi[i-1][j])
+                  +piv / (xi[i][j]-xi[i-1][j])
+                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            cc[k]=-1.0/(z[k+1]-z[k])
+                  *0.5*(xi[i+1][j]-xi[i-1][j]);
+            ddkm=dd[k];
+            dd[k]=(bet0-gamach*(ph[i][j][k]-ph[i-1][j][k])
+                  / (xi[i][j]-xi[i-1][j]))
+                  *(ui-um) / (xi[i][j]-xi[i-1][j])
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +((ph[i][j+1][k]-ph[i][j][k]) / (y[j+1]-y[j])
+                  -(ph[i][j][k]-ph[i][j-1][k]) / (y[j]-y[j-1]))
+                  / (y[j+1]-y[j-1])
+                  *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +((ph[i][j][k+1]-ph[i][j][k]) / (z[k+1]-z[k])
+                  -(ph[i][j][k]-ph[i][j][k-1]) / (z[k]-z[k-1]))
+                  *0.5*(xi[i+1][j]-xi[i-1][j])
+                  -((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                  +(xi[i][j]-xi[i][j-1])/(y[j]-y[j-1]))
+                  *(ph[i+1][j+1][k]-ph[i+1][j-1][k]
+                  -ph[i-1][j+1][k]+ph[i-1][j-1][k])
+                  / (y[j+1]-y[j-1])
+                  / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                  -xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  -2.0*((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                  -(xi[i][j]-xi[i][j-1]) / (y[j]-y[j-1]))
+                  / (y[j+1]-y[j-1])*(ph[i+1][j][k]-ph[i-1][j][k])
+                  / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                  -xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +piv*ddkm / (xi[i][j]-xi[i-1][j])
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+        }
+        else {
+            // subsonic point
+            aa[k]=-1.0/(z[k]-z[k-1])
+                  *0.5*(xi[i+1][j]-xi[i-1][j]);
+            bb[k]=(bet0-gamach*ui)
+                  *(1.0/(xi[i+1][j]-xi[i][j])+1.0 / (xi[i][j]-xi[i-1][j]))
+                  *0.5*(z[k+1]-z[k-1])
+                  +(1.0/(y[j+1]-y[j])+1.0/(y[j]-y[j-1]))
+                   / (y[j+1]-y[j-1])
+                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +(1.0/(z[k+1]-z[k])+1.0 / (z[k]-z[k-1]))
+                  *0.5*(xi[i+1][j]-xi[i-1][j])
+                  +piv / (xi[i][j]-xi[i-1][j])
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            cc[k]=-1.0/(z[k+1]-z[k])
+                  *0.5*(xi[i+1][j]-xi[i-1][j]);
+            ddkm=dd[k];
+            dd[k]=(bet0-gamach*ui)*((ph[i+1][j][k]-ph[i][j][k])
+                  / (xi[i+1][j]-xi[i][j])
+                  -(ph[i][j][k]-ph[i-1][j][k])/(xi[i][j]-xi[i-1][j]))
+                  *0.5*(z[k+1]-z[k-1])
+                  +((ph[i][j+1][k]-ph[i][j][k]) / (y[j+1]-y[j])
+                  -(ph[i][j][k]-ph[i][j-1][k]) / (y[j]-y[j-1]))
+                  / (y[j+1]-y[j-1])
+                  *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  +((ph[i][j][k+1]-ph[i][j][k]) / (z[k+1]-z[k])
+                  -(ph[i][j][k]-ph[i][j][k-1]) / (z[k]-z[k-1]))
+                   *0.5*(xi[i+1][j]-xi[i-1][j])
+                  -((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                  +(xi[i][j]-xi[i][j-1]) / (y[j]-y[j-1]))
+                  *(ph[i+1][j+1][k]-ph[i+1][j-1][k]
+                  -ph[i-1][j+1][k]+ph[i-1][j-1][k])
+                  / (y[j+1]-y[j-1])
+                  / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                  -xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
+                  -2.0*((xi[i][j+1]-xi[i][j]) / (y[j+1]-y[j])
+                  -(xi[i][j]-xi[i][j-1]) / (y[j]-y[j-1]))
+                  / (y[j+1]-y[j-1])*(ph[i+1][j][k]-ph[i-1][j][k])
+                  / (xi[i+1][j]-xi[i-1][j]-(xi[i+1][j+1]-xi[i+1][j-1]
+                  -xi[i-1][j+1]+xi[i-1][j-1])*y[j] / (y[j+1]-y[j-1]))
+                  *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+                 //+piv*ddkm/(xi(i,j)-xi(i-1,j))
+                 //*0.25*(xi(i+1,j)-xi(i-1,j))*(z(k+1)-z(k-1))*/
+        }
+    }
+}
+
+void tsd::tridiag(int n1, int n) {
+    int n2,n1n,k,k1;
+    bb[n1]=1.0/bb[n1];
+    aa[n1]=ff[n1]*bb[n1];
+    n2=n1+1;
+    n1n=n1+n;
+    for (int k=n2; k <= n; ++k) {
+        //do k=n2,n
+        k1=k-1;
+        cc[k1]=cc[k1]*bb[k1];
+        bb[k]=bb[k]-aa[k]*cc[k1];
+        bb[k]=1./bb[k];
+        aa[k]=(ff[k]-aa[k]*aa[k1])*bb[k];
+        //enddo
+    }
+
+    // back substitution
+    ff[n]=aa[n];
+    for (int k1=n2; k1 <= n; ++k1) {
+        //do k1=n2,n
+        k=n1n-k1;
+        ff[k]=aa[k]-cc[k]*ff[k+1];
+        //enddo
+    }
 }
 
 void tsd::printInput() {

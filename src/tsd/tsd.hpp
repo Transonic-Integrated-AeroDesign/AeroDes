@@ -30,6 +30,8 @@ public:
     // functional
     void setMesh();
     void solveScheme();
+    void jjscheme(int, int, int);
+    void tridiag(int n1, int n);
 
     // prints
     void printInput();
@@ -54,7 +56,7 @@ private:
     double yj,bs2,ystr,piv,dga,yjm,am,cdum,cmum,cav,cdw;
     double *x,*y,*z,**xi;
     double ***ph;
-    double *aa,*bb,*cc,*dd;
+    double *aa,*bb,*cc,*dd,*ff;
     double *d,*e;
     double **dp, **ep;
     double **cpo,**cpu,**gp;
