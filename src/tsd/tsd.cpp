@@ -512,8 +512,8 @@ void tsd::setMesh() {
         i=ite-1+ile-ic;
         xii=0.5*(1.0-cos((i-ile+0.5)*dtet));
         if(inprof == 0) {
-            //camberdis(1.0, dm, dmplus, xii, d[i]);
-            //thickdis(ithick, 1.0, em, xii, e[i]);
+            d[i]=camberdis(1.0, xii);
+            e[i]=thickdis(ithick, 1.0, em, xii);
         }
         zu[i][2]=d[i]+e[i];
         zo[i][2]=d[i]-e[i];
@@ -649,183 +649,268 @@ void tsd::setMesh() {
 }
 
 void tsd::solveScheme() {
-    //do 300 it=1,itx
-    iter=iter+1;
-    cdw=0.0;
-    // scheme
-    // x-sweep
-    rex=0.0;
-    idx=0;
-    jdx=0;
-    kdx=0;
-    // y-sweep
-    //do 200 jj=2,jx-1
-    if(iter%2==1) j=jj;
-    else {
-        j=jx+1-jj;
-        j=jj;
-    }
-    // boundary condition at i=1
-    for (int k = 1; k <= kx; ++k) {
-        //do 24 k=1,kx
-        if (mach0 < 1.0-eps) ph[1][j][k]=usdpi*ga[j]*atan2(z[k],-(xi[1][j]-xle[j])) / sqrt(bet0);
-        else ph[1][j][k]=0.0;
-        //24   continue
-    }
+    //
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " tsd::solveScheme()" << endl;
 
-    for (int n = 1; n <= 1; ++n) {
-        for (int i = 2; i <= ix - 1; ++i) {
-            //do 27 n=1,1
-            //do 27 i=2,ix-1
-            // boundary condition at k=1 and k=kx
-            if(mach0 < 1.0-eps) {
-                aa[1]=0.0;
-                bb[1]=1.0;
-                cc[1]=0.0;
-                dd[1]=0.0;
-                ph[i][j][1]=usdpi*ga[j]*atan2(z[1],-(xi[i][j]-xle[j])) / sqrt(bet0);
-                aa[kx]=0.0;
-                bb[kx]=1.0;
-                cc[kx]=0.0;
-                dd[kx]=0.0;
-                ph[i][j][kx]=usdpi*ga[j]*atan2(z[kx],-(xi[i][j]-xle[j])) / sqrt(bet0);
-            }
+    for (int it = 1; it <= itx; ++it) {
+        //do 300 it=1,itx
+        iter=iter+1;
+        cdw=0.0;
+        // scheme
+        // x-sweep
+        rex=0.0;
+        idx=0;
+        jdx=0;
+        kdx=0;
+
+        // y-sweep
+        for (int jj = 2; jj <= jx-1; ++jj) {
+            //do 200 jj=2,jx-1
+            if(iter%2==1) j=jj;
             else {
-                aa[1]=0.0;
-                bb[1]=1.0;
-                cc[1]=0.0;
-                dd[1]=0.0;
-                aa[kx]=0.0;
-                bb[kx]=1.0;
-                cc[kx]=0.0;
-                dd[kx]=0.0;
+                j=jx+1-jj;
+                j=jj;
             }
-
-            // z-sweep interior points
-            for (int k = 2; k <= kx-1; ++k) {
-                //do 25 k=2,kx-1
-                um=(ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]);
-                if (i > 2) um=0.5*(um + (ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]));
-
-                u[i-1][j][k]=um;
-                ui=0.5*((ph[i+1][j][k]-ph[i][j][k]) / (xi[i+1][j]-xi[i][j])
-                            + (ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]));
-                u[i][j][k]=ui;
-
-                if (k<klo || k>kup || i>ile || j>jtip) {
-                    jjscheme(i, j, k);
-                }
-                else {
-                    if (k==klo && i<=ite && j<=jtip) {
-                        jjscheme(i, j, k);
-                        bb[k]=bb[k]-(1.0 / (z[k+1]-z[k]))*0.5*(xi[i+1][j]-xi[i-1][j]);
-                        cc[k]=0.0;
-                        dd[k]=dd[k]
-                                +(dp[i][j]-ep[i][j]-alpha
-                                -(ph[i][j][k+1]-ph[i][j][k]) / (z[k+1]-z[k]))
-                                *0.5*(xi[i+1][j]-xi[i-1][j]);
-                    }
-
-                    if (k==klo && i>ite) {
-                        jjscheme(i, j, k);
-                        dd[k]=dd[k]
-                                +(-ga[j]/(z[k+1]-z[k]))
-                                *0.5*(xi[i+1][j]-xi[i-1][j]);
-                    }
-
-                    if (k==kup && i<=ite && j<=jtip) {
-                        jjscheme(i, j, k);
-                        aa[k]=0.0;
-                        bb[k]=bb[k]
-                                -(1.0 / (z[k]-z[k-1]))
-                                *0.5*(xi[i+1][j]-xi[i-1][j]);
-                        dd[k]=dd[k]
-                                +(-(dp[i][j]+ep[i][j]-alpha)
-                                +(ph[i][j][k]-ph[i][j][k-1]) / (z[k]-z[k-1]))
-                                *0.5*(xi[i+1][j]-xi[i-1][j]);
-                    }
-
-                    if (k==kup && i>ite) {
-                        jjscheme(i,j,k);
-                        dd[k]=dd[k]
-                              +(ga[j] / (z[k]-z[k-1]))
-                              *0.5*(xi[i+1][j]-xi[i-1][j]);
-                    }
-                }
-
-                if(ui<ucr-eps) dd[k]=omega*dd[k];
-                else if (i>2 && i<ix-1) {
-                    dd[k]=dd[k]-0.0*(u[i-1][j][k]-2.0*u[i][j][k]
-                            + u[i+1][j][k]);
-                }
-
-                if(abs(dd[k]) > abs(rex)) {
-                    rex=dd[k];
-                    idx=i;
-                    jdx=j;
-                    kdx=k;
-                }
-            }
-            tridiag(1,kx);
-
+            // boundary condition at i=1
             for (int k = 1; k <= kx; ++k) {
-                //do 26 k=1,kx
-                ph[i][j][k]=ph[i][j][k]+dd[k];
-                //26      continue
+                //do 24 k=1,kx
+                if (mach0 < 1.0-eps) ph[1][j][k]=usdpi*ga[j]*atan2(z[k],-(xi[1][j]-xle[j])) / sqrt(bet0);
+                else ph[1][j][k]=0.0;
+                //24   continue
             }
 
-            if(i==ite && j<=jtip) {
-                dga=ph[ite][j][kup]-ph[ite][j][klo]
-                        +(ph[ite][j][kup+1]-ph[ite][j][kup])*(0.0-z[kup])
-                        /(z[kup+1]-z[kup])
-                        -(ph[ite][j][klo]-ph[ite][j][klo-1])*(0.0-z[klo])
-                        /(z[klo]-z[klo-1])-ga[j];
-                ga[j]=ga[j]+omega*dga;
-                //endif
+            for (int n = 1; n <= 1; ++n) {
+                for (int i = 2; i <= ix - 1; ++i) {
+                    //do 27 n=1,1
+                    //do 27 i=2,ix-1
+                    // boundary condition at k=1 and k=kx
+                    if(mach0 < 1.0-eps) {
+                        aa[1]=0.0;
+                        bb[1]=1.0;
+                        cc[1]=0.0;
+                        dd[1]=0.0;
+                        ph[i][j][1]=usdpi*ga[j]*atan2(z[1],-(xi[i][j]-xle[j])) / sqrt(bet0);
+                        aa[kx]=0.0;
+                        bb[kx]=1.0;
+                        cc[kx]=0.0;
+                        dd[kx]=0.0;
+                        ph[i][j][kx]=usdpi*ga[j]*atan2(z[kx],-(xi[i][j]-xle[j])) / sqrt(bet0);
+                    }
+                    else {
+                        aa[1]=0.0;
+                        bb[1]=1.0;
+                        cc[1]=0.0;
+                        dd[1]=0.0;
+                        aa[kx]=0.0;
+                        bb[kx]=1.0;
+                        cc[kx]=0.0;
+                        dd[kx]=0.0;
+                    }
+
+                    // z-sweep interior points
+                    for (int k = 2; k <= kx-1; ++k) {
+                        //do 25 k=2,kx-1
+                        um=(ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]);
+                        if (i > 2) um=0.5*(um + (ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]));
+
+                        u[i-1][j][k]=um;
+                        ui=0.5*((ph[i+1][j][k]-ph[i][j][k]) / (xi[i+1][j]-xi[i][j])
+                                + (ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]));
+                        u[i][j][k]=ui;
+
+                        if (k<klo || k>kup || i>ile || j>jtip) {
+                            jjscheme(i, j, k);
+                        }
+                        else {
+                            if (k==klo && i<=ite && j<=jtip) {
+                                jjscheme(i, j, k);
+                                bb[k]=bb[k]-(1.0 / (z[k+1]-z[k]))*0.5*(xi[i+1][j]-xi[i-1][j]);
+                                cc[k]=0.0;
+                                dd[k]=dd[k]
+                                      +(dp[i][j]-ep[i][j]-alpha
+                                        -(ph[i][j][k+1]-ph[i][j][k]) / (z[k+1]-z[k]))
+                                       *0.5*(xi[i+1][j]-xi[i-1][j]);
+                            }
+
+                            if (k==klo && i>ite) {
+                                jjscheme(i, j, k);
+                                dd[k]=dd[k]
+                                      +(-ga[j]/(z[k+1]-z[k]))
+                                       *0.5*(xi[i+1][j]-xi[i-1][j]);
+                            }
+
+                            if (k==kup && i<=ite && j<=jtip) {
+                                jjscheme(i, j, k);
+                                aa[k]=0.0;
+                                bb[k]=bb[k]
+                                      -(1.0 / (z[k]-z[k-1]))
+                                       *0.5*(xi[i+1][j]-xi[i-1][j]);
+                                dd[k]=dd[k]
+                                      +(-(dp[i][j]+ep[i][j]-alpha)
+                                        +(ph[i][j][k]-ph[i][j][k-1]) / (z[k]-z[k-1]))
+                                       *0.5*(xi[i+1][j]-xi[i-1][j]);
+                            }
+
+                            if (k==kup && i>ite) {
+                                jjscheme(i,j,k);
+                                dd[k]=dd[k]
+                                      +(ga[j] / (z[k]-z[k-1]))
+                                       *0.5*(xi[i+1][j]-xi[i-1][j]);
+                            }
+                        }
+
+                        if(ui<ucr-eps) dd[k]=omega*dd[k];
+                        else if (i>2 && i<ix-1) {
+                            dd[k]=dd[k]-0.0*(u[i-1][j][k]-2.0*u[i][j][k]
+                                             + u[i+1][j][k]);
+                        }
+
+                        if(abs(dd[k]) > abs(rex)) {
+                            rex=dd[k];
+                            idx=i;
+                            jdx=j;
+                            kdx=k;
+                        }
+                    }
+                    tridiag(1,kx);
+
+                    for (int k = 1; k <= kx; ++k) {
+                        //do 26 k=1,kx
+                        ph[i][j][k]=ph[i][j][k]+dd[k];
+                        //26      continue
+                    }
+
+                    if(i==ite && j<=jtip) {
+                        dga=ph[ite][j][kup]-ph[ite][j][klo]
+                            +(ph[ite][j][kup+1]-ph[ite][j][kup])*(0.0-z[kup])
+                             /(z[kup+1]-z[kup])
+                            -(ph[ite][j][klo]-ph[ite][j][klo-1])*(0.0-z[klo])
+                             /(z[klo]-z[klo-1])-ga[j];
+                        ga[j]=ga[j]+omega*dga;
+                        //endif
+                    }
+                    //27   continue
+                }
             }
-            //27   continue
+
+            // boundary condition at i=ix
+            for (int k = 1; k <= kx; ++k) {
+                //do 28 k=1,kx
+                ph[ix][j][k]=ph[ix-1][j][k];
+                //28   continue
+            }
+            //200  continue
+        }
+
+        // first j-plane  and last j-plane
+        for (int i = 1; i <= ix; ++i) {
+            for (int k = 1; k <= kx; ++k) {
+                //do 30 i=1,ix
+                //do 29 k=1,kx
+                ph[i][1][k]=ph[i][2][k];
+                ph[i][jx][k]=ph[i][jx-1][k];
+                //29      continue
+                //30   continue
+            }
+        }
+
+        ga[1]=ga[2];
+        ga[jx]=ga[jx-1];
+
+        for (int j = jtip+1; j <= jx; ++j) {
+            //do 31 j=jtip+1,jx
+            ga[j]=0.0;
+            cx[j]=0.0;
+            cmo[j]=0.0;
+            //31   continue
+        }
+
+        // calculate lift, drag and moment
+        if(iter == 1) rex1=rex;
+        tenlog=log10(abs(rex/rex1)+eps*eps);
+
+        // 16 = 'tsd.itr'
+        //write(16,*)iter,tenlog
+        cl=0.0;
+        yjm=0.0;
+
+        for (int j = 2; j <= jtip; ++j) {
+            //do 32 j=2,jtip
+            if(j == jtip) cl=cl+ga[j]*(y[jtip]-yjm);
+            else cl=cl+ga[j]*(0.5*(y[j+1]+y[j])-yjm);
+            yjm=0.5*(y[j+1]+y[j]);
+            //32   continue
+        }
+
+        cl=2.0*cl/am;
+        cdw=-gamach*cdw/(6.0*am);
+        //write(27,*)iter,cl
+        cout << "iter = " << iter << " cl = " << cl << endl;
+        //300  continue
+    }
+}
+
+void tsd::solvePhoPhu() {
+    // use after solveScheme()
+    for (int j = 1; j <= jx; ++j) {
+        for (int i = 1; i <= ix; ++i) {
+            pho[i][j]=ph[i][j][klo]+(ph[i][j][klo]-ph[i][j][klo-1])
+                    *(0.0-z[klo]) / (z[klo]-z[klo-1]);
+            phu[i][j]=ph[i][j][kup]+(ph[i][j][kup+1]-ph[i][j][kup])
+                    *(0.0-z[kup]) / (z[kup+1]-z[kup]);
+            if(i>=ite || j>jtip) {
+                pho[i][j]=0.5*(pho[i][j]+phu[i][j]);
+                phu[i][j]=pho[i][j]+0.5*ga[j];
+                pho[i][j]=pho[i][j]-0.5*ga[j];
+            }
+        }
+    }
+}
+
+void tsd::solvePressureCoef() {
+    //
+    for (int j = 1; j <= jx; ++j) {
+        for (int i = 2; i <= ix-1; ++i) {
+            //do 37 j=1,jx
+            //do 36 i=2,ix-1
+            cpo[i][j]=2.0*(pho[i+1][j]-pho[i][j]) / (xi[i+1][j]-xi[i][j]);
+            cpu[i][j]=2.0*(phu[i+1][j]-phu[i][j]) / (xi[i+1][j]-xi[i][j]);
+            gp[i][j]=0.5*(cpu[i][j]-cpo[i][j]);
+            if(i<ile || i>=ite || j>jtip) {
+                cpo[i][j]=0.5*(cpo[i][j]+cpu[i][j]);
+                cpu[i][j]=cpo[i][j];
+                gp[i][j]=0.0;
+            }
+            cpwo[i][j]=2.0*(ph[i+1][j][1]-ph[i-1][j][1])
+                    / (xi[i+1][j]-xi[i-1][j]);
+            cpwu[i][j]=2.0*(ph[i+1][j][kx]-ph[i-1][j][kx])
+                    / (xi[i+1][j]-xi[i-1][j]);
+            //36      continue
+            //37   continue
         }
     }
 
-    // boundary condition at i=ix
-    /*do 28 k=1,kx
-    ph(ix,j,k)=ph(ix-1,j,k)
-    28   continue
-    200  continue
-    c     first j-plane  and last j-plane
-    do 30 i=1,ix
-    do 29 k=1,kx
-    ph(i,1,k)=ph(i,2,k)
-    ph(i,jx,k)=ph(i,jx-1,k)
-    29      continue
-    30   continue
-    ga(1)=ga(2)
-    ga(jx)=ga(jx-1)
-    do 31 j=jtip+1,jx
-    ga(j)=0.0
-    cx(j)=0.0
-    cmo(j)=0.0
-    31   continue
-    c     calculate lift, drag and moment
-    if(iter.eq.1)then
-            rex1=rex
-    endif
-            tenlog=log10(abs(rex/rex1)+eps*eps)
-    write(16,*)iter,tenlog
-    cl=0.0
-    yjm=0.0
-    do 32 j=2,jtip
-    if(j.eq.jtip)then
-                cl=cl+ga(j)*(y(jtip)-yjm)
-            else
-    cl=cl+ga(j)*(0.5*(y(j+1)+y(j))-yjm)
-    endif
-            yjm=0.5*(y(j+1)+y(j))
-    32   continue
-    cl=2.0*cl/am
-    cdw=-gamach*cdw/(6.0*am)*/
-    //write(27,*)iter,cl
-    //300  continue
+    for (int j = 1; j <= jx; ++j) {
+        //do 38 j=1,jx
+        cpo[1][j]=cpo[2][j];
+        cpu[1][j]=cpu[2][j];
+        cpwo[1][j]=cpwo[2][j]+(cpwo[3][j]-cpwo[2][j])*(xi[1][j]-xi[2][j])
+                / (xi[3][j]-xi[2][j]);
+        cpwu[1][j]=cpwu[2][j]+(cpwu[3][j]-cpwu[2][j])*(xi[1][j]-xi[2][j])
+                / (xi[3][j]-xi[2][j]);
+        cpwo[ix][j]=cpwo[ix-1][j]+(cpwo[ix-1][j]
+                -cpwo[ix-2][j])*(xi[ix][j]-xi[ix-1][j])
+                / (xi[ix-1][j]-xi[ix-2][j]);
+        cpwu[ix][j]=cpwu[ix-1][j]+(cpwu[ix-1][j]
+                -cpwu[ix-2][j])*(x[ix]-x[ix-1])
+                / (xi[ix-1][j]-xi[ix-2][j]);
+        cpo[ix][j]=0.0;
+        cpu[ix][j]=0.0;
+        gp[1][j]=0.0;
+        gp[ix][j]=0.0;
+        //38   continue
+    }
 }
 
 void tsd::jjscheme(int i, int j, int k) {
@@ -1072,6 +1157,49 @@ void tsd::tridiag(int n1, int n) {
     }
 }
 
+double tsd::camberdis(double cxm, double xii) {
+    //real cxm,dm,xi,fim,dmplus
+    // parabolic relative camber dm>0
+    // (alfades=0, Cldes=4*pi*dm, Cmac=-pi*dm)
+    double fim=4.*dm*xii*(1.-xii/cxm);
+    if(dm >= 0) return 0;
+    // Profile for tailless airplane cubic+parabolic dm<0 (alfades=-dm/3.0
+    // Cldes=pi*(-dm+4.0*dmplus), Cmac=pi*dmplus)
+    fim=-dm / 3.
+            *xii*(7.0-8.0*xii / cxm)
+            *(1.-xii/cxm)
+            +4.*dmplus*xii*(1.-xii / cxm);
+    return fim;
+}
+
+double tsd::thickdis(int ithick, double cxm, double em, double xii) {
+    double fasc=0.4592793;
+    double faqj=0.3849002;
+    double fasl=0.3088162;
+    double fass=0.2414953;
+    double eim;
+    //
+    // 1=elliptic distribution
+    // 2=semi-cubic distribution
+    // 3=quasi-joukowski distribution
+    // 4=naca00em distribution
+    // 5=selig distribution
+    // 6=super-selig distribution
+    // 7=biconvex distribution
+    double teti=acos(1.0-2.0*xii);
+    if (ithick==1) eim=0.5*em*cxm*sin(teti);
+    else if (ithick==2) eim=fasc*em*cxm*sqrt(1.+cos(teti))*sin(teti);
+    else if (ithick==3) eim=faqj*em*cxm*(1.+cos(teti))*sin(teti);
+    else if (ithick==4) {
+        eim=5.*em*cxm*(.2969*sqrt(xii/cxm)-.126*xii/cxm-
+                .3537*pow(xii/cxm,2)+.2843*pow(xii/cxm,3)-.1015*pow(xii/cxm,4));
+    }
+    else if (ithick==5) eim=fasl*em*cxm*sin(teti)*pow(1.+cos(teti),1.5);
+    else if (ithick==6) eim=fass*em*cxm*sin(teti)*pow(1.+cos(teti),2);
+    else if (ithick==7) eim=2.0*em*cxm*xii*(1.0-xii);
+    return eim;
+}
+
 void tsd::printInput() {
     //
     // output on listing
@@ -1123,4 +1251,18 @@ void tsd::printInput() {
     cout << "           tangent(lamb) swp = " << swp << endl;
     cout << "         1-M0**2+swp**2 bet0 = " << bet0 << endl;
     cout << "                         ucr = " << ucr << endl << endl;
+}
+
+void tsd::outputLift(std::string filename) {
+    // 18 - "tsd.kz"
+    file2.open(filename);
+    file2 << left << setw(12) << "k";
+    file2 << left << setw(12) << "z[k]" << endl;
+    file2 << fixed << std::setprecision(8);
+    for (int k = 1; k <= kx; ++k) {
+        //do 35 k=1,kx
+        file2 << left << setw(12) << k;
+        file2 << left << setw(12) << z[k] << endl;
+        //35   continue
+    }
 }

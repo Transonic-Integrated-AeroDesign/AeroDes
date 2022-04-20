@@ -30,11 +30,20 @@ public:
     // functional
     void setMesh();
     void solveScheme();
+    void solvePhoPhu();
+    void solvePressureCoef();
     void jjscheme(int, int, int);
     void tridiag(int n1, int n);
 
+    // geometry
+    double camberdis(double, double);
+    double thickdis(int, double, double, double);
+
     // prints
     void printInput();
+
+    // output io
+    void outputLift(std::string);
 
     // memory
     double **create_2d_double_array(int, int, double **&);
@@ -72,10 +81,8 @@ private:
     std::string filenameInputFlow; bool inputFlowBool;
     bool iterBool;
 
-    /*data ph/ijkxx*0.0/cp/ijkxx*0.0/u/ijkxx*0.0/
-    data cpo/ijxx*0.0/cpu/ijxx*0.0/cpwo/ijxx*0.0/cpwu/ijxx*0.0/
-    data gp/ijxx*0.0/zu/ijxx*0.0/zo/ijxx*0.0/dp/ijxx*0.0/ep/ijxx*0.0/
-    data ga/jxx*0.0/cz/jxx*0.0/cx/jxx*0.0/cmo/jxx*0.0/xcp/jxx*0.0/*/
+    std::ofstream file1;
+    std::ofstream file2;
 };
 
 #endif

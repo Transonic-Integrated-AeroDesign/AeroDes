@@ -1104,11 +1104,11 @@ void canareq::readInputPolar(std::string filename) {
         std::istringstream iss(line);
         //cout << "\nline: \'"<< line << "\'"<< endl;
         if(!(iss >> a >> b >> c >> d >> e)) break;  // break loop if end of file reached
-        inc[i] = a; // change this to double array
-        cz[i] = b;
-        cx[i] = c;
-        dum = d;
-        cq[i] = e;
+        inc[i] = a; // angle of attack
+        cz[i] = b;  // lift coefficient
+        cx[i] = c;  // drag coefficient
+        dum = d;    // dummy variable
+        cq[i] = e;  // twist coefficient
 
         if (DBG) {
             cout << std::setprecision(6);
