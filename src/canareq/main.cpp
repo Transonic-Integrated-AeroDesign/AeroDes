@@ -34,13 +34,12 @@ using namespace std;
 
 int main(int argc, char** argv) {
     variables *vars = new variables();
-    wake *wk = new wake(vars);
     canareq *canary = new canareq(argc, argv, vars);
 
     canary->readInputParams();
     canary->printInputParams();
 
-    canary->readInputPolar(""); // by default reads "canarpolar.dat" file
+    canary->readInputPolar(""); // leave empty to read default "canarpolar.dat" file
     canary->printInputPolar();
     canary->printGlobalCoefs();
 
@@ -48,6 +47,5 @@ int main(int argc, char** argv) {
     canary->nonlinearModel();
 
     delete canary;
-    delete wk;
     delete vars;
 }

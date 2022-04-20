@@ -26,12 +26,28 @@ public:
 
     // input
     void readInputParams(std::string);
+    void readInputProfile(std::string);
 
     // functional
     void setMesh();
+    void solveScheme();
+    void solvePhoPhu();
+    void solvePressureCoef();
+    void jjscheme(int, int, int);
+    void tridiag(int n1, int n);
+
+    // geometry
+    double camberdis(double, double);
+    double thickdis(int, double, double, double);
 
     // prints
     void printInput();
+
+    // output io
+    void outputMesh1(std::string);
+    void outputMesh2(std::string);
+    void outputGeom(std::string);
+    void outputLift(std::string);
 
     // memory
     double **create_2d_double_array(int, int, double **&);
@@ -41,7 +57,8 @@ public:
 
 private:
     int ixx,kxx,ikxx,ithick,ile,klo,kup,kpt,kx,iprof,ite;
-    int ipt,ix,k,kc,i,ic,iter,inflow,itx,idx,kdx,iwrite;
+    int ipt,ix,k,kc,i,ic,iter,inflow,itx,idx,kdx;
+    int iwrite, imesh;
     int it,jxx,ijkxx,j,jx,ijxx,ixdum,jxdum,kxdum,idum,inprof;
     int jtip,jpt,jc,jstr,jdx,jj,jtipp,n;
 
@@ -53,7 +70,7 @@ private:
     double yj,bs2,ystr,piv,dga,yjm,am,cdum,cmum,cav,cdw;
     double *x,*y,*z,**xi;
     double ***ph;
-    double *aa,*bb,*cc,*dd;
+    double *aa,*bb,*cc,*dd,*ff;
     double *d,*e;
     double **dp, **ep;
     double **cpo,**cpu,**gp;
@@ -63,10 +80,17 @@ private:
     double ***cp,***u;
     double *ax,*ay,*xle,*xte,*c,*ga;
     double *cz,*cx,*cmo,*xcp;
-    /*data ph/ijkxx*0.0/cp/ijkxx*0.0/u/ijkxx*0.0/
-    data cpo/ijxx*0.0/cpu/ijxx*0.0/cpwo/ijxx*0.0/cpwu/ijxx*0.0/
-    data gp/ijxx*0.0/zu/ijxx*0.0/zo/ijxx*0.0/dp/ijxx*0.0/ep/ijxx*0.0/
-    data ga/jxx*0.0/cz/jxx*0.0/cx/jxx*0.0/cmo/jxx*0.0/xcp/jxx*0.0/*/
+
+    int inputFlag;
+    std::string filenameInputData; bool inputBool;
+    std::string filenameInputFlow; bool inputFlowBool;
+    bool iterBool;
+
+    std::string filenameMesh1; std::ofstream fileMesh1; bool meshBool;
+    std::string filenameMesh2; std::ofstream fileMesh2;
+    std::string filenameGeom; std::ifstream fileinGeom; std::ofstream fileoutGeom;
+
+    std::ofstream file2;
 };
 
 #endif

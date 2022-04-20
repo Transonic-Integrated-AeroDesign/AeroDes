@@ -24,11 +24,13 @@ public:
 
     // inputs
     void readInputParams();
+    void readInputParams(std::string);
     void readInputPolar(std::string);
     void readInputPolarMulti(std::string filename);
     void readInputDownwash();
 
     // specific
+    void setAlpha(double);
     void setMesh();
     void solveLiftingLine();
 

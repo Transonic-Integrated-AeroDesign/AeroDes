@@ -31,21 +31,22 @@ using namespace std;
 
 int main(int argc, char** argv) {
     variables *vars = new variables();
-    wake *wk = new wake(vars);
+    wake *wk = new wake(argc, argv, vars);
 
-    wk->cmdInput(argc, argv);
+    //wk->cmdInput(argc, argv);
 
     // input
     wk->readInputParams();
     wk->readInputPolar("polarbl.dat"); // default polar file for users*
+    wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
     //wk->printXFoilValues();
 
-    //
+    // solve lifting line
     wk->setMesh();
     wk->solveLiftingLine();
-    //wk->printDistributions();
+    //wk->printDistributions(); // optional
 
-    wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
+    //wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
     wk->integrate_canard();
 
     // prints

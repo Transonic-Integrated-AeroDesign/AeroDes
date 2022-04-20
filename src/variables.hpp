@@ -10,18 +10,19 @@ public:
     // absolutely need constructor
     variables() {
         kx_of_alpha = 0;
-        dClmda0 = 0;
+        dClmda0 = 0;    // main wing lift slope
+        dClcda0 = 0;    // canard lift slope
         em = 0;
         jxx=102;
-        inc_of_alpha = (double *) malloc(sizeof(double)*jxx);
-        al_of_alpha = (double *) malloc(sizeof(double)*jxx);
+        alr_of_alpha = (double *) malloc(sizeof(double)*jxx);
+        ald_of_alpha = (double *) malloc(sizeof(double)*jxx);
         cl_of_alpha = (double *) malloc(sizeof(double)*jxx);
         cd_of_alpha = (double *) malloc(sizeof(double)*jxx);
         cq_of_alpha = (double *) malloc(sizeof(double)*jxx);
     };
     ~variables() {
-        delete inc_of_alpha;
-        delete al_of_alpha;
+        delete alr_of_alpha;
+        delete ald_of_alpha;
         delete cl_of_alpha;
         delete cd_of_alpha;
         delete cq_of_alpha;
@@ -30,15 +31,15 @@ public:
     int jxx;
     int kx_of_alpha;
 
-    // canard equilibrium
-    double dClmda0;
-    double em;              // oswald efficiency
-    double arceff, armeff;  // corrected aspect ratio
-    double dClcda0;         // lift slope
+    // for canard equilibrium
+    double dClmda0;         // from: wake,
+    double em;              // from: wake, oswald efficiency
+    double arceff, armeff;  // from: wake, corrected aspect ratio
+    double dClcda0;         // from: wake, canard lift slope
 
     // polar
-    double *inc_of_alpha;   // alpha in radians
-    double *al_of_alpha;    // alpha in degree
+    double *alr_of_alpha;   // alpha in radians
+    double *ald_of_alpha;   // alpha in degree
     double *cl_of_alpha;
     double *cd_of_alpha;
     double *cq_of_alpha;

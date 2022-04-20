@@ -31,10 +31,11 @@ public:
     // file input
     void init();
     void readInputParams();
+    void readInputParams(std::string);
     void readInputPolar(std::string); // read main wing polar
 
     // sets
-    void setTCD(double);
+    void setCanardAngle(double);
 
     // memory
     double* create_1d_double_array(int n1, double *array);
@@ -57,6 +58,8 @@ public:
     int outputPolarPrandtline();
     int outputPolarCdClCq();
     int outputEqList(); // same as printGlobalCoefs()
+    void outputResults2Dat(std::string);
+    void outputResults2JSON(std::string);
     
     private:
         int n1, n2;
@@ -94,6 +97,11 @@ public:
         char title[38],prop[20]; // these are not large enough there will be issues w/ strings
         char nc[5],yw[5];
 
+        // Cl/Cd
+        // thrust
+        // slope
+        // Cl (canard)
+
         // input resulting polar from smoothpolar or prandtline
         double *alphares, *czres, *cxres, *cqres;
         int nsteps;
@@ -115,6 +123,8 @@ public:
         std::string filenameEqDataOpt;
 
         bool tcdBool; int tcdflag; double tcd0;
+
+        std::ofstream file1; int file1index;
 };
 
 #endif

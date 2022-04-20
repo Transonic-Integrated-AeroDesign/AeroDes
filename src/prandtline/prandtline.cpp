@@ -102,13 +102,13 @@ prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) 
 
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
-        if (!strcmp(argv[iarg],"-in_prandtline")){
+        if (!strcmp(argv[iarg],"--prandtl_in")){
             inputBool=true;
             inputFlag=iarg+1;
             filenameInputData = std::string(argv[inputFlag]);
             iarg+=2;
         }
-        else if (!strcmp(argv[iarg],"-bl")){
+        else if (!strcmp(argv[iarg],"--prantl_polar")){
             polarBool=true;
             inputFlag=iarg+1;
             filenameInputPolar = argv[inputFlag];
@@ -176,7 +176,11 @@ prandtline::~prandtline() {
     free(cqres);
 }
 
-
+void prandtline::setAlpha(double al) {
+    // set singular alpha (degrees)
+    alstep=0;
+    alphain=al;
+}
 
 void prandtline::setMesh() {
     //
@@ -317,7 +321,7 @@ void prandtline::solveLiftingLine() {
     if (DBG) cout << " prandtline::solveLiftingLine()" << endl;
 
     int jp, jm;
-    int n = 0;  // polar index
+    int n=0;  // polar index
     //ivis=0;
     //vis=0.;
 
@@ -553,7 +557,6 @@ void prandtline::solveLiftingLine() {
 
         // calculate bending moment
         for (j = 1; j < (jx-1); ++j) {
-            //do 13 j = 2, jx - 1
             if(j==1) eta[j-1]=-1.0; // initial boundary condition
             if(j==(jx-2)) eta[j]=1.0;   // final boundary condition
 
@@ -595,9 +598,7 @@ void prandtline::solveLiftingLine() {
                     cout << " cam = " << cam << " etam = " << eta[j - 1] << endl;
                 }
             }
-
             cmf[j + 1]=cmf[j]-fz[j]*(eta[j+1]-eta[j]);
-            //13 continue
         }
 
         //at[0] = at[1] + (at[2] - at[1]) * (y[0] - y[1]) / (y[2] - y[1]);
@@ -670,52 +671,27 @@ void prandtline::solveLiftingLine() {
         }
 
         // set shared variables
-        //vars->inc_of_alpha[nstep] = alpha; // would have to do a search... to find out where you are.
-        //vars->al_of_alpha[nstep] = alphad;
-        //vars->cl_of_alpha[nstep] = cl;
-        //vars->cd_of_alpha[nstep] = cd;
-        //vars->cq_of_alpha[nstep] = cmac;
+        vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
+        vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
+        vars->cl_of_alpha[vars->kx_of_alpha] = cl;
+        vars->cd_of_alpha[vars->kx_of_alpha] = cd;
+        vars->cq_of_alpha[vars->kx_of_alpha] = cmac;
+        vars->kx_of_alpha += 1;
 
         // print results
-        /*cout << "results:" << endl;
-        cout << right << setw(38) << " alpha = " << alphad << endl;
-        cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
-        cout << right << setw(38) << " oswald efficiency e = " << em << endl;
-        cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
-        cout<< "global results:  " << endl;
-        cout << right << setw(38) << "CD = " << cd << endl;
-        cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
-        cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
-        cout << right << setw(38) << " CM,ac = " << cmac << endl;
-        cout << right << setw(38) << " aerodynamic center x,ac = " << xac << endl;
-        cout << right << setw(38) << " center of pressure x,cp = " << xcp << endl;
-        cout << right << setw(38) << " root bending moment coef. CM,x = " << -cmf[jx2] << endl;
-        cout << right << setw(38) << " root torsion moment coef. CM,y = " << - cmt[jx2] << endl;
-        cout << right << setw(38) << " ivis = " << ivis << endl;*/
-
-        // results
-        //alphares[nstep] = alphad;
-        //czres[nstep] = cl;
-        //cxres[nstep] = cd;
-        //dum = 0.;
-        //cqres[nstep] = cmac;
-
         printResults();
         //printDistributions();
     }
 
-    // set shared variable
-    vars->kx_of_alpha = nsteps;
-
     // set breakpoints in y-distribution
-    y[46] = -0.11111;
+    /*y[46] = -0.11111;
     xle[46] = 1.3;
     y[47] = -0.11110;
     xle[47] = cxm;
     y[53] = 0.11110;
     xle[53] = cxm;
     y[54] = 0.11111;
-    xle[54] = 1.3;
+    xle[54] = 1.3;*/
 }
 
 int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
@@ -753,6 +729,75 @@ void prandtline::delete_2d_double_array(double **array) {
 void prandtline::readInputParams() {
     if (DBG) cout << endl << "=========================================\n";
     if (DBG) cout << " prandtline::readInputParams()" << endl;
+
+    ifstream paramfile(filenameInputData);
+    if (!paramfile.is_open()) {
+        cout << "\nCannot Read " << filenameInputData;
+        cout << "File error in: readInputParams()" << endl;
+        abort();
+    }
+
+    // *****read in data
+    std::string line;
+    std::string a; double b; std::string c;
+    for (int i=0; i<lxx; i++) {
+        std::getline(paramfile, line);
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        if(!(iss >> a >> b >> c)) break;
+
+        if (a.compare("JX") == 0) {
+            jx = b;
+            if (jx > jxx) {
+                cout << "jx=" << jx << " jxx= " << jxx << ", change dimension:exiting!" << endl;
+                abort();
+            }
+        }
+        else if (a.compare("ITX") == 0) itx = b;
+        else if (a.compare("OMEGA") == 0) omega = b;
+        else if (a.compare("AVIS") == 0) avis = b;
+        else if (a.compare("B") == 0) B = b;
+        else if (a.compare("CX0") == 0) Cx0 = b;
+        else if (a.compare("LAMBD") == 0) Lambd = b;
+        else if (a.compare("RSTR0") == 0) Rstr0 = b;
+        else if (a.compare("RF0") == 0) Rf0 = b;
+        else if (a.compare("DM") == 0) dm = b;
+        else if (a.compare("TM") == 0) tmd = b;
+        else if (a.compare("IWING") == 0) iwing = b;
+        else if (a.compare("ALPHAD") == 0) alphad = b;
+        else if (a.compare("ACWASH") == 0) acwash = b;
+        else if (a.compare("RHO") == 0) Rho = b;
+        else if (a.compare("VINF") == 0) Vinf = b;
+        else if (a.compare("AMU") == 0) Amu = b;
+        else if (a.compare("IVIS") == 0) ivis = b;
+        else if (a.compare("IPOLAR") == 0) { polarBool = true; }
+        else if (a.compare("ALPHAIN") == 0) alphain = b;
+        else if (a.compare("ALPHAFI") == 0) alphafi = b;
+        else if (a.compare("ALPHASTEP") == 0) alstep = b;
+        else {
+            cout << " command: " << a << " not known" << endl;
+            abort();
+        }
+        //if (a.compare("NPOLAR") == 0) { nx = b; }
+    }
+
+    cxm=2.0*Cx0/B;
+    lamb=degrad*Lambd;
+    rstr=2.0*Rstr0/B;
+    rf=2.0*Rf0/B;
+    tm=degrad*tmd;
+    alpha=degrad*alphad;
+
+    // optional read-in files
+    if(acwash) readInputDownwash();
+}
+
+void prandtline::readInputParams(std::string filename) {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " prandtline::readInputParams()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameInputPolar = filename;
 
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -1310,6 +1355,7 @@ void prandtline::printResults() {
 
     cout << endl << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
 
+    cout << fixed << std::setprecision(4);
     //cout << right << setw(32) << "                            alpha = " << alphad << endl;
     cout << right << setw(32) << "                               it = " << iter << " dgx = " << abs(dgx) << " eps = " << eps << endl;
     cout << right << setw(32) << "        inviscid contribution CDi = " << cdi << endl;

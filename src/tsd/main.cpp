@@ -30,9 +30,11 @@ int main(int argc, char** argv) {
 
     // discretization
     sonic->setMesh();
+    //sonic->outputMesh1("tsd.xymesh1");
+    //sonic->outputMesh2("tsd.xymesh2");
 
     // print to screen
-    sonic->printInput();
+    //sonic->printInput();
 
     delete sonic;
     delete vars;

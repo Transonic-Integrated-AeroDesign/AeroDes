@@ -22,7 +22,7 @@
 class aerodes{
 public:
     variables* vars;
-    prandtline* prants;
+    prandtline* prandtl;
     canareq* canary;
     wake* wk;
     aerodes(int argc, char** argv);

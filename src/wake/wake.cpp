@@ -19,7 +19,7 @@
 
 using namespace std; // g++ wake.cpp -c
 
-wake::wake(variables *varshr) : vars(varshr) {
+wake::wake(int argc, char** argv, variables *varshr) : vars(varshr) {
     ixx=201;
     lxx=102;
     nxx=10;
@@ -85,12 +85,6 @@ wake::wake(variables *varshr) : vars(varshr) {
 
     create_2d_int_array(lxx, nxx, kxtrm);
 
-    // results array
-    //alphares  = (double *) malloc(sizeof(double)*lxx);
-    //czres  = (double *) malloc(sizeof(double)*lxx);
-    //cxres  = (double *) malloc(sizeof(double)*lxx);
-    //cqres  = (double *) malloc(sizeof(double)*lxx);
-
     // filenames
     filenameInputData = "wake.data";
     inputBool = false;
@@ -100,7 +94,23 @@ wake::wake(variables *varshr) : vars(varshr) {
 
     filenameInputDownwash = "canarwash.ylwl";
 
-    // *****constants
+    // parse commandline input
+    for (int iarg = 0; iarg<argc ; ++iarg) {
+        if (!strcmp(argv[iarg],"--wk_in")){
+            inputBool=true;
+            inputFlag=iarg+1;
+            filenameInputData = std::string(argv[inputFlag]);
+            iarg+=2;
+        }
+        else if (!strcmp(argv[iarg],"--wk_polar")){
+            polarBool=true;
+            inputFlag=iarg+1;
+            filenameInputPolar = argv[inputFlag];
+            iarg+=2;
+        }
+    }
+
+    // constants
     eps=1.e-7;
     pi=2.*asin(1.);
     degrad=pi/180.;
@@ -368,7 +378,7 @@ void wake::solveLiftingLine() {
         cout << " (more steps than memory allocated by lxx)" << endl;
         abort();
     }
-    vars->kx_of_alpha = nsteps; // set shared variable
+    //vars->kx_of_alpha = nsteps; // set shared variable
 
     // loop over incidence angles
     for (int nstep = 0; nstep < nsteps; nstep++) {
@@ -629,10 +639,10 @@ void wake::solveLiftingLine() {
 
         cl=0.5*arc*cl;
 
-        if(alphad == 0.0) {
+        if(alphad>=0.0-2*eps && alphad<=0.0+2*eps) {
             cl0=cl+eps;
         }
-        if(alphad==1.0) {
+        if(alphad>=1.0-2*eps && alphad<=1+2*eps) {
             cl1=cl;
         }
 
@@ -688,19 +698,17 @@ void wake::solveLiftingLine() {
             fz[j]=0.5*arc*fz[j];
             cmf[j]=0.5*arc*cmf[j];
             cmt[j]=0.25*arc*cmt[j] / cac;
-            //write(26, *)y(j), cmf(j)
-            //write(27, *)eta(j), fz(j)
-            //write(28, *)eta(j), cmt(j)
-            //16   continue
         }
 
-        // set shared variables
-        // for "wake" to "canareq" you would have to do a search... to find out where you are.
-        //vars->inc_of_alpha[nstep] = alpha; // do not use canard-wake-line new polar
-        //vars->al_of_alpha[nstep] = alphad;
-        //vars->cl_of_alpha[nstep] = cl;
-        //vars->cd_of_alpha[nstep] = cd;
-        //vars->cq_of_alpha[nstep] = cmac;
+        if(alstep < eps) {
+            cout << "not enough info to calculate arceff and dClcda0" << endl;
+        }
+        else {
+            dClcda0=180.* (cl1-cl0) / pi;
+            arceff=2.*dClcda0 / (2.*pi-dClcda0);
+            vars->arceff = arceff;
+            vars->dClcda0 = dClcda0;
+        }
 
         printResults();
     }
@@ -714,20 +722,8 @@ void wake::solveLiftingLine() {
     y[54] = 0.11111;
     xle[54] = 1.3;
 
-    // check that AReff has sufficient information
-    // and set shared variables
-    //vars->kx_of_alpha = nsteps; // do not use canard-wake-line new polar
     vars->em = em;
-    if (DBG) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
-    if(alstep < eps) {
-        cout << "not enough info to calculate arceff and dClcda0" << endl;
-    }
-    else {
-        dClcda0=180.* (cl1-cl0) / pi;
-        arceff=2.*dClcda0 / (2.*pi-dClcda0);
-        vars->arceff = arceff;
-        vars->dClcda0 = dClcda0;
-    }
+    if (alstep < eps) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
 }
 
 void wake::integrate_canard() {
@@ -881,28 +877,6 @@ void wake::delete_2d_double_array(double **array) {
     free(array);
 }
 
-void wake::cmdInput(int argc, char** argv) {
-    //
-    // parse commandline input
-    //
-
-    for (int iarg = 0; iarg<argc ; ++iarg) {
-        if (!strcmp(argv[iarg],"-in")){
-            inputBool=true;
-            inputFlag=iarg+1;
-            filenameInputData = std::string(argv[inputFlag]);
-            iarg+=2;
-        }
-        else if (!strcmp(argv[iarg],"-bl")){
-            polarBool=true;
-            inputFlag=iarg+1;
-            filenameInputPolar = argv[inputFlag];
-            iarg+=2;
-        }
-    }
-
-}
-
 void wake::readInputParams() {
     //
     // open input file
@@ -944,6 +918,89 @@ void wake::readInputParams() {
         else if (a.compare("ARCEFF") == 0) arceff = b;
         else if (a.compare("LAMBD") == 0) Lambd = b;
         //else if (a.compare("RSTR0") == 0) Rstr0 = b;
+        else if (a.compare("RF0") == 0) Rf0 = b;
+        else if (a.compare("DM") == 0) dm = b;
+        else if (a.compare("TCD") == 0) tcd = b;
+        else if (a.compare("IWING") == 0) iwing = b;
+        else if (a.compare("B") == 0) B = b;
+        else if (a.compare("LF0") == 0) Lf0 = b;
+        else if (a.compare("DX0") == 0) Dx0 = b;
+        else if (a.compare("STR") == 0) str = b;
+        else if (a.compare("ZWAKE") == 0) zwake = b;
+        else if (a.compare("RHO") == 0) Rho = b;
+        else if (a.compare("VINF") == 0) Vinf = b;
+        else if (a.compare("AMU") == 0) Amu = b;
+        else if (a.compare("IVIS") == 0) ivis = b;
+        else if (a.compare("IPOLAR") == 0) { polarBool = true; }
+        else if (a.compare("ALPHAIN") == 0) alphain = b;
+        else if (a.compare("ALPHAFI") == 0) alphafi = b;
+        else if (a.compare("ALPHASTEP") == 0) alstep = b;
+        else {
+            cout << " command: " << a << " not known" << endl;
+            abort();
+        }
+        //if (a.compare("NPOLAR") == 0) { nx = b; }
+    }
+
+    // initializations -move this to init() function later -cp 3/27/22
+    jx=2*jxs2;
+    bc=2.0;
+    cxc=2.0*Cc0/Bc0;
+    zcanar=2.0*Zc0/B;
+    lamb=degrad*Lambd;
+    rf=2.0*Rf0/Bc0;
+    tc=degrad*tcd;
+    lf=2.0*Lf0/Bc0;
+    dxm=2.0*Dx0/Bc0;
+
+    // optional read-in files
+    //if(acwash) readInputDownwash();
+}
+
+void wake::readInputParams(std::string filename) {
+    //
+    // open input file
+    // add the ability to read any input filename -cp 3/29/22
+
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " wake::readInputParams()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameInputPolar = filename;
+
+    ifstream paramfile(filenameInputData);
+    if (!paramfile.is_open()) {
+        cout << "\n\tCannot Read " << filenameInputData;
+        cout << " File error in readInputParams()" << endl;
+        abort();
+    }
+
+    std::string line;
+    std::string a; double b; std::string c;
+
+    // read in data
+    for (int i=0; i<lxx; i++) {
+        std::getline(paramfile, line);
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        if(!(iss >> a >> b >> c)) break;
+
+        if (a.compare("JXS2") == 0) {
+            jxs2 = b;
+            if (jxs2 > jxx) {
+                cout << "jxs2 = " << jxs2 << " jxx = " << jxx << ", change dimension:exiting!" << endl;
+                abort();
+            }
+        }
+        else if (a.compare("ITX") == 0) itx = b;
+        else if (a.compare("OMEGA") == 0) omega = b;
+        else if (a.compare("AVIS") == 0) avis = b;
+        else if (a.compare("BC0") == 0) Bc0 = b;
+        else if (a.compare("CC0") == 0) Cc0 = b;
+        else if (a.compare("ZC0") == 0) Zc0 = b;
+        else if (a.compare("ARCEFF") == 0) arceff = b;
+        else if (a.compare("LAMBD") == 0) Lambd = b;
+            //else if (a.compare("RSTR0") == 0) Rstr0 = b;
         else if (a.compare("RF0") == 0) Rf0 = b;
         else if (a.compare("DM") == 0) dm = b;
         else if (a.compare("TCD") == 0) tcd = b;
@@ -1485,7 +1542,7 @@ void wake::printResults() {
                   << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
 
     cout << fixed << std::setprecision(4);
-    cout << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
+    cout << endl << "\033[1;42m canar-wake results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
     cout << right << setw(38) << " oswald efficiency e = " << em << endl;
@@ -1493,7 +1550,7 @@ void wake::printResults() {
     cout << right << setw(38) << " arceff = " << arceff << endl;
     cout << right << setw(38) << " dClcda0 = " << dClcda0 << endl << endl;
 
-    cout<< "\033[1;42m global results: " << alphad << " (deg) \033[0m" << endl;
+    cout<< "\033[1;42m canar-wake global results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "CD = " << cd << endl;
     cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
     cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
