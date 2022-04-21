@@ -6,8 +6,7 @@ files are listed below:
 * **canareq.data**
 * **canarpolar.dat**
 
-Typically the canarline input data file is named **canarline.data**; however you 
-may change it using the ```--cline_in``` flag (shown below). 
+Typically the canarline input data file is named **canarline.data**; however you may change it using the ```--ceq_in``` flag (shown below). 
 
 ## Example:
 You may run this example using two methods. Using the executables or with the AeroDes.hpp library.
