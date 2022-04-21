@@ -11,7 +11,7 @@
 0.		=tm setting angle at root (typically zero)
 2		=iwing elliptic/rectangular/general shape/0/1/2
 0.0		=alphad geometric incidence (deg)
-0.0		-0.1		=acwash  reference (-0.1 rd) downwash of canard on main wing
+1		=acwash=1/0  accounting for downwash of canard on main wing from canarwake
 1.2		=Rho air density (kg/m**3)
 100.		=Vinf  wind velocity (m/s)
 0.0000181	=Amu dynamic viscosity (kg/(m*s))

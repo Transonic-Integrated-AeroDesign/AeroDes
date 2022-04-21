@@ -10,7 +10,7 @@
       real alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj
       real reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0
       real rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr
-      real Rf0,rf,phij,phi0,dwkj,Lambd,lamb
+      real Rf0,rf,phij,phi0,dwkj,Lambd,lamb,clf
       real c(jxx),g(jxx),dg(jxx),y(jxx),eta(jxx)
       real w(jxx),t(jxx),dem(jxx)
       real a0(jxx),a1(jxx),b0(jxx),b1(jxx),c0(jxx),c1(jxx)
@@ -25,8 +25,8 @@
       character*4 title(18)
       character*4 typcode(18)
       data a0/jxx*0./a1/jxx*0./b0/jxx*0./b1/jxx*0./c0/jxx*0./c1/jxx*0./
-      data m/jxx*0/
-      data rbreak/nxx*2./
+      data wcanar/jxx*0./
+      data m/jxx*0/rbreak/nxx*2./
       open(unit=13,file='polarbl.dat',form='formatted')
       open(unit=14,file='polarbl.cdcl',form='formatted')
       open(unit=15,file='prandtline.data',form='formatted')
@@ -417,7 +417,7 @@ c     search for point on polar and polar coefficients
          n=polar(j)
          if(n.ne.0)then
             atj=at(j)
-            atj=atj-acwash*wcanar(j)/0.1
+            atj=atj+acwash*wcanar(j)
             mj=2
             prod=1.57-atj
             do 7 k=2,kx(n)-1
@@ -536,6 +536,7 @@ c*****results
       is=mod(jx,2)
       si=is
       cl=0.
+      clf=0.
       xac=0.
       cmac=0.
       fz(1)=0.
@@ -549,6 +550,9 @@ c*****results
          if(j.eq.2)eta(j-1)=-1.0
          if(j.eq.jx-1)eta(j)=1.0
          cl=cl+g(j)*(eta(j)-eta(j-1))
+         if(abs(y(j)).lt.rf)then
+            clf=clf+g(j)*(eta(j)-eta(j-1))
+         endif
          if(ipolar.ne.1)then
             at(j)=alpha+atan2(w(j),1.)+t(j)
             q(j)=c0(j)+c1(j)*at(j)
@@ -581,6 +585,7 @@ c*****results
       at(jx)=at(jx-1)
      &     +(at(jx-2)-at(jx-1))*(y(jx)-y(jx-1))/(y(jx-2)-y(jx-1))
       cl=0.5*arm*cl
+      clf=2.0*clf/am
       xac=xac/am
       cmac=cmac/(am*cam)
       cm0=cmac-xac*cl/cam
@@ -644,7 +649,7 @@ c*****force and moment
       write(6,*)'results:'
       write(6,1005)cdi,em
       write(6,1006)cdv
-      write(6,1007)cd,cl
+      write(6,1007)cd,cl,clf
       write(6,1008)cm0,cmac,xac
       write(6,1011)xcp
       write(6,1009)-cmf(jx2+1)
@@ -703,9 +708,11 @@ c*****files
      &     ,'    Oswald efficiency e=',f10.4)
  1006 format('  viscous contribution: CDv=',f10.6)
  1007 format('        global results:  CD=',f10.6
-     &     ,'    lift coefficient CL=',f10.4)
+     &     ,'    lift coefficient CL=',f10.4
+     &     ,'   fuselage lift CLf=',f10.4)
  1008 format('                             '
-     &     ,'pitching moment coefficient CM,0=',f10.4,' CM,ac=',f10.4
+     &     ,'pitching moment coefficient CM,0=',f10.4
+     &     ,'               CM,ac=',f10.4
      &     ,/,'                                      '
      &     ,'aerodynamic center x,ac=',f10.4)
  1009 format('                             '    
