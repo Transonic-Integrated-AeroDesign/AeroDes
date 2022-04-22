@@ -1441,7 +1441,7 @@ void tsd::outputRestart(std::string filename) {
     }
 
     // output the first line (the indice limits)
-    if (!(fileRestartOut << ixdum << "\t" << jxdum << "\t" << kxdum)) {
+    if (!(fileRestartOut << ixdum << "\t" << jxdum << "\t" << kxdum << endl)) {
         cout << "File error in: outputRestart(): first line issue" << endl;
         abort();
     }
