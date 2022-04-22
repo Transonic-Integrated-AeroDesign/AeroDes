@@ -1,0 +1,29 @@
+DX0     0.01		# dx0 minimum mesh step in x (leading & trailing edges)
+DY0     0.01		# dy0 minimum mesh step in y (wing tip)
+DZ0     0.05		# dz0 minimum mesh step in z (wing surface)
+XMIN    -2.0		# xmin location of upstream boudary (ref. root chord)
+XMAX    3.0		    # xmax location of downstream boundary (ref. root chord)
+BS2     1.7778		# bs2 wing half-span (ref. root chord Cx0=1)
+YSTR    0.37778		# ystr end of wing strake (ref. root chord)
+YMIN    -1.0		# ymin unused (plane of symmetry is at y=0)
+YMAX    4.0		    # ymax location of side boundary (ref. root chord)
+ZMIN    -10.0		# zmin location of bottom boundary (ref. root chord)
+ZMAX    10.0		# zmax location of top boundary (ref. root chord)
+STR     1.1		    # str stretch factor for mesh in x and z
+OMEGA   0.2		    # omega relaxation factor in subsonic (<2)
+PIV     100.0		# piv
+DM      -0.02		# dm camber ratio (<0 for flying wing) used if inprof=0
+DMPLUS  -0.01		# dmplus used for flying wing extra parabolic camber ratio, used if inprof=0
+EM      0.1	    	# em used if inprof=0
+ITHICK  3		    # ithick(1/2/3/4/5/6/7) ellip/semi-cubic/q-j/naca00xx/selig/super-selig/biconvex used if inprof=0
+INPROF  1		    # inprof read-in profile data Y/N=1/0
+ARR     1.0		    # ratio change aspect ratio of read-in profile
+ALPHAD  2.0		    # alphad (deg)
+GAMP    2.4		    # gamp  gas index combination (gamma+1)
+MACH0   0.85		# mach0 Mach number M0
+LAMB    25.0		    # lamb sweep angle of leading edge for infinite wings (deg)
+
+IMESH   1           # do you want to write the geometry mesh? Y/N=1/0
+IWRITE  1           # do you want to write the geometry? Y/N=1/0
+IFLOW   1           # do you want to read-in the flow? Y/N=1/0
+ITER    1           # itx=?
