@@ -39,6 +39,8 @@ int main(int argc, char** argv) {
 
     // restart file
     sonic->outputRestart("tsd.in");
+    sonic->outputCpContour("tsd.cpcon");
+    sonic->outputXiCp("tsd.cp");
 
     // print to screen (uncomment for prints, then rebuild)
     //sonic->printInput();

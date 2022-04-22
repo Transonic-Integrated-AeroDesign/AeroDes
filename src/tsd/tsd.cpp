@@ -50,7 +50,7 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
     cz = (double *) malloc(sizeof(double)*jxx); cx = (double *) malloc(sizeof(double)*jxx);
     cmo = (double *) malloc(sizeof(double)*jxx); xcp = (double *) malloc(sizeof(double)*jxx);
 
-    // filenames
+    // default filenames
     filenameInputData = "tsd.data";
     inputBool = false;
 
@@ -63,6 +63,8 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
 
     filenameGeom = "geoprofortsd.xde";
     filenameRestart = "tsd.in";
+    filenameContour = "tsd.cpcon";
+    filenameCp = "tsd.cp";
 
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
@@ -1443,25 +1445,25 @@ void tsd::outputLift(std::string filename) {
 void tsd::outputMesh1(std::string filename) {
     // originally the legacy code output to 34
     // which corresponds to "tsd.xymesh1"
-    fileMesh1.open(filename);
-    fileMesh1 << left << setw(14) << "# xi[i][j]"
+    outfileMesh1.open(filename);
+    outfileMesh1 << left << setw(14) << "# xi[i][j]"
               << left << setw(14) << "y[j]"
               << left << setw(14) << "zdum" << endl;
-    fileMesh1 << fixed << std::setprecision(5);
+    outfileMesh1 << fixed << std::setprecision(5);
     double zdum = 0;
     for (int j = 1; j <= jx; ++j) {
         for (int i = 1; i <= ix; ++i) {
             //do 15 i = 1, ix
             ic=ix+1-i;
             if ( j%2 == 1 ) {
-                fileMesh1 << left << setw(14) << xi[i][j]
-                          << left << setw(14) << y[j]
-                          << left << setw(14) << zdum << endl;
+                outfileMesh1 << left << setw(14) << xi[i][j]
+                             << left << setw(14) << y[j]
+                             << left << setw(14) << zdum << endl;
             }
             else {
-                fileMesh1 << left << setw(14) << xi[ic][j]
-                          << left << setw(14) << y[j]
-                          << left << setw(14) << zdum << endl;
+                outfileMesh1 << left << setw(14) << xi[ic][j]
+                             << left << setw(14) << y[j]
+                             << left << setw(14) << zdum << endl;
             }
         }
     }
@@ -1470,24 +1472,24 @@ void tsd::outputMesh1(std::string filename) {
 void tsd::outputMesh2(std::string filename) {
     // originally the legacy code output to 35
     // which corresponds to "tsd.xymesh2"
-    fileMesh2.open(filename);
-    fileMesh2 << left << setw(14) << "# xi[i][j]"
+    outfileMesh2.open(filename);
+    outfileMesh2 << left << setw(14) << "# xi[i][j]"
               << left << setw(14) << "y[j]"
               << left << setw(14) << "zdum" << endl;
-    fileMesh2 << fixed << std::setprecision(5);
+    outfileMesh2 << fixed << std::setprecision(5);
     double zdum = 0;
     for (int i = 1; i <= ix; ++i) {
         for (int j = 1; j <= jx; ++j) {
             jc=jx+1-j;
             if ( i%2 == 1 ) {
-                fileMesh2 << left << setw(14) << xi[i][j]
-                          << left << setw(14) << y[j]
-                          << left << setw(14) << zdum << endl;
+                outfileMesh2 << left << setw(14) << xi[i][j]
+                             << left << setw(14) << y[j]
+                             << left << setw(14) << zdum << endl;
             }
             else {
-                fileMesh2 << left << setw(14) << xi[i][jc]
-                          << left << setw(14) << y[jc]
-                          << left << setw(14) << zdum << endl;
+                outfileMesh2 << left << setw(14) << xi[i][jc]
+                             << left << setw(14) << y[jc]
+                             << left << setw(14) << zdum << endl;
             }
         }
     }
@@ -1497,14 +1499,14 @@ void tsd::outputGeom(std::string filename) {
     // output profile geometry
     // originally the legacy code output to 14
     // which corresponds to "geoprofortsd.xde"
-    fileoutGeom.open(filename);
-    fileoutGeom << left << setw(10) << "i"
+    outfileGeom.open(filename);
+    outfileGeom << left << setw(10) << "i"
                 << left << setw(10) << "d[i]"
                 << left << setw(10) << "e[i]" << endl;
     for (int i = ile; i <= ite-1; ++i) {
         //do 19 i=ile,ite-1
         if (inprof != 0) {
-            fileoutGeom << left << setw(10) << i
+            outfileGeom << left << setw(10) << i
                         << left << setw(10) << d[i]
                         << left << setw(10) << e[i] << endl;
             //read(14, *)dum, d(i), e(i)
@@ -1516,7 +1518,7 @@ void tsd::outputGeom(std::string filename) {
 
 void tsd::outputRestart(std::string filename) {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " tsd::solveScheme()" << endl;
+    if (DBG) cout << " tsd::outputRestart()" << endl;
 
     if (filename.compare("")==0);
     else filenameRestart = filename;
@@ -1551,4 +1553,104 @@ void tsd::outputRestart(std::string filename) {
     }
 
     fileRestartOut.close();
+}
+
+void tsd::outputCpContour(std::string filename) {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " tsd::outputCpContour()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameContour = filename;
+
+    outfileContour.open(filenameContour);
+    if (!outfileContour.is_open()) {
+        cout << "\nCannot Read " << filenameContour;
+        cout << "File error in: outputCpContour()" << endl;
+        abort();
+    }
+
+//    outfileContourMatrix.open("tsd.cpmatrix");
+//    if (!outfileContourMatrix.is_open()) {
+//        cout << "\nCannot Read " << filenameContour;
+//        cout << "File error in: outputCpContour()" << endl;
+//        abort();
+//    }
+
+    // header text
+    outfileContour << left << setw(12) << "# x[i]"
+                   << left << setw(12) << "z[k]"
+                   << left << setw(12) << "cp[i][j][k]" << endl;
+    outfileContour << fixed << setprecision(6);
+    for (int k = 1; k <= kx; ++k) {
+        //do 43 k=1,kx
+        for (int j = 2; j <= 2; ++j) {
+            for (int i = 1; i <= ix; ++i) {
+                outfileContour << left << setw(12) << fixed << x[i]
+                               << left << setw(12) << fixed << z[k]
+                               << left << setw(12) << fixed << cp[i][j][k] << endl;
+                //outfileContourMatrix << left << setw(12) << fixed << cp[i][j][k];
+            }
+        }
+        outfileContour << endl;
+        //outfileContourMatrix << endl;
+    }
+    outfileContour.close();
+}
+
+void tsd::outputXiCp(std::string filename) {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " tsd::outputXiCp()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameCp = filename;
+
+    outfileCp.open(filenameCp);
+    if (!outfileCp.is_open()) {
+        cout << "\nCannot Read " << filenameCp;
+        cout << "File error in: outputCp()" << endl;
+        abort();
+    }
+
+    // header
+    outfileCp << left << setw(12) << fixed << "# j"
+              << left << setw(12) << fixed << "xi[i][j]"
+              << left << setw(12) << fixed << "cpo[i][j]"
+              << left << setw(12) << fixed << "cpu[i][j]"
+              << left << setw(12) << fixed << "gp[i][j]"
+              << left << setw(12) << fixed << "cpwo[i][j]"
+              << left << setw(12) << fixed << "cpwu[i][j]" << endl;
+
+    if(abs(lamb) > eps) {
+        jtipp=jtip-1;
+    }
+    else {
+        jtipp = jtip;
+        //endif
+    }
+
+    for (int j = 2; j <= jtipp; ++j) {
+        for (int i = 1; i <= ix; ++i) {
+            ic=ix+1-i;
+            if(j%2 == 1) {
+                outfileCp << left << setw(12) << fixed << j
+                          << left << setw(12) << fixed << xi[i][j]
+                          << left << setw(12) << fixed << cpo[i][j]
+                          << left << setw(12) << fixed << cpu[i][j]
+                          << left << setw(12) << fixed << gp[i][j]
+                          << left << setw(12) << fixed << cpwo[i][j]
+                          << left << setw(12) << fixed << cpwu[i][j] << endl;
+            }
+            else {
+                outfileCp << left << setw(12) << fixed << j
+                          << left << setw(12) << fixed << xi[ic][j]
+                          << left << setw(12) << fixed << cpo[ic][j]
+                          << left << setw(12) << fixed << cpu[ic][j]
+                          << left << setw(12) << fixed << gp[ic][j]
+                          << left << setw(12) << fixed << cpwo[ic][j]
+                          << left << setw(12) << fixed << cpwu[ic][j] << endl;
+            }
+//    write(40+j,*)xi(i,j),cpo(i,j),cpu(i,j)
+        }
+    }
+    outfileCp.close();
 }

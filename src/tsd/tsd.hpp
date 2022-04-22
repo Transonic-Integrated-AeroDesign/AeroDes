@@ -52,6 +52,8 @@ public:
     void outputGeom(std::string);
     void outputLift(std::string);
     void outputRestart(std::string);
+    void outputCpContour(std::string);
+    void outputXiCp(std::string);
 
     // memory
     double **create_2d_double_array(int, int, double **&);
@@ -90,11 +92,13 @@ private:
     std::string filenameInputFlow; bool inputFlowBool;
     bool iterBool;
 
-    std::string filenameMesh1; std::ofstream fileMesh1; bool meshBool;
-    std::string filenameMesh2; std::ofstream fileMesh2;
-    std::string filenameGeom; std::ifstream fileinGeom; std::ofstream fileoutGeom;
+    std::string filenameMesh1; std::ofstream outfileMesh1; bool meshBool;
+    std::string filenameMesh2; std::ofstream outfileMesh2;
+    std::string filenameGeom; std::ifstream fileinGeom; std::ofstream outfileGeom;
     std::string filenameRestart; std::ofstream fileRestartOut; std::ifstream fileRestartIn;
     std::ofstream file2;
+    std::string filenameContour; std::ofstream outfileContour; std::ofstream outfileContourMatrix;
+    std::string filenameCp; std::ofstream outfileCp;
 };
 
 #endif
