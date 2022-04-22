@@ -33,7 +33,7 @@ public:
     void solveScheme();
     void solvePhoPhu();
     void solvePressureCoef();
-    void jjscheme(int, int, int);
+    int jjscheme(int, int, int);
     void tridiag(int n1, int n);
 
     // geometry
@@ -59,7 +59,7 @@ private:
     int ixx,kxx,ikxx,ithick,ile,klo,kup,kpt,kx,iprof,ite;
     int ipt,ix,k,kc,i,ic,iter,inflow,itx,idx,kdx;
     int iwrite, imesh;
-    int it,jxx,ijkxx,j,jx,ijxx,ixdum,jxdum,kxdum,idum,inprof;
+    int it,jxx,ijkxx,jx,ijxx,ixdum,jxdum,kxdum,idum,inprof;
     int jtip,jpt,jc,jstr,jdx,jj,jtipp,n;
 
     double pi,eps,gamp,mach0,ucr,bet0,gamach;
@@ -70,7 +70,7 @@ private:
     double yj,bs2,ystr,piv,dga,yjm,am,cdum,cmum,cav,cdw;
     double *x,*y,*z,**xi;
     double ***ph;
-    double *aa,*bb,*cc,*dd,*ff;
+    double *aa,*bb,*cc,*dd; //*ff;
     double *d,*e;
     double **dp, **ep;
     double **cpo,**cpu,**gp;

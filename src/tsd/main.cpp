@@ -33,6 +33,9 @@ int main(int argc, char** argv) {
     //sonic->outputMesh1("tsd.xymesh1");
     //sonic->outputMesh2("tsd.xymesh2");
 
+    // solve the continuity equation
+    sonic->solveScheme();
+
     // print to screen
     //sonic->printInput();
 

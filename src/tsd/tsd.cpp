@@ -36,7 +36,7 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
     bb = (double *) malloc(sizeof(double)*kxx);
     cc = (double *) malloc(sizeof(double)*kxx);
     dd = (double *) malloc(sizeof(double)*kxx);
-    ff = (double *) malloc(sizeof(double)*kxx);
+    //ff = (double *) malloc(sizeof(double)*kxx);
     d = (double *) malloc(sizeof(double)*ixx); e = (double *) malloc(sizeof(double)*ixx);
     create_2d_double_array(ixx, jxx, dp); create_2d_double_array(ixx, jxx, ep);
     create_2d_double_array(ixx, jxx, cpo); create_2d_double_array(ixx, jxx, cpu); create_2d_double_array(ixx, jxx, gp);
@@ -89,7 +89,7 @@ tsd::~tsd() {
     free(x); free(y); free(z);
     delete_2d_double_array(xi);
     delete_3d_double_array(ph);
-    free(aa); free(bb); free(cc); free(dd); free(ff);
+    free(aa); free(bb); free(cc); free(dd); //free(ff);
     free(d); free(e);
     delete_2d_double_array(dp); delete_2d_double_array(ep);
     delete_2d_double_array(cpo); delete_2d_double_array(cpu); delete_2d_double_array(gp);
@@ -269,7 +269,7 @@ void tsd::readInputParams(std::string filename) {
         else if (a.compare("IFLOW") == 0) inflow=b;
         else if (a.compare("ITER") == 0) {
             iterBool=true;
-            itx=b;
+            if (!itx) itx=b;
         }
         else {
             cout << " command: " << a << " not known" << endl;
@@ -385,7 +385,7 @@ void tsd::setMesh() {
         if (j==jtip) am=am+c[j]*(y[jtip]-yjm);
         else am=am+c[j]*(0.5*(y[j+1]+y[j])-yjm);
         yjm=0.5*(y[j+1]+y[j]);
-        cout << " j = " << j << " am = " << am << " cj = " << c[j] << " yj = " << y[j] << endl;
+        if (DBG) cout << " j = " << j << " am = " << am << " cj = " << c[j] << " yj = " << y[j] << endl;
         //3    continue
     }
 
@@ -417,7 +417,7 @@ void tsd::setMesh() {
             x[i]=xii;
             for (int j = 1; j <= jx; ++j) {
                 //do 6 j=1,jx
-                xi[i][j] = x[i] + xle[j];
+                xi[i][j]=x[i]+xle[j];
                 //6 continue
             }
         }
@@ -470,7 +470,7 @@ void tsd::setMesh() {
 
     dtet=pi/(2.0*(ix-ite));
 
-    for (int i = ite+1; i < ix; ++i) {
+    for (int i = ite+1; i <= ix; ++i) {
         //do 14 i=ite+1,ix
         if (str-1.0-eps < 0.0) {
             xii=1.0+(i-ite)*dx0;
@@ -558,14 +558,18 @@ void tsd::setMesh() {
     //write(6,1003)
     dp[1][2]=0.0;
     ep[1][2]=0.0;
-    if(iwrite && DBG) {
-        //write(6,1004)1,x(1),d(1),dp(1,2),e(1),ep(1,2)
-        cout << left << setw(12) << "1"
-             << left << setw(12) << "x"
-             << left << setw(12) << "d"
-             << left << setw(12) << "dp"
-             << left << setw(12) << "e"
-             << left << setw(12) << "ep" << endl;
+
+    //
+    cout << fixed << std::setprecision(4);
+    if (iwrite) {
+        cout << endl;
+        cout << left << setw(12) << "i"
+             << left << setw(12) << "x[i]"
+             << left << setw(12) << "d[i]"
+             << left << setw(12) << "dp[i]"
+             << left << setw(12) << "e[i]"
+             << left << setw(12) << "ep[i]" << endl;
+
         cout << left << setw(12) << 1
              << left << setw(12) << x[1]
              << left << setw(12) << d[1]
@@ -574,6 +578,7 @@ void tsd::setMesh() {
              << left << setw(12) << ep[1][2] << endl;
     }
 
+    //
     for (int i = 2; i <= ix-1; ++i) {
         //do 23 i=2,ix-1
         for (int j = 1; j <= jtip; ++j) {
@@ -583,17 +588,17 @@ void tsd::setMesh() {
             if (i == ite) {
                 dp[i][j] = dp[i - 1][j];
                 ep[i][j] = ep[i - 1][j];
-                //endif
             }
             //22   continue
         }
-        if (iwrite && DBG)
+        if (iwrite) {
             cout << left << setw(12) << i
                  << left << setw(12) << x[i]
                  << left << setw(12) << d[i]
                  << left << setw(12) << dp[i][2]
                  << left << setw(12) << e[i]
                  << left << setw(12) << ep[i][2] << endl;
+        }
         //23   continue
     }
 
@@ -611,7 +616,7 @@ void tsd::setMesh() {
     iter=0;
 
     //
-    // read flow restart file
+    // read flow restart file -make this a function 4/21/22
     //
     //write(6,*)' do you want to read-in the flow? Y/N=1/0 '
     //read(5,*)inflow
@@ -629,12 +634,14 @@ void tsd::setMesh() {
         if (!(iss1 >> kxdum)) return;
         if (DBG) cout << "success: ix = " << ixdum << " jx = " << jxdum << " kx = " << kxdum << endl;
         // read the second line, fill the ph R^3 matrix
-        std::getline(inputflow, line);
-        std::istringstream iss2(line);
+        //std::getline(inputflow, line);
+        //std::istringstream iss2(line);
         double value;
-        for (int i = 1; i <= ixdum ; ++i) {
-            for (int j = 1; j <= jxdum ; ++j) {
-                for (int k = 1; k <= kxdum ; ++k) {
+        for (int i = 1; i <= ix ; ++i) {
+            for (int j = 1; j <= jx ; ++j) {
+                for (int k = 1; k <= kx ; ++k) {
+                    std::getline(inputflow, line);
+                    std::istringstream iss2(line);
                     if (iss2 >> value) {
                         ph[i][j][k]=value;
                         if (DBG) cout << "i " << i << " j = " << j << " k =" << k << " ph = " << value << endl;
@@ -673,9 +680,11 @@ void tsd::solveScheme() {
         jdx=0;
         kdx=0;
 
+        cout << fixed << std::setprecision(10);
         // y-sweep
         for (int jj = 2; jj <= jx-1; ++jj) {
             //do 200 jj=2,jx-1
+            int j;
             if(iter%2==1) j=jj;
             else {
                 j=jx+1-jj;
@@ -721,19 +730,36 @@ void tsd::solveScheme() {
                     for (int k = 2; k <= kx-1; ++k) {
                         //do 25 k=2,kx-1
                         um=(ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]);
-                        if (i > 2) um=0.5*(um + (ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]));
+                        if (i > 2) {
+                            um=0.5*(um
+                                +(ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]));
+                        }
 
                         u[i-1][j][k]=um;
                         ui=0.5*((ph[i+1][j][k]-ph[i][j][k]) / (xi[i+1][j]-xi[i][j])
                                 + (ph[i][j][k]-ph[i-1][j][k]) / (xi[i][j]-xi[i-1][j]));
                         u[i][j][k]=ui;
 
-                        if (k<klo || k>kup || i>ile || j>jtip) {
-                            jjscheme(i, j, k);
+                        if (DBG) {
+                            cout << " i = " << i << " j = " << j << " k = " << k << " ui = " << ui << " um = " << um
+                                 << endl;
+                            cout << " ph+1 = " << ph[i + 1][j][k] << endl;
+                            cout << " ph = " << ph[i][j][k] << endl;
+                            cout << " ph-1 = " << ph[i - 1][j][k] << endl;
+                            cout << " xi+1 = " << xi[i + 1][j] << endl;
+                            cout << " xi = " << xi[i][j] << endl;
+                        }
+
+                        if (k<klo || k>kup || i<ile || j>jtip) {
+                            if(!jjscheme(i, j, k)) {
+                                cout << " broken 1" << endl;
+                                abort();
+                            }
                         }
                         else {
                             if (k==klo && i<=ite && j<=jtip) {
-                                jjscheme(i, j, k);
+                                if(!jjscheme(i, j, k)) cout << " broken 2" << endl;
+                                //jjscheme(i, j, k);
                                 bb[k]=bb[k]-(1.0 / (z[k+1]-z[k]))*0.5*(xi[i+1][j]-xi[i-1][j]);
                                 cc[k]=0.0;
                                 dd[k]=dd[k]
@@ -743,14 +769,16 @@ void tsd::solveScheme() {
                             }
 
                             if (k==klo && i>ite) {
-                                jjscheme(i, j, k);
+                                if(!jjscheme(i, j, k)) cout << " broken 3" << endl;
+                                //jjscheme(i, j, k);
                                 dd[k]=dd[k]
                                       +(-ga[j]/(z[k+1]-z[k]))
                                        *0.5*(xi[i+1][j]-xi[i-1][j]);
                             }
 
                             if (k==kup && i<=ite && j<=jtip) {
-                                jjscheme(i, j, k);
+                                if(!jjscheme(i, j, k)) cout << " broken 4" << endl;
+                                //jjscheme(i, j, k);
                                 aa[k]=0.0;
                                 bb[k]=bb[k]
                                       -(1.0 / (z[k]-z[k-1]))
@@ -762,7 +790,8 @@ void tsd::solveScheme() {
                             }
 
                             if (k==kup && i>ite) {
-                                jjscheme(i,j,k);
+                                if(!jjscheme(i, j, k)) cout << " broken 5" << endl;
+                                //jjscheme(i,j,k);
                                 dd[k]=dd[k]
                                       +(ga[j] / (z[k]-z[k-1]))
                                        *0.5*(xi[i+1][j]-xi[i-1][j]);
@@ -781,12 +810,20 @@ void tsd::solveScheme() {
                             jdx=j;
                             kdx=k;
                         }
+                        if (DBG) cout << "aa[k]" << aa[k] << endl;
+                        if (DBG) cout << "bb[k]" << bb[k] << endl;
+                        if (DBG) cout << "cc[k]" << cc[k] << endl;
+                        if (DBG) cout << "dd[k]" << dd[k] << endl << endl;
                     }
+
                     tridiag(1,kx);
 
                     for (int k = 1; k <= kx; ++k) {
                         //do 26 k=1,kx
-                        ph[i][j][k]=ph[i][j][k]+dd[k];
+                        if (DBG) cout << "i = " << i << " j = " << j << " k = " << k << " d* = " << dd[k] << endl;
+                        if (DBG) cout << "i = " << i << " j = " << j << " k = " << k << " ph* = " << ph[i][j][k] << endl;
+                        ph[i][j][k]+=dd[k];
+                        if (DBG) cout << "i = " << i << " j = " << j << " k = " << k << " ph_ijk = " << ph[i][j][k] << endl << endl;
                         //26      continue
                     }
 
@@ -855,7 +892,13 @@ void tsd::solveScheme() {
         cl=2.0*cl/am;
         cdw=-gamach*cdw/(6.0*am);
         //write(27,*)iter,cl
-        cout << "iter = " << iter << " cl = " << cl << endl;
+        cout << "iter = " << iter
+             << " resx = " << rex
+             << " idx = " << idx
+             << " jdx = " << jdx
+             << " kdx = " << kdx
+             << " cl = " << cl
+             << " cdw = " << cdw << endl;
         //300  continue
     }
 }
@@ -922,7 +965,7 @@ void tsd::solvePressureCoef() {
     }
 }
 
-void tsd::jjscheme(int i, int j, int k) {
+int tsd::jjscheme(int i, int j, int k) {
     int jtip, ile, ite;
     double ddkm;
 
@@ -981,6 +1024,7 @@ void tsd::jjscheme(int i, int j, int k) {
                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
                   +piv*ddkm / (xi[i][j]-xi[i-1][j])
                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            //cout << "case 1" << endl;
         }
         else {
             // shock point
@@ -1013,7 +1057,8 @@ void tsd::jjscheme(int i, int j, int k) {
                                         / (xi[i][j]-xi[i-1][j])
                                         -(ph[i-1][j][k]-ph[i-2][j][k]) / (xi[i-1][j]-xi[i-2][j]))
                       / (xi[i][j]-xi[i-2][j])
-                      *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]); }
+                      *0.5*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            }
 
             dd[k]=dd[k]
                   +(bet0-gamach*ui)*((ph[i+1][j][k]-ph[i][j][k])
@@ -1043,6 +1088,7 @@ void tsd::jjscheme(int i, int j, int k) {
                   +piv*ddkm / (xi[i][j]-xi[i-1][j])
                    *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
             cdw=cdw+2.0*pow(ucr-um,3)*(z[k+1]-z[k-1])*(y[j+1]-y[j-1]);
+            //cout << "case 2" << endl;
         }
     }
     else {
@@ -1091,9 +1137,11 @@ void tsd::jjscheme(int i, int j, int k) {
                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1])
                   +piv*ddkm / (xi[i][j]-xi[i-1][j])
                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
+            //cout << "case 3" << endl;
         }
         else {
             // subsonic point
+            //cout << "gamach = " << gamach << " bet0 = " << bet0 << " ui = " << ui << endl;
             aa[k]=-1.0/(z[k]-z[k-1])
                   *0.5*(xi[i+1][j]-xi[i-1][j]);
             bb[k]=(bet0-gamach*ui)
@@ -1136,14 +1184,38 @@ void tsd::jjscheme(int i, int j, int k) {
                   *0.25*(xi[i+1][j]-xi[i-1][j])*(z[k+1]-z[k-1]);
                  //+piv*ddkm/(xi(i,j)-xi(i-1,j))
                  //*0.25*(xi(i+1,j)-xi(i-1,j))*(z(k+1)-z(k-1))*/
+            //cout << "case 4 bb_k = " << bb[k] << " dd_k = " << dd[k] << endl;
         }
     }
+    //cout << " aa[k] = " << left << setw(12) << aa[k]
+    //     << " bb[k] = " << left << setw(12) << bb[k]
+    //     << " cc[k] = " << left << setw(12) << cc[k]
+    //     << " dd[k] = " << left << setw(12) << dd[k] << endl;
+    if (isnan(aa[k])) {
+        cout << " error aa[k] = " << aa[k] << endl;
+        return 0;
+    }
+    else if (isnan(bb[k])) {
+        cout << " error bb[k] = " << bb[k] << endl;
+        return 0;
+    }
+    else if (isnan(cc[k])) {
+        cout << " error cc[k] = " << cc[k] << endl;
+        return 0;
+    }
+    else if (isnan(dd[k])) {
+        cout << " error dd[k] = " << dd[k] << endl;
+        return 0;
+    }
+    else return 1;
 }
 
 void tsd::tridiag(int n1, int n) {
     int n2,n1n,k,k1;
+    //double ff[n];
     bb[n1]=1.0/bb[n1];
-    aa[n1]=ff[n1]*bb[n1];
+    //aa[n1]=ff[n1]*bb[n1];
+    aa[n1]=dd[n1]*bb[n1];
     n2=n1+1;
     n1n=n1+n;
     for (int k=n2; k <= n; ++k) {
@@ -1152,16 +1224,19 @@ void tsd::tridiag(int n1, int n) {
         cc[k1]=cc[k1]*bb[k1];
         bb[k]=bb[k]-aa[k]*cc[k1];
         bb[k]=1./bb[k];
-        aa[k]=(ff[k]-aa[k]*aa[k1])*bb[k];
+        //aa[k]=(ff[k]-aa[k]*aa[k1])*bb[k];
+        aa[k]=(dd[k]-aa[k]*aa[k1])*bb[k];
         //enddo
     }
 
     // back substitution
-    ff[n]=aa[n];
+    //ff[n]=aa[n];
+    dd[n]=aa[n];
     for (int k1=n2; k1 <= n; ++k1) {
         //do k1=n2,n
         k=n1n-k1;
-        ff[k]=aa[k]-cc[k]*ff[k+1];
+        //ff[k]=aa[k]-cc[k]*ff[k+1];
+        dd[k]=aa[k]-cc[k]*dd[k+1];
         //enddo
     }
 }
@@ -1308,7 +1383,8 @@ void tsd::outputMesh2(std::string filename) {
     // which corresponds to "tsd.xymesh2"
     fileMesh2.open(filename);
     fileMesh2 << left << setw(14) << "# xi[i][j]"
-              << left << setw(14) << "y[j]" << endl;
+              << left << setw(14) << "y[j]"
+              << left << setw(14) << "zdum" << endl;
     fileMesh2 << fixed << std::setprecision(5);
     double zdum = 0;
     for (int i = 1; i <= ix; ++i) {
