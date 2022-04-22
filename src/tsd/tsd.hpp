@@ -27,6 +27,7 @@ public:
     // input
     void readInputParams(std::string);
     void readInputProfile(std::string);
+    void readInputRestart(std::string);
 
     // functional
     void setMesh();

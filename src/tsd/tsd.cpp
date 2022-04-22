@@ -309,7 +309,48 @@ void tsd::readInputProfile(std::string filename) {
         //read(14, *)dum, d(i), e(i)
         //19   continue
     }
+    fileinGeom.close();
+}
 
+void tsd::readInputRestart(std::string filename) {
+    std::string line;
+    ifstream inputflow(filename);
+    std::getline(inputflow, line);
+    std::istringstream iss1(line);
+    // read the first line, the indice limits
+    if (!(iss1 >> ixdum)) return;
+    if (!(iss1 >> jxdum)) return;
+    if (!(iss1 >> kxdum)) return;
+    if (DBG) cout << "success: ix = " << ixdum << " jx = " << jxdum << " kx = " << kxdum << endl;
+    // read the second line, fill the ph R^3 matrix
+    //std::getline(inputflow, line);
+    //std::istringstream iss2(line);
+    double value;
+    for (int i = 1; i <= ix ; ++i) {
+        for (int j = 1; j <= jx ; ++j) {
+            for (int k = 1; k <= kx ; ++k) {
+                std::getline(inputflow, line);
+                std::istringstream iss2(line);
+                if (iss2 >> value) {
+                    ph[i][j][k]=value;
+                    if (DBG) cout << "i " << i << " j = " << j << " k =" << k << " ph = " << value << endl;
+                }
+            }
+        }
+    }
+    // read the third line, fill the ga vector
+    std::getline(inputflow, line);
+    std::istringstream iss3(line);
+    iss3 >> iter;
+    iss3 >> rex;
+    for (int j = 1; j <= jx; ++j) {
+        if (iss3 >> value) {
+            ga[j]=value;
+            if (DBG) cout << "j = " << j << " ga = " << ga[j] << endl;
+        }
+    }
+    if (DBG) cout << "iter = " << iter << " rex = " << rex << endl;
+    inputflow.close();
 }
 
 void tsd::setMesh() {
@@ -606,7 +647,7 @@ void tsd::setMesh() {
     xii=1.0;
     dp[ix][2]=0.0;
     ep[ix][2]=0.0;
-    //if (iwrite) write(6,1004)ix,x(ix),d(ix),dp(ix,2),e(ix),ep(ix,2)
+
     if (iwrite) cout << left << setw(12) << ix
                      << left << setw(12) << x[ix]
                      << left << setw(12) << d[ix]
@@ -616,53 +657,8 @@ void tsd::setMesh() {
 
     iter=0;
 
-    //
-    // read flow restart file -make this a function 4/21/22
-    //
-    //write(6,*)' do you want to read-in the flow? Y/N=1/0 '
-    //read(5,*)inflow
-    // read 24 = "tsd.in"
-    if(inflow) {
-        cout << endl << " INFLOW = " << inflow << endl;
-        std::string filename = "tsd.in";
-        std::string line;
-        ifstream inputflow(filename);
-        std::getline(inputflow, line);
-        std::istringstream iss1(line);
-        // read the first line, the indice limits
-        if (!(iss1 >> ixdum)) return;
-        if (!(iss1 >> jxdum)) return;
-        if (!(iss1 >> kxdum)) return;
-        if (DBG) cout << "success: ix = " << ixdum << " jx = " << jxdum << " kx = " << kxdum << endl;
-        // read the second line, fill the ph R^3 matrix
-        //std::getline(inputflow, line);
-        //std::istringstream iss2(line);
-        double value;
-        for (int i = 1; i <= ix ; ++i) {
-            for (int j = 1; j <= jx ; ++j) {
-                for (int k = 1; k <= kx ; ++k) {
-                    std::getline(inputflow, line);
-                    std::istringstream iss2(line);
-                    if (iss2 >> value) {
-                        ph[i][j][k]=value;
-                        if (DBG) cout << "i " << i << " j = " << j << " k =" << k << " ph = " << value << endl;
-                    }
-                }
-            }
-        }
-        // read the third line, fill the ga vector
-        std::getline(inputflow, line);
-        std::istringstream iss3(line);
-        iss3 >> iter;
-        iss3 >> rex;
-        for (int j = 1; j <= jx; ++j) {
-            if (iss3 >> value) {
-                ga[j]=value;
-                cout << "j = " << j << " ga = " << ga[j] << endl;
-            }
-        }
-        cout << "iter = " << iter << " rex = " << rex << endl;
-    }
+    // read flow restart file
+    if (inflow) readInputRestart("tsd.in");
 }
 
 void tsd::solveScheme() {
@@ -893,13 +889,14 @@ void tsd::solveScheme() {
         cl=2.0*cl/am;
         cdw=-gamach*cdw/(6.0*am);
         //write(27,*)iter,cl
+        cout << fixed << setprecision(6);
         cout << "iter = " << iter
-             << " resx = " << rex
-             << " idx = " << idx
+             << scientific << " resx = " << rex
+             << fixed << " idx = " << idx
              << " jdx = " << jdx
              << " kdx = " << kdx
-             << " cl = " << cl
-             << " cdw = " << cdw << endl;
+             << scientific << " cl = " << cl
+             << scientific << " cdw = " << cdw << endl;
         //300  continue
     }
 }
@@ -1461,4 +1458,6 @@ void tsd::outputRestart(std::string filename) {
     for (int j = 1; j <= jx; ++j) {
         fileRestartOut << "  " << ga[j];
     }
+
+    fileRestartOut.close();
 }
