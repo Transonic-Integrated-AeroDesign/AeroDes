@@ -33,7 +33,8 @@ public:
     void setMesh();
     void solveScheme();
     void solvePhoPhu();
-    void solvePressureCoef();
+    void solvePressureCoefs();
+    void solveGlobalCoefs();
     int jjscheme(int, int, int);
     void tridiag(int n1, int n);
 
@@ -43,6 +44,7 @@ public:
 
     // prints
     void printInput();
+    void printGlobalResults();
 
     // output io
     void outputMesh1(std::string);

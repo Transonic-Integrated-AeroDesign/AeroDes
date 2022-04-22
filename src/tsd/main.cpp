@@ -33,12 +33,16 @@ int main(int argc, char** argv) {
 
     // solve the continuity equations
     sonic->solveScheme();
+    sonic->solvePhoPhu();
+    sonic->solvePressureCoefs();
+    sonic->solveGlobalCoefs();
 
     // restart file
     sonic->outputRestart("tsd.in");
 
     // print to screen (uncomment for prints, then rebuild)
     //sonic->printInput();
+    sonic->printGlobalResults();
 
     delete sonic;
     delete vars;

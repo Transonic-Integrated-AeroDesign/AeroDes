@@ -918,8 +918,9 @@ void tsd::solvePhoPhu() {
     }
 }
 
-void tsd::solvePressureCoef() {
-    //
+void tsd::solvePressureCoefs() {
+    // use after solveScheme()
+    // internal mesh
     for (int j = 1; j <= jx; ++j) {
         for (int i = 2; i <= ix-1; ++i) {
             //do 37 j=1,jx
@@ -941,6 +942,7 @@ void tsd::solvePressureCoef() {
         }
     }
 
+    // boundary conditions
     for (int j = 1; j <= jx; ++j) {
         //do 38 j=1,jx
         cpo[1][j]=cpo[2][j];
@@ -961,6 +963,71 @@ void tsd::solvePressureCoef() {
         gp[ix][j]=0.0;
         //38   continue
     }
+
+    // ?
+    for (int k = 2; k <= kx-1; ++k) {
+        for (int i = 2; i <= ix-1; ++i) {
+            //do 42 k=2,kx-1
+            //do 41 i=2,ix-1
+            int j=2;
+            cp[i][j][k]=-2.0*(ph[i+1][j][k]-ph[i-1][j][k])
+                        / (xi[i+1][j]-xi[i-1][j]);
+            //41      continue
+            //42   continue
+        }
+    }
+}
+
+void tsd::solveGlobalCoefs() {
+    // use after solvePressureCoefs()
+    cl=0.0;
+    cav=0.0;
+    cdum=0.0;
+    cmum=0.0;
+    yjm=0.0;
+
+    for (int j = 1; j <= jtip; ++j) {
+        //do 45 j=1,jtip
+        cd=0.0;
+        cm0=0.0;
+        for (int i = ile; i <= ite; ++i) {
+            //do 44 i=ile,ite
+            cd=cd+0.5*((cpo[i-1][j]+cpo[i][j])*(dp[i][j]-ep[i][j])
+                    -(cpu[i-1][j]+cpu[i][j])*(dp[i][j]+ep[i][j]))
+                            *0.5*(xi[i+1][j]-xi[i-1][j]);
+
+            cm0=cm0-(gp[i-1][j]+gp[i][j])*xi[i][j]
+                    *0.5*(xi[i+1][j]-xi[i-1][j]);
+            //44      continue
+        }
+
+        cz[j]=2.0*ga[j] / c[j];
+        cx[j]=cd;
+        cmo[j]=cm0;
+        if(abs(cz[j]) > eps) xcp[j]=-cm0 / cz[j];
+        else xcp[j]=1.0 / eps;
+
+        if(j == jtip) {
+            cl=cl+ga[j]*(y[jtip]-yjm);
+            cdum=cdum+cx[j]*(y[jtip]-yjm);
+            cmum=cmum+cmo[j]*(y[jtip]-yjm);
+            cav=cav+pow(c[j],2)*(y[jtip]-yjm);
+        }
+        else {
+            cl=cl+ga[j]*(0.5*(y[j+1]+y[j])-yjm);
+            cdum=cdum+cx[j]*(0.5*(y[j+1]+y[j])-yjm);
+            cmum=cmum+cmo[j]*(0.5*(y[j+1]+y[j])-yjm);
+            cav=cav+pow(c[j],2)*(0.5*(y[j+1]+y[j])-yjm);
+            //endif
+        }
+        yjm=0.5*(y[j+1]+y[j]);
+        //45   continue
+    }
+
+    cl=2.0*cl / am;
+    cav=cav / am;
+    cdum=cdum / am;
+    cmum=cmum / (cav*am);
 }
 
 int tsd::jjscheme(int i, int j, int k) {
@@ -1333,6 +1400,30 @@ void tsd::printInput() {
     cout << "           tangent(lamb) swp = " << swp << endl;
     cout << "         1-M0**2+swp**2 bet0 = " << bet0 << endl;
     cout << "                         ucr = " << ucr << endl << endl;
+}
+
+void tsd::printGlobalResults() {
+    cout << endl;
+    cout << " global results:" << endl;
+    cout << "   M0 = " << mach0 << " alpha = " << alphad
+         << " lamb = " << lamb << " ratio = " << ratio << " cav = " << cav << endl;
+    cout << "   Cl = " << cl << "   Cd = " << cdw << endl;
+    cout << " Cm,o = " << cmum << endl;
+    //cpcr=2.0*ucr;
+
+    cout << endl << "ga[j] = ";
+    for (int j = 1; j <= jx; ++j) {
+        cout << ga[j] << " ";
+    }
+    cout << endl << "cx[j] = ";
+    for (int j = 1; j <= jx; ++j) {
+        cout << cx[j] << " ";
+    }
+    cout << endl << "cmo[j] = ";
+    for (int j = 1; j <= jx; ++j) {
+        cout << cmo[j] << " ";
+    }
+    cout << endl;
 }
 
 void tsd::outputLift(std::string filename) {
