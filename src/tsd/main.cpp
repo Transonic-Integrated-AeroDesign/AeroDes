@@ -30,13 +30,14 @@ int main(int argc, char** argv) {
 
     // discretization
     sonic->setMesh();
-    //sonic->outputMesh1("tsd.xymesh1");
-    //sonic->outputMesh2("tsd.xymesh2");
 
-    // solve the continuity equation
+    // solve the continuity equations
     sonic->solveScheme();
 
-    // print to screen
+    // restart file
+    sonic->outputRestart("tsd.in");
+
+    // print to screen (uncomment for prints, then rebuild)
     //sonic->printInput();
 
     delete sonic;

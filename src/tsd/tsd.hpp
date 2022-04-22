@@ -48,6 +48,7 @@ public:
     void outputMesh2(std::string);
     void outputGeom(std::string);
     void outputLift(std::string);
+    void outputRestart(std::string);
 
     // memory
     double **create_2d_double_array(int, int, double **&);
@@ -89,7 +90,7 @@ private:
     std::string filenameMesh1; std::ofstream fileMesh1; bool meshBool;
     std::string filenameMesh2; std::ofstream fileMesh2;
     std::string filenameGeom; std::ifstream fileinGeom; std::ofstream fileoutGeom;
-
+    std::string filenameRestart; std::ofstream fileRestartOut; std::ifstream fileRestartIn;
     std::ofstream file2;
 };
 

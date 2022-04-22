@@ -62,6 +62,7 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
     filenameMesh2 = "tsd.xymesh2";
 
     filenameGeom = "geoprofortsd.xde";
+    filenameRestart = "tsd.in";
 
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
@@ -1422,5 +1423,42 @@ void tsd::outputGeom(std::string filename) {
             //endif
         }
         //19   continue
+    }
+}
+
+void tsd::outputRestart(std::string filename) {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " tsd::solveScheme()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameRestart = filename;
+
+    fileRestartOut.open(filenameRestart);
+    if (!fileRestartOut.is_open()) {
+        cout << "\nCannot Read " << filenameRestart;
+        cout << "File error in: outputRestart()" << endl;
+        abort();
+    }
+
+    // output the first line (the indice limits)
+    if (!(fileRestartOut << ixdum << "\t" << jxdum << "\t" << kxdum)) {
+        cout << "File error in: outputRestart(): first line issue" << endl;
+        abort();
+    }
+
+    // output lines [2, 3, ..., ix * jx * kx]
+    double value;
+    for (int i = 1; i <= ix ; ++i) {
+        for (int j = 1; j <= jx ; ++j) {
+            for (int k = 1; k <= kx ; ++k) {
+                fileRestartOut << ph[i][j][k] << endl;
+                if (DBG) cout << "i " << i << " j = " << j << " k =" << k << " ph = " << ph[i][j][k] << endl;
+            }
+        }
+    }
+    // output on the [ix * jx * kx]'th line, the ga vector
+    fileRestartOut << iter << "  " << rex;
+    for (int j = 1; j <= jx; ++j) {
+        fileRestartOut << "  " << ga[j];
     }
 }
