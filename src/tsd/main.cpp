@@ -37,10 +37,11 @@ int main(int argc, char** argv) {
     sonic->solvePressureCoefs();
     sonic->solveGlobalCoefs();
 
-    // restart file
-    sonic->outputRestart("tsd.in");
+    // output
+    sonic->outputRestart("tsd.in");     // restart file
     sonic->outputCpContour("tsd.cpcon");
     sonic->outputXiCp("tsd.cp");
+    sonic->outputGeom("tsd.xzmses");
 
     // print to screen (uncomment for prints, then rebuild)
     //sonic->printInput();

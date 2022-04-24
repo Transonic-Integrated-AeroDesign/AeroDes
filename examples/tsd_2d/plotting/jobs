@@ -1,11 +1,12 @@
 #gnuplot -p plotcontour.gp
 
-gnuplot -p plotcp.gp
-display cp.png
+#gnuplot -p plotcp.gp
+#display cp.png
 
 #gnuplot -p plotcontourlatex.gp
 #latex contour.tex
 #dvips -o contour.ps contour.dvi
 #display contour.ps
 
-#gnuplot -p plotcontourmat.gp
+gnuplot -p plotcontour.gp
+display contour.png

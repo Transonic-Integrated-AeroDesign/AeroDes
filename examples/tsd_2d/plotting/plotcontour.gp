@@ -1,10 +1,6 @@
 wpx = 3.8
 hpx = 3.3
 
-# LATEX
-#set terminal epslatex size wpx, hpx standalone color colortext 10 header "\\newcommand{\\ft}[0]{\\huge}"
-#set out 'contour.tex'
-
 # PNG
 set terminal png medium size 640, 480
 set out 'contour.png'
@@ -17,18 +13,25 @@ set contour
 set cntrparam levels 25
 
 set border linewidth 0
+unset border
 unset key
 unset colorbox
-#unset tics
+unset tics
 set lmargin screen 0.05
 set rmargin screen 0.95
 set tmargin screen 0.95
 set bmargin screen 0.05
 
+#set xrange [-0.1:0.1]
+set xrange [-1:2]
+set yrange [-1:2]
+set palette gray
+
+#splot '../tsd.xzmses' u 1:2:3 with lines ,\
+#      '../tsd.cpcon' u 1:2:3
 splot '../tsd.cpcon' u 1:2:3
 
-#set size 0.5, 0.5
-#set origin 50, 0.5
-#set yrange [-1:1.5]
-#set xrange [-2:2]
-#splot '../tsd.cpcon' u 1:2:3
+set xrange [-1:2]
+set yrange [-1:2]
+plot '../tsd.xzmses' u 1:2 with lines lc 'black' ,\
+     '../tsd.xzmses' u 1:3 with lines lc 'black'

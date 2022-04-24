@@ -1498,22 +1498,22 @@ void tsd::outputMesh2(std::string filename) {
 void tsd::outputGeom(std::string filename) {
     // output profile geometry
     // originally the legacy code output to 14
-    // which corresponds to "geoprofortsd.xde"
+    // which corresponds to "tsd.xzmses"
     outfileGeom.open(filename);
-    outfileGeom << left << setw(10) << "i"
-                << left << setw(10) << "d[i]"
-                << left << setw(10) << "e[i]" << endl;
-    for (int i = ile; i <= ite-1; ++i) {
+    outfileGeom << left << setw(14) << "# x[i]"
+                << left << setw(14) << "zu[i]"
+                << left << setw(14) << "zo[i]" << endl;
+    outfileGeom << setprecision(6);
+    for (int ic = ile; ic <= ite-1; ++ic) {
         //do 19 i=ile,ite-1
-        if (inprof != 0) {
-            outfileGeom << left << setw(10) << i
-                        << left << setw(10) << d[i]
-                        << left << setw(10) << e[i] << endl;
-            //read(14, *)dum, d(i), e(i)
-            //endif
-        }
-        //19   continue
+        i=ite-1+ile-ic;
+        xii=0.5*(1.0-cos((i-ile+0.5)*dtet));
+        //if (inprof != 0) {
+        outfileGeom << left << setw(14) << xii
+                    << left << setw(14) << zu[i][2]
+                    << left << setw(14) << zo[i][2] << endl;
     }
+    outfileGeom.close();
 }
 
 void tsd::outputRestart(std::string filename) {
