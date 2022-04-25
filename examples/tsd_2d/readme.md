@@ -5,7 +5,7 @@ files are listed below:
 
 * **tsd.data**
 * **geoprofortsd.xde**
-* ***tsd.in***
+* **tsd.in**
 
 Typically the input data file is named **tsd.data**; however you 
 may change it using the ```--tsd_in``` flag (shown below).

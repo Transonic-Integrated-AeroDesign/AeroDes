@@ -1,7 +1,7 @@
-wpx = 3.8
+wpx = 4.2
 hpx = 3.3
 
-# LATEX
+# PNG
 set terminal epslatex size wpx, hpx standalone color colortext 10 header "\\newcommand{\\ft}[0]{\\huge}"
 set out 'contour.tex'
 
@@ -10,21 +10,27 @@ set multiplot
 set pm3d map
 set pm3d interpolate 0,0
 set contour
-set cntrparam levels 25
+set cntrparam levels 29
 
-set border linewidth 0
+unset clabel
+unset border
 unset key
 unset colorbox
-#unset tics
+unset tics
 set lmargin screen 0.05
-set rmargin screen 0.95
+set rmargin screen 0.97
 set tmargin screen 0.95
 set bmargin screen 0.05
 
-splot '../tsd.cpcon' u 1:2:3
+set xrange [-1:2]
+set yrange [-1.6:1.9]
+load 'jet.pal'
 
-set size 0.5, 0.5
-set origin 0.5, 0.5
-#set yrange [-1:1.5]
-#set xrange [-2:2]
-splot '../tsd.cpcon' u 1:2:3
+splot '../tsd.cpcon' u 1:2:3 ,\
+#      '../tsd.cpcon' u 1:2:3 w lines lc 1
+
+set xrange [-1:2]
+set yrange [-1.6:1.9]
+plot '../tsd.xzmses' u 1:2 w filledcu lc 'black'
+
+plot '../tsd.xzmses' u 1:3 w filledcu lc 'black'

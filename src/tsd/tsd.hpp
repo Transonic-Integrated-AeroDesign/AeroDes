@@ -54,6 +54,7 @@ public:
     void outputRestart(std::string);
     void outputCpContour(std::string);
     void outputXiCp(std::string);
+    void outputIter(std::string);
 
     // memory
     double **create_2d_double_array(int, int, double **&);
