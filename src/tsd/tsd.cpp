@@ -11,6 +11,7 @@
 #include <stdio.h>  // strcpy
 #include <math.h>   // copysign
 #include <cstring>
+#include <sys/stat.h>
 
 #include "tsd.hpp"
 
@@ -51,20 +52,15 @@ tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
     cmo = (double *) malloc(sizeof(double)*jxx); xcp = (double *) malloc(sizeof(double)*jxx);
 
     // default filenames
-    filenameInputData = "tsd.data";
-    inputBool = false;
-
-    filenameInputFlow = "tsd.in";
-    inputFlowBool = false;
-
-    filenameMesh1 = "tsd.xymesh1";
-    meshBool = false;
+    filenameInputData = "tsd.data"; inputBool = false;
+    filenameInputFlow = "tsd.in"; inputFlowBool = false;
+    filenameMesh1 = "tsd.xymesh1"; meshBool = false;
     filenameMesh2 = "tsd.xymesh2";
-
     filenameGeom = "geoprofortsd.xde";
     filenameRestart = "tsd.in";
     filenameContour = "tsd.cpcon";
     filenameCp = "tsd.cp";
+    filenameIter = "tsd.iter";
 
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
@@ -102,6 +98,7 @@ tsd::~tsd() {
     delete_3d_double_array(cp); delete_3d_double_array(u);
     free(ax); free(ay); free(xle); free(xte); free(c); free(ga);
     free(cz); free(cx); free(cmo); free(xcp);
+    if (iconvrg) outfileIter.close();
 }
 
 double **tsd::create_2d_double_array(int n1, int n2, double **&array) {
@@ -270,6 +267,19 @@ void tsd::readInputParams(std::string filename) {
         }
         else if (a.compare("IWRITE") == 0) iwrite = b;
         else if (a.compare("IFLOW") == 0) inflow=b;
+        else if (a.compare("ICONVRG") == 0) {
+            iconvrg=b;
+            if (iconvrg) {
+                std::ifstream infile(filenameIter);
+                if(infile)  outfileIter.open(filenameIter, std::ios_base::app);
+                else outfileIter.open(filenameIter);
+                infile.close();
+                if (!outfileIter.is_open()) {
+                    cout << "File error in: outputIter()" << endl;
+                    abort();
+                }
+            }
+        }
         else if (a.compare("ITER") == 0) {
             iterBool=true;
             if (!itx) itx=b;
@@ -279,7 +289,7 @@ void tsd::readInputParams(std::string filename) {
             abort();
         }
     }
-
+    paramfile.close();
     // initialize some constants
     alpha=degrad*alphad;
     gamach=gamp*pow(mach0,2);
@@ -575,6 +585,8 @@ void tsd::setMesh() {
     }
 
     xii=0.0;
+    //zu[ite][2]=0.0;
+    //zo[ite][2]=0.0;
     zu[ile][2]=0.0;
     zo[ile][2]=0.0;
 
@@ -593,6 +605,10 @@ void tsd::setMesh() {
     xii=1.0;
     zu[ite][2]=0.0;
     zo[ite][2]=0.0;
+
+    // reset leading edge condition (this should be accounted for)
+    //zu[ile][2]=0.0;
+    //zo[ile][2]=0.0;
     //write(30,*)xii,zu(ite,2)
     //write(6,*)
     //write(6,*)'******do you want to write the geometry? Y/N=1/0'
@@ -667,6 +683,10 @@ void tsd::solveScheme() {
     //
     if (DBG) cout << endl << "=========================================\n";
     if (DBG) cout << " tsd::solveScheme()" << endl;
+
+    int modval=200;
+    int iout=round(itx / modval);
+    if (!iout) iout=1;
 
     for (int it = 1; it <= itx; ++it) {
         //do 300 it=1,itx
@@ -874,9 +894,6 @@ void tsd::solveScheme() {
         // calculate lift, drag and moment
         if(iter == 1) rex1=rex;
         tenlog=log10(abs(rex/rex1)+eps*eps);
-
-        // 16 = 'tsd.itr'
-        //write(16,*)iter,tenlog
         cl=0.0;
         yjm=0.0;
 
@@ -891,14 +908,21 @@ void tsd::solveScheme() {
         cl=2.0*cl/am;
         cdw=-gamach*cdw/(6.0*am);
         //write(27,*)iter,cl
-        cout << fixed << setprecision(6);
-        cout << "iter = " << iter
-             << scientific << " resx = " << rex
-             << fixed << " idx = " << idx
-             << " jdx = " << jdx
-             << " kdx = " << kdx
-             << scientific << " cl = " << cl
-             << scientific << " cdw = " << cdw << endl;
+
+        if (!(iter%iout) || iter==1) {
+            cout << fixed << setprecision(6);
+            cout << "iter = " << iter
+                 << scientific << " resx = " << rex
+                 << fixed << " idx = " << idx
+                 << " jdx = " << jdx
+                 << " kdx = " << kdx
+                 << scientific << " cl = " << cl
+                 << scientific << " cdw = " << cdw << endl;
+
+            // output iterative results
+            // 16 = 'tsd.itr'
+            outputIter();
+        }
         //300  continue
     }
 }
@@ -1508,7 +1532,6 @@ void tsd::outputGeom(std::string filename) {
         //do 19 i=ile,ite-1
         i=ite-1+ile-ic;
         xii=0.5*(1.0-cos((i-ile+0.5)*dtet));
-        //if (inprof != 0) {
         outfileGeom << left << setw(14) << xii
                     << left << setw(14) << zu[i][2]
                     << left << setw(14) << zo[i][2] << endl;
@@ -1653,4 +1676,27 @@ void tsd::outputXiCp(std::string filename) {
         }
     }
     outfileCp.close();
+}
+
+void tsd::outputIter() {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " tsd::outputIter()" << endl;
+
+    // header
+    if (iter==1) outfileIter << left << setw(12) << fixed << "# iter"
+                             << left << setw(16) << fixed << "rex"
+                             << left << setw(12) << fixed << "idx"
+                             << left << setw(12) << fixed << "jdx"
+                             << left << setw(12) << fixed << "kdx"
+                             << left << setw(16) << fixed << "cl"
+                             << left << setw(16) << fixed << "cdw" << endl;
+
+    outfileIter << fixed << setprecision(6);
+    outfileIter << left << setw(12) << iter
+                << left << setw(16) << scientific << rex
+                << left << setw(12) << fixed << idx
+                << left << setw(12) << jdx
+                << left << setw(12) << kdx
+                << left << setw(16) << scientific << cl
+                << left << setw(16) << scientific << cdw << endl;
 }
