@@ -1,5 +1,7 @@
 # TSD Instructions
 
+![qjimage](https://github.com/Transonic-Integrated-AeroDesign/AeroDes/blob/master/docs/tsd/qj.png)
+
 This directory contains all the **required files to have in your working directory** before running. These
 files are listed below:
 
