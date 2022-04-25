@@ -390,6 +390,7 @@ c     profile geometry
          write(30,*)xii,zo(i,2)
  20   continue
       xii=0.0
+c     this is missing after this do-loop
       zu(ile,2)=0.0
       zo(ile,2)=0.0
       write(30,*)xii,zo(ile,2)
@@ -470,7 +471,6 @@ c     x-sweep
       idx=0
       jdx=0
       kdx=0
-      write(6,*)'kx = ',kx
 c     y-sweep
       do 200 jj=2,jx-1
          if(mod(iter,2).eq.1)then
@@ -525,7 +525,6 @@ c     z-sweep interior points
             ui=0.5*((ph(i+1,j,k)-ph(i,j,k))/(xi(i+1,j)-xi(i,j))
      &        +(ph(i,j,k)-ph(i-1,j,k))/(xi(i,j)-xi(i-1,j)))
             u(i,j,k)=ui
-c            write(6,*)'i = ',i,' j = ',j,'k = ',k,' ui = ',ui
 c            write(6,*)'ph+1',ph(i+1,j,k)
 c            write(6,*)'ph',ph(i,j,k)
 c            write(6,*)'ph-1',ph(i-1,j,k)
