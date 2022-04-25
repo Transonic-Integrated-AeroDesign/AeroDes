@@ -1,5 +1,5 @@
-wpx = 4.2
-hpx = 3.3
+wpx = 4.5
+hpx = 2.5
 
 # PNG
 set terminal epslatex size wpx, hpx standalone color colortext 10 header "\\newcommand{\\ft}[0]{\\huge}"

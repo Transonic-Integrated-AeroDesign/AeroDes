@@ -26,4 +26,6 @@ LAMB    25.0		    # lamb sweep angle of leading edge for infinite wings (deg)
 IMESH   1           # do you want to write the geometry mesh? Y/N=1/0
 IWRITE  1           # do you want to write the geometry? Y/N=1/0
 IFLOW   1           # do you want to read-in the flow? Y/N=1/0
+ICONVRG 1           # do you want to write the iteration convergence? Y/N=1/0
 ITER    1           # itx=?
+

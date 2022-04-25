@@ -1,5 +1,5 @@
-1		=dx0 minimum mesh step in x (leading & trailing edges)
-1		=dy0 minimum mesh step in y (wing tip)
+0.01		=dx0 minimum mesh step in x (leading & trailing edges)
+0.01		=dy0 minimum mesh step in y (wing tip)
 0.05		=dz0 minimum mesh step in z (wing surface)
 -2.0		=xmin location of upstream boudary (ref. root chord)
 3.0		=xmax location of downstream boundary (ref. root chord)
@@ -21,5 +21,5 @@
 2.0		=alphad (deg)
 2.4		=gamp  gas index combination (gamma+1)
 0.85		0.7703616		=mach0 Mach number M0
-0.0			0.00001		=lamb sweep angle of leading edge for infinite wings (deg)
+25.0			0.00001		=lamb sweep angle of leading edge for infinite wings (deg)
 

@@ -54,7 +54,7 @@ public:
     void outputRestart(std::string);
     void outputCpContour(std::string);
     void outputXiCp(std::string);
-    void outputIter(std::string);
+    void outputIter();
 
     // memory
     double **create_2d_double_array(int, int, double **&);
@@ -100,6 +100,7 @@ private:
     std::ofstream file2;
     std::string filenameContour; std::ofstream outfileContour; std::ofstream outfileContourMatrix;
     std::string filenameCp; std::ofstream outfileCp;
+    std::string filenameIter; std::ofstream outfileIter; int iconvrg;
 };
 
 #endif
