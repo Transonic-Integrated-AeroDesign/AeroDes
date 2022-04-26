@@ -25,6 +25,7 @@ public:
     // inputs
     void readInputParams();
     void readInputParams(std::string);
+    void readInputPolar();
     void readInputPolar(std::string);
     void readInputPolarMulti(std::string filename);
     void readInputDownwash();
@@ -68,10 +69,10 @@ private:
     double **cx, **cz, **cq, **inc;
     double *cmf, *cmt, *fz;
     double *xle, *xte, *wcanar, *xacm, *xiac;
-    double *rbreak;
+    double *nbreak, *lbreak, *rbreak;
     int *m, *polar;
     int *kx, **kxtrm, *mxtrm;
-    double *alphares, *czres, *cxres, dumres, *cqres;
+
     std::string bry;
     std::string title;
     std::string typcode;

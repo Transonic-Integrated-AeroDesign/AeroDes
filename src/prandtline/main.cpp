@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 
     // input
     prants->readInputParams();
-    prants->readInputPolarMulti("polarbl.dat");
+    prants->readInputPolar();
 
     // solve lifting line problem
     prants->setMesh();
@@ -40,8 +40,6 @@ int main(int argc, char** argv) {
     //prants->printInputParams();   // optional
     //prants->printInputPolar();    // optional
     //prants->printSetupSummary();  // optional
-    //prants->printDistributions();
-    //prants->printResults();
 
     delete prants;
     delete vars;
