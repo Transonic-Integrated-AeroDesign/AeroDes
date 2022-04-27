@@ -1,26 +1,26 @@
 JXS2    21		        # jxs2 number of points along one canard span (<103)
-ITX     5001		    # itx maximum number of iterations
+ITX     5001		    	# itx maximum number of iterations
 OMEGA   0.2		        # omega relaxation factor
 AVIS    0.0		        # avis viscosity coefficient
-BC0     14.0		    # Bc0 canard span (m)
+BC0     14.0		    	# Bc0 canard span (m)
 CC0     4.0		        # Cc0 root chord of canard (m)
 ZC0     1.5		        # Zc0 canard location in z (m)
-ARCEFF  0.8889		    # ARceff canard effective aspect ratio
-LAMBD   0.0		        # Lambd a.c. sweep angle (deg)
+ARCEFF  0.8889		    	# ARceff canard effective aspect ratio
+LAMBD   0.0		        # Lambd a.c. sweep angle (deg) (for elliptic or rectangular canard)
 RF0     2.0		        # Rf0 diameter of fuselage (m)
 DM      0.0		        # dm relative camber of canar (ref.=Cc)
-TCD     0.0		        # tcd setting angle of the canard
+TCD     0.0		        # tcd setting angle of the canard (given from canareq)
 IWING   2		        # iwing elliptic/rectangular/general shape/0/1/2
-B       36.0		    # B wing span (m)
+B       36.0		    	# B wing span (m)
 
-LF0     30.0		    # Lf0 fuselage length (m)
+LF0     30.0		    	# Lf0 fuselage length (m)
 DX0     0.2		        # Dx0 wake initial step (m)
-STR     1.1		        # str stretching parameter for wake
-ZWAKE   0.03		    # zwake distance of wake above/below wing (ref. B/2)
+STR     1.1		   	# str stretching parameter for wake
+ZWAKE   0.03		    	# zwake distance of wake above/below wing (ref. B/2)
 
-RHO     0.36		    # Rho air density (kg/m**3)
-VINF    100.		    # Vinf  wind velocity (m/s)
-AMU     0.0000181	    # Amu dynamic viscosity (kg/(m*s))
+RHO     0.36		    	# Rho air density (kg/m**3)
+VINF    100.		    	# Vinf  wind velocity (m/s)
+AMU     0.0000181	    	# Amu dynamic viscosity (kg/(m*s))
 
 IVIS        1           # do you want to introduce viscous effects? Y/N=1/0
 
@@ -28,4 +28,4 @@ IPOLAR      1           # do you want to use polar data? Y/N=1/0
 
 ALPHAIN     0           # initial angle
 ALPHAFI     5           # final angle
-ALPHASTEP   1           # increment in angle
+ALPHASTEP   1           # increment in angle (zwake output + val = above wing at half span) plot taillessgo.xyz canarwake.xz

@@ -24,6 +24,7 @@ using namespace std; // g++ prandtline.cpp -c
  * include maximum Cl between 20-25 degrees
  * start with negative alpha
  */
+
 prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) {
     jxx = 201;
     lxx = 101;  // n discrete wing-span points
@@ -54,10 +55,10 @@ prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) 
     q   = (double *) malloc(sizeof(double)*jxx);
     at  = (double *) malloc(sizeof(double)*jxx);
 
-    cx  = (double **) malloc(sizeof(double *)*nxx);
-    cz  = (double **) malloc(sizeof(double *)*nxx);
-    cq  = (double **) malloc(sizeof(double *)*nxx);
-    inc  = (double **) malloc(sizeof(double *)*nxx);
+    //cx  = (double **) malloc(sizeof(double *)*nxx);
+    //cz  = (double **) malloc(sizeof(double *)*nxx);
+    //cq  = (double **) malloc(sizeof(double *)*nxx);
+    //inc  = (double **) malloc(sizeof(double *)*nxx);
 
     create_2d_double_array(nxx, lxx, cx);
     create_2d_double_array(nxx, lxx, cz);
@@ -82,10 +83,8 @@ prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) 
     polar  = (int *) malloc(sizeof(int)*jxx);
 
     kx  = (int *) malloc(sizeof(int)*nxx);
-    kxtrm  = (int **) malloc(sizeof(int *)*nxx);
-    mxtrm  = (int *) malloc(sizeof(int)*nxx);
-
     create_2d_int_array(lxx, nxx, kxtrm);
+    mxtrm  = (int *__restrict) malloc(sizeof(int)*nxx);
 
     // filenames
     filenameInputData = "prandtline.data";
@@ -116,6 +115,7 @@ prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) 
     eps=1.e-7;
     pi=2.*asin(1.);
     degrad=pi/180.;
+    shared=true;
 }
 
 prandtline::~prandtline() {
@@ -165,7 +165,7 @@ prandtline::~prandtline() {
 
     free(kx);
     delete_2d_int_array(kxtrm);
-    free(mxtrm);
+    delete [] mxtrm;
 }
 
 void prandtline::setAlpha(double al) {
@@ -391,10 +391,10 @@ void prandtline::solveLiftingLine() {
 
                     // unnecessary if statement
                     if (ndum!=0) {
-                        atj = at[j];
-                        atj = atj + acwash * wcanar[j];
-                        mj = 1;
-                        prod = 1.57 - atj;
+                        atj=at[j];
+                        atj=atj+acwash*wcanar[j];
+                        mj=1;
+                        prod=1.57-atj;
 
                         // loop over wingspan mesh points
                         for (int k = 1; k < (kx[n] - 1); ++k) {
@@ -570,6 +570,7 @@ void prandtline::solveLiftingLine() {
         is=jx % 2;
         si=is;
         cl=0.;
+        clf=0;
         cm0=0.;
         amdum=0.;
         xac=0.;
@@ -588,6 +589,9 @@ void prandtline::solveLiftingLine() {
             if(j==(jx-2)) eta[j]=1.0;   // final boundary condition
 
             cl=cl+g[j]*(eta[j]-eta[j-1]);
+            if(abs(y[j]) < rf) {
+                clf=clf+g[j]*(eta[j]-eta[j-1]);
+            }
 
             // if polar is [off] on
             if (!polarBool) {
@@ -631,6 +635,7 @@ void prandtline::solveLiftingLine() {
         //at[0] = at[1] + (at[2] - at[1]) * (y[0] - y[1]) / (y[2] - y[1]);
         //at[jx] = at[jx - 1] + (at[jx - 2] - at[jx - 1]) * (y[jx] - y[jx - 1]) / (y[jx - 2] - y[jx - 1]);
         cl=0.5*arm*cl;
+        clf=2.0*clf/am;
         xac=xac / am;
         cmac=cmac / (am*cam);
         cm0=cmac-xac*cl / cam;
@@ -698,12 +703,14 @@ void prandtline::solveLiftingLine() {
         }
 
         // set shared variables
-        vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
-        vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
-        vars->cl_of_alpha[vars->kx_of_alpha] = cl;
-        vars->cd_of_alpha[vars->kx_of_alpha] = cd;
-        vars->cq_of_alpha[vars->kx_of_alpha] = cmac;
-        vars->kx_of_alpha += 1;
+        if (shared) {
+            vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
+            vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
+            vars->cl_of_alpha[vars->kx_of_alpha] = cl;
+            vars->cd_of_alpha[vars->kx_of_alpha] = cd;
+            vars->cq_of_alpha[vars->kx_of_alpha] = cmac;
+            vars->kx_of_alpha += 1;
+        }
 
         // print results
         printResults();
@@ -721,10 +728,13 @@ void prandtline::solveLiftingLine() {
     xle[54] = 1.3;*/
 }
 
-int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
+int **prandtline::create_2d_int_array(int n1, int n2, int **&array) {
+    //
     // create a n1 x n2 matrix
+    //
     int n=0;
-    int *data = (int *) malloc(n1*n2*sizeof(int));
+    int *__restrict data = (int *) malloc(n1*n2*sizeof(int));
+    array =(int **) malloc(sizeof(int *)*n1);
     for (int i=0; i<n1; i++) {
         array[i] = &data[n];
         n += n2;
@@ -732,10 +742,13 @@ int **prandtline::create_2d_int_array(int n1, int n2, int **array) {
     return array;
 }
 
-double **prandtline::create_2d_double_array(int n1, int n2, double **array) {
+double **prandtline::create_2d_double_array(int n1, int n2, double **&array) {
+    //
     // create a n1 x n2 matrix
+    //
     int n=0;
     double *data = (double *) malloc(n1*n2*sizeof(double));
+    array =(double **) malloc(sizeof(double *)*n1);
     for (int i=0; i<n1; i++) {
         array[i] = &data[n];
         n += n2;
@@ -743,9 +756,9 @@ double **prandtline::create_2d_double_array(int n1, int n2, double **array) {
     return array;
 }
 
-void prandtline::delete_2d_int_array(int **array) {
-    free(array[0]);
-    free(array);
+void prandtline::delete_2d_int_array(int **__restrict array) {
+    delete [] array[0];
+    delete [] array;
 }
 
 void prandtline::delete_2d_double_array(double **array) {
@@ -767,11 +780,20 @@ void prandtline::readInputParams() {
     // *****read in data
     std::string line;
     std::string a; double b; std::string c;
+    std::string afirst;
     for (int i=0; i<lxx; i++) {
         std::getline(paramfile, line);
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if(!(iss >> a >> b >> c)) break;
+        if(!(iss >> a >> b >> c)) {
+            afirst = a.at(0);
+            // check for comment line
+            if (afirst.compare("#") == 0) {
+                if (DBG) cout << "comment = " << afirst << endl;
+                continue;
+            }
+            break;
+        }
 
         if (a.compare("JX") == 0) {
             jx = b;
@@ -805,7 +827,6 @@ void prandtline::readInputParams() {
             cout << " command: " << a << " not known" << endl;
             abort();
         }
-        //if (a.compare("NPOLAR") == 0) { nx = b; }
     }
 
     cxm=2.0*Cx0/B;
@@ -899,7 +920,7 @@ void prandtline::readInputPolar() {
     //    ...     ...    ...        ...         ...
     //
     //    ...     ...    ...        ...         ...
-    //  [breakpoint]
+    //  [left break-point] [right break-point]
     //
 
     if (DBG) cout << endl << "=========================================\n";
@@ -1569,6 +1590,7 @@ void prandtline::printResults() {
 
     cout << right << setw(32) << "              drag coefficient CD = " << cd << endl;
     cout << right << setw(32) << "              lift coefficient CL = " << cl << endl;
+    cout << right << setw(32) << "    fuselage lift coefficient CLf = " << clf << endl;
     cout << right << setw(32) << " pitching moment coefficient CM,0 = " << cm0 << endl;
     cout << right << setw(32) << "                            CM,ac = " << cmac << endl;
     cout << right << setw(32) << "          aerodynamic center x,ac = " << xac << endl;

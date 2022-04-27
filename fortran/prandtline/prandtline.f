@@ -325,8 +325,8 @@ c     slender body treatment of fuselage
          else
             polar(j)=0
          endif
-         write(6,1003)y(j),eta(j),c(j),t(j),dem(j),g(j),w(j),at(j)
-     &        ,polar(j)
+c         write(6,1003)y(j),eta(j),c(j),t(j),dem(j),g(j),w(j),at(j)
+c     &        ,polar(j)
          write(17,*)y(j),c(j),dem(j),t(j)
          write(29,*)y(j),xle(j),xte(j),xacm(j)
          if(j.ge.2)write(33,*)eta(j-1),xiac(j-1)

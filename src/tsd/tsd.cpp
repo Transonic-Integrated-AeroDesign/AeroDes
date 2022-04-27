@@ -1431,6 +1431,7 @@ void tsd::printInput() {
 void tsd::printGlobalResults() {
     cout << endl;
     cout << " global results:" << endl;
+    cout << " ix = " << ix << " jx = " << jx << " kx = " << kx << endl;
     cout << "   M0 = " << mach0 << " alpha = " << alphad
          << " lamb = " << lamb << " ratio = " << ratio << " cav = " << cav << endl;
     cout << "   Cl = " << cl << "   Cd = " << cdw << endl;

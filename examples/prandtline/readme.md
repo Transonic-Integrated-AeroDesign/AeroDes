@@ -4,14 +4,32 @@ This directory contains all the **required files to have in your working directo
 files are listed below:
 
 * **prandtline.data**
-* **polarbl[n].dat**
+* **polarbl.dat**
 
 Typically the prandtline input data file is named **prandtline.data**; however you 
-may change it using the ```--prandtl_in``` flag (shown below). 
+may change which file to use, by using the ```--prandtl_in``` flag. There is an example of this below. 
 
-If you wish to integrate wing + fuselage
-ensemble then read in the 9 polars named, **polarbl[n].dat**. These will then be read into the prandtline program.
+If you wish to integrate the ****wing**** and ****fuselage**** ensemble then read in the 9 polars named, **polarbl[n].dat**. These files can be 
+found in the ```individual_polars/``` directory.
 
+#### Polar File Format
+
+The required format for the input polar file is demonstrated like so.
+
+```
+    [alpha]  [cz]   [cx]    [dummyval]      [cq]
+     ...     ...    ...        ...         ...
+     ...     ...    ...        ...         ...
+  
+     ...     ...    ...        ...         ...
+    [left break-point] [right break-point]
+```
+
+Alpha is in degrees, and the rest of the drag coefficients are acquired from XFoil. 
+
+Users must manually add in the left and right break points. Keep in mind the gamma integro equation is solved for the domain
+[-1,1]. Essentially your leftmost break point cannot exceed -1, and the right most break point
+cannot exceed +1.
 
 ## Example:
 You may run this example using two methods. Using the executables or with the AeroDes.hpp library.
@@ -29,10 +47,10 @@ prandtl --prandtl_in prandtline.data
 
 specify the input **polar** file to whatever file you want:
 ```
-prandtl --prantl_polar polarbl.dat
+prandtl --prandtl_polar polarbl.dat
 ```
 
 you can even use these flags simultaneously:
 ```
-prandtl --prandtl_in prandtline.data --prantl_polar polarbl.dat
+prandtl --prandtl_in prandtline.data --prandtl_polar polarbl.dat
 ```

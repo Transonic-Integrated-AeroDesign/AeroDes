@@ -20,8 +20,8 @@ INPROF  1		    # inprof read-in profile data Y/N=1/0
 ARR     1.0		    # ratio change aspect ratio of read-in profile
 ALPHAD  2.0		    # alphad (deg)
 GAMP    2.4		    # gamp  gas index combination (gamma+1)
-MACH0   0.85		# mach0 Mach number M0
-LAMB    25.0		    # lamb sweep angle of leading edge for infinite wings (deg)
+MACH0   0.77		# mach0 Mach number M0
+LAMB    1e-4		    # lamb sweep angle of leading edge for infinite wings (deg)
 
 IMESH   1           # do you want to write the geometry mesh? Y/N=1/0
 IWRITE  1           # do you want to write the geometry? Y/N=1/0
