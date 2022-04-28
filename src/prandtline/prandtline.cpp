@@ -55,11 +55,6 @@ prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) 
     q   = (double *) malloc(sizeof(double)*jxx);
     at  = (double *) malloc(sizeof(double)*jxx);
 
-    //cx  = (double **) malloc(sizeof(double *)*nxx);
-    //cz  = (double **) malloc(sizeof(double *)*nxx);
-    //cq  = (double **) malloc(sizeof(double *)*nxx);
-    //inc  = (double **) malloc(sizeof(double *)*nxx);
-
     create_2d_double_array(nxx, lxx, cx);
     create_2d_double_array(nxx, lxx, cz);
     create_2d_double_array(nxx, lxx, cq);

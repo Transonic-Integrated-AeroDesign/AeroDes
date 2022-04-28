@@ -12,7 +12,7 @@ public:
         kx_of_alpha = 0;
         dClmda0 = 0;    // main wing lift slope
         dClcda0 = 0;    // canard lift slope
-        em = 0;
+        ec = 0;
         jxx=102;
         alr_of_alpha = (double *) malloc(sizeof(double)*jxx);
         ald_of_alpha = (double *) malloc(sizeof(double)*jxx);
@@ -32,8 +32,8 @@ public:
     int kx_of_alpha;
 
     // for canard equilibrium
-    double dClmda0;         // from: wake,
-    double em;              // from: wake, oswald efficiency
+    double dClmda0;         // from: wake, main wing slope
+    double ec;              // from: wake, oswald efficiency
     double arceff, armeff;  // from: wake, corrected aspect ratio
     double dClcda0;         // from: wake, canard lift slope
 

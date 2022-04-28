@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
     //wk->printInputParams();
     //wk->printResults();
     //wk->printCanarWake();
+    //wk->printGeomSummary();
 
     // output results to file
     //wk->outputGammaDownwash("prandtline.ygw");

@@ -33,7 +33,7 @@ wake::wake(int argc, char** argv, variables *varshr) : vars(varshr) {
 
     w   = (double *) malloc(sizeof(double)*jxx);
     t   = (double *) malloc(sizeof(double)*jxx);
-    dem = (double *) malloc(sizeof(double)*jxx);
+    dec = (double *) malloc(sizeof(double)*jxx);
     ww  = (double *) malloc(sizeof(double)*jxx);
 
     a0  = (double *) malloc(sizeof(double)*jxx);
@@ -47,11 +47,6 @@ wake::wake(int argc, char** argv, variables *varshr) : vars(varshr) {
     d   = (double *) malloc(sizeof(double)*jxx);
     q   = (double *) malloc(sizeof(double)*jxx);
     at  = (double *) malloc(sizeof(double)*jxx);
-
-    cx  = (double **) malloc(sizeof(double *)*nxx);
-    cz  = (double **) malloc(sizeof(double *)*nxx);
-    cq  = (double **) malloc(sizeof(double *)*nxx);
-    inc  = (double **) malloc(sizeof(double *)*nxx);
 
     create_2d_double_array(nxx, lxx, cx);
     create_2d_double_array(nxx, lxx, cz);
@@ -80,10 +75,8 @@ wake::wake(int argc, char** argv, variables *varshr) : vars(varshr) {
     polar  = (int *) malloc(sizeof(int)*jxx);
 
     kx  = (int *) malloc(sizeof(int)*nxx);
-    kxtrm  = (int **) malloc(sizeof(int *)*nxx);
-    mxtrm  = (int *) malloc(sizeof(int)*nxx);
-
     create_2d_int_array(lxx, nxx, kxtrm);
+    mxtrm  = (int *) malloc(sizeof(int)*nxx);
 
     // filenames
     filenameInputData = "wake.data";
@@ -125,7 +118,7 @@ wake::~wake() {
 
     free(w);
     free(t);
-    free(dem);
+    free(dec);
     free(ww);
 
     free(a0);
@@ -217,47 +210,63 @@ void wake::setMesh() {
         //eta[j]=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0;
         etaj=-1.0+(1.0-cos(tetj+.5*dtet))*(1.0-rf)/2.0;
 
-        if (j==0) { etajm = -1.;}
-        else { etajm = eta[j - 1]; }
+        if (j==0) { etajm=-1.;}
+        else { etajm=eta[j-1]; }
 
         // reached last point
-        if (j==jxs2) { etaj = eta[j - 1]; }
+        if (j==jxs2-1) { etaj=y[j]; }
 
         eta[j]=etaj;
         eta[jx-j-1]=-eta[j-1]; // mirror image value
 
-        dem[j]=dm;
+        dec[j]=dc;
         t[j]=tc;
         g[j]=0.0;
         w[j]=0.0;
         at[j]=0.0;
-        a0[j]=-pi*dm;
+        a0[j]=-pi*dc;
         a1[j]=0.0;
-        b0[j]=2.0*pi*(2.0*dem[j]);
+        b0[j]=2.0*pi*(2.0*dec[j]);
         b1[j]=2.0* pi;
         // elliptic canard
-        if (iwing==0) {
+        if (icanar==0) {
             c[j]=cxc*sin(tetj);
+            c[jx-j-1]=c[j];
+
+            xle[j]=xacc[j]-0.25*c[j];
+            xle[jx-j-1]=xle[j];
+
+            xte[j]=xle[j]+c[j];
+            xte[jx-j-1]=xte[j];
+
             xacc[j]=0.25*cxc;
             xacc[j]=xacc[j]+tan(lamb)*abs(y[j]);
-            xle[j]=xacc[j]-0.25*c[j];
-            xte[j]=xle[j]+c[j];
             if (j>=1) xiac[j-1]=0.5*(xacc[j]+xacc[j-1]);
+
+            // projected area calculation
             acdum=acdum+c[j]*(etaj - etajm);
             cacdum=cacdum+pow(c[j],2)*(etaj-etajm);
         }
         // rectangular canard
-        if (iwing==1) {
+        if (icanar==1) {
             c[j]=cxc;
+            c[jx-j-1]=c[j];
+
             xle[j]=0.0;
+            xle[jx-j-1]=xle[j];
+
             xte[j]=cxc;
+            xte[jx-j-1]=xte[j];
+
             xacc[j]=0.5*cxc;
             xiac[j]=0.5*cxc;
+
+            // projected area calculation
             acdum=acdum+c[j]*(etaj-etajm);
             cacdum=cacdum+pow(c[j],2)*(etaj-etajm);
         }
         // canard geometry
-        if(iwing==2) {
+        if(icanar==2) {
             if (abs(yj)>=(rf-eps)) {
                 xle[j]=0.5115-0.466*(1.0-abs(y[j]));
                 xle[jx-j-1]=xle[j]; // mirror image value
@@ -268,6 +277,7 @@ void wake::setMesh() {
                 c[j]=xte[j]-xle[j];
                 c[jx-j-1]=c[j];
 
+                // projected area calculation
                 xacc[j]=xle[j]+0.25*c[j];
                 xacc[jx-j-1]=xacc[j]; // mirror image value
 
@@ -277,8 +287,33 @@ void wake::setMesh() {
                 }
 
                 acdum=acdum+c[j]*(etaj-etajm);
-                cacdum=cacdum+pow(c[j],2)*(etaj - etajm);
+                cacdum=cacdum+pow(c[j],2)*(etaj-etajm);
                 a0[j]=0.0;
+            }
+        }
+        // canard geometry new
+        if(icanar==3) {
+            if(abs(yj) >= rf-eps) {
+                xle[j]=0.8497-0.466*(1.0-abs(y[j]));
+                xle[jx-j-1]=xle[j]; // mirror image value
+
+                xte[j]=0.9747-0.266*(1.0-abs(y[j]));
+                xte[jx-j-1]=xte[j]; // mirror image value
+
+                c[j]=xte[j]-xle[j];
+                c[jx-j-1]=c[j];
+
+                // projected area calculation
+                xacc[j]=xle[j]+0.25*c[j];
+                xacc[jx-j-1]=xacc[j]; // mirror image value
+
+                if(j >= 1) {
+                    xiac[j-1]=0.5*(xacc[j]+xacc[j-1]);
+                    xiac[jx-j-1]=xiac[j-1]; // mirror image value
+                }
+                acdum=acdum+c[j]*(etaj-etajm);
+                cacdum=cacdum+pow(c[j],2)*(etaj-etajm);
+                a0[j]=0.;
             }
         }
 
@@ -299,7 +334,7 @@ void wake::setMesh() {
                  << left << setw(16) << eta[j]
                  << left << setw(16) << c[j]
                  << left << setw(16) << t[j]
-                 << left << setw(16) << dem[j]
+                 << left << setw(16) << dec[j]
                  << left << setw(16) << g[j]
                  << left << setw(16) << w[j]
                  << left << setw(16) << at[j]
@@ -314,9 +349,11 @@ void wake::setMesh() {
     // middle condition
     //eta[jxs2]=eta[jxs2-1];
     xiac[jxs2-1]=xiac[jxs2-2];
+    xiac[jx-1]=xiac[jx-2];
 
     // end condition
     eta[jx-1]=eta[jx-2];
+    eta[jxs2-1]=0; // end-point
 
     /*int j=0;
     for (int jc = 0; jc<jxs2 ; ++jc) {
@@ -347,9 +384,7 @@ void wake::setMesh() {
     arc=0.5*pow(bc,2)/ac;
     Re=Rho*Vinf*Cc0*cac/Amu;
 
-    //int jmax = jx-1; // accounts for zeroth element
-    //eta[jmax] = eta[jmax-1];
-    //xiac[jmax] = xiac[jmax-1];
+    if (DBG) cout << " ARC = " << arc << endl;
 }
 
 void wake::solveLiftingLine() {
@@ -538,7 +573,7 @@ void wake::solveLiftingLine() {
                 at[j]=attj;
                 if (DBG) cout << " g_j = " << g[j] << " dg = " << dg[j] << endl;
 
-                if (abs(y[j])<=rf) {
+                if (icanar>=2 && abs(y[j])<=rf) {
                     dg[j]=g[j-1]+2.0*rf*sin(3.0*alpha) / 3.0*((1.0-pow((y[j] / rf), 2))
                             / (1.0+pow((y[j] / rf), 2)) -
                             (1.0-pow((y[j-1] / rf), 2))
@@ -585,8 +620,8 @@ void wake::solveLiftingLine() {
         // check if results converged
         cout << fixed << std::setprecision(5);
         if (abs(dgx) > eps) {
-            cout << " NOT CONVERGED!" << endl;
-            abort();
+            cout << "\033[1;41m NOT CONVERGED! \033[0m" << endl;
+            //abort();
         }
 
         // resulting cl, cd, cq calculations
@@ -599,7 +634,7 @@ void wake::solveLiftingLine() {
         cmf[1]=0.;
         cmt[0]=0.;
 
-        // calculate bending moment & lift
+        // calculate internal bending moment & lift
         for (j = 1; j < (jxs2 - 1); ++j) {
             //do 13 j = 2, jx - 1
             cl=cl+g[j]*(eta[j]-eta[j-1]);
@@ -637,7 +672,7 @@ void wake::solveLiftingLine() {
                        +(cmt[jxs2-3]-cmt[jxs2-2])*(y[jxs2-1]-y[jxs2-2])
                        /(y[jxs2-3]-y[jxs2-2]);
 
-        cl=0.5*arc*cl;
+        cl=arc*cl;
 
         if(alphad>=0.0-2*eps && alphad<=0.0+2*eps) {
             cl0=cl+eps;
@@ -683,13 +718,14 @@ void wake::solveLiftingLine() {
             //14 continue
         }
 
-        cdi=-0.5*arc*sum;
+        cdi=-arc*sum;
         cdv=vis*0.25*arc*(sum0+sum1+sum2);
         if(abs(cdi) < eps) {
-            em= 1.0;
+            ec=1.0;
         } else {
-            em=cl*cl / (pi*arc*cdi);
+            ec=cl*cl / (pi*arc*cdi);
         }
+        if (DBG) cout << " ec = " << ec << " cl = " << cl << " arc = " << arc << endl;
         cd=cdi+cdv;
 
         // force and moment unit conversion
@@ -722,7 +758,7 @@ void wake::solveLiftingLine() {
     y[54] = 0.11111;
     xle[54] = 1.3;
 
-    vars->em = em;
+    vars->ec = ec;
     if (alstep < eps) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
 }
 
@@ -845,7 +881,7 @@ void wake::integrate_wing() {
     cacdum=0.7972;
 }
 
-int **wake::create_2d_int_array(int n1, int n2, int **array) {
+/*int **wake::create_2d_int_array(int n1, int n2, int **array) {
     // create a n1 x n2 matrix
     int n=0;
     int *data = (int *) malloc(n1*n2*sizeof(int));
@@ -854,12 +890,40 @@ int **wake::create_2d_int_array(int n1, int n2, int **array) {
         n += n2;
     }
     return array;
+}*/
+
+int **wake::create_2d_int_array(int n1, int n2, int **&array) {
+    //
+    // create a n1 x n2 matrix
+    //
+    int n=0;
+    int *__restrict data = (int *) malloc(n1*n2*sizeof(int));
+    array =(int **) malloc(sizeof(int *)*n1);
+    for (int i=0; i<n1; i++) {
+        array[i] = &data[n];
+        n += n2;
+    }
+    return array;
 }
 
-double **wake::create_2d_double_array(int n1, int n2, double **array) {
+/*double **wake::create_2d_double_array(int n1, int n2, double **array) {
     // create a n1 x n2 matrix
     int n=0;
     double *data = (double *) malloc(n1*n2*sizeof(double));
+    for (int i=0; i<n1; i++) {
+        array[i] = &data[n];
+        n += n2;
+    }
+    return array;
+}*/
+
+double **wake::create_2d_double_array(int n1, int n2, double **&array) {
+    //
+    // create a n1 x n2 matrix
+    //
+    int n=0;
+    double *data = (double *) malloc(n1*n2*sizeof(double));
+    array =(double **) malloc(sizeof(double *)*n1);
     for (int i=0; i<n1; i++) {
         array[i] = &data[n];
         n += n2;
@@ -919,14 +983,17 @@ void wake::readInputParams() {
         else if (a.compare("LAMBD") == 0) Lambd = b;
         //else if (a.compare("RSTR0") == 0) Rstr0 = b;
         else if (a.compare("RF0") == 0) Rf0 = b;
-        else if (a.compare("DM") == 0) dm = b;
+        else if (a.compare("DC") == 0) dc = b;
         else if (a.compare("TCD") == 0) tcd = b;
-        else if (a.compare("IWING") == 0) iwing = b;
+        else if (a.compare("TAD") == 0) theqd = b;
+        else if (a.compare("ICANAR") == 0) icanar = b;
         else if (a.compare("B") == 0) B = b;
+        else if (a.compare("XACMSTR") == 0) xacmstr = b;
+        else if (a.compare("ZW0") == 0) Zw0 = b;
         else if (a.compare("LF0") == 0) Lf0 = b;
         else if (a.compare("DX0") == 0) Dx0 = b;
         else if (a.compare("STR") == 0) str = b;
-        else if (a.compare("ZWAKE") == 0) zwake = b;
+        //else if (a.compare("ZWAKE") == 0) zwake = b; // obsolete
         else if (a.compare("RHO") == 0) Rho = b;
         else if (a.compare("VINF") == 0) Vinf = b;
         else if (a.compare("AMU") == 0) Amu = b;
@@ -936,7 +1003,7 @@ void wake::readInputParams() {
         else if (a.compare("ALPHAFI") == 0) alphafi = b;
         else if (a.compare("ALPHASTEP") == 0) alstep = b;
         else {
-            cout << " command: " << a << " not known" << endl;
+            cout << " command: '" << a << "' not known" << endl;
             abort();
         }
         //if (a.compare("NPOLAR") == 0) { nx = b; }
@@ -1002,14 +1069,16 @@ void wake::readInputParams(std::string filename) {
         else if (a.compare("LAMBD") == 0) Lambd = b;
             //else if (a.compare("RSTR0") == 0) Rstr0 = b;
         else if (a.compare("RF0") == 0) Rf0 = b;
-        else if (a.compare("DM") == 0) dm = b;
+        else if (a.compare("DC") == 0) dc = b;
         else if (a.compare("TCD") == 0) tcd = b;
-        else if (a.compare("IWING") == 0) iwing = b;
+        else if (a.compare("ICANAR") == 0) icanar = b;
         else if (a.compare("B") == 0) B = b;
+        else if (a.compare("XACMSTR") == 0) xacmstr = b;
+        else if (a.compare("ZW0") == 0) Zw0 = b;
         else if (a.compare("LF0") == 0) Lf0 = b;
         else if (a.compare("DX0") == 0) Dx0 = b;
         else if (a.compare("STR") == 0) str = b;
-        else if (a.compare("ZWAKE") == 0) zwake = b;
+        //else if (a.compare("ZWAKE") == 0) zwake = b; // obsolete
         else if (a.compare("RHO") == 0) Rho = b;
         else if (a.compare("VINF") == 0) Vinf = b;
         else if (a.compare("AMU") == 0) Amu = b;
@@ -1027,12 +1096,14 @@ void wake::readInputParams(std::string filename) {
 
     // initializations -move this to init() function later -cp 3/27/22
     jx=2*jxs2;
+    tc=degrad*tcd;
+    theq=degrad*theqd;
     bc=2.0;
     cxc=2.0*Cc0/Bc0;
     zcanar=2.0*Zc0/B;
     lamb=degrad*Lambd;
     rf=2.0*Rf0/Bc0;
-    tc=degrad*tcd;
+    zwing=2.0*Zw0/B;
     lf=2.0*Lf0/Bc0;
     dxm=2.0*Dx0/Bc0;
 
@@ -1433,9 +1504,9 @@ void wake::printInputParams() {
     cout << right << setw(20) << "ARCEFF = " <<  arceff << endl;
     cout << right << setw(20) << "LAMBD = " <<  Lambd << endl;
     cout << right << setw(20) << "RF0 = " <<  Rf0 << endl;
-    cout << right << setw(20) << "DM = " <<  dm << endl;
+    cout << right << setw(20) << "DC = " <<  dc << endl;
     cout << right << setw(20) << "TCD = " <<  tcd << endl;
-    cout << right << setw(20) << "IWING = " <<  iwing << endl;
+    cout << right << setw(20) << "ICANAR = " <<  icanar << endl;
     cout << right << setw(20) << "B = " <<  B << endl;
     cout << right << setw(20) << "LF0 = " <<  Lf0 << endl;
     cout << right << setw(20) << "DX0 = " <<  Dx0 << endl;
@@ -1473,26 +1544,27 @@ void wake::printGeomSummary() {
     cout << right << setw(32) << "   canard effective AR arceff = " << left << setw(10) << arceff << endl;
     cout << right << setw(32) << "  0/1 a. c. sweep angle Lambd = " << left << setw(10) << Lambd << "(deg)" << endl;
     cout << right << setw(32) << "          fuselage radius Rf0 = " << left << setw(10) << Rf0 << " (m)" << endl;
-    cout << right << setw(32) << "    relative camber height dm = " << left << setw(10) << dm << " (ref. C)" << endl;
+    cout << right << setw(32) << "    relative camber height dc = " << left << setw(10) << dc << " (ref. C)" << endl;
+    cout << right << setw(32) << "     canard efficiency arceff = " << left << arceff << " (initial value 1 to be recalculated)" << endl;
     cout << right << setw(32) << "      canard setting angle tm = " << left << setw(10) << tc << " (rd) =" << tcd <<" (deg)" << endl;
-    cout << right << setw(32) << "           canard shape 0/1/2 = " << left << setw(10) << iwing << endl;
-    cout << right << setw(32) << "                  wing span B = " << B << " (m)" << endl;
-    cout << right << setw(32) << "          fuselage length Lf0 = " << Lf0 << " (m)" << endl;
-    cout << right << setw(32) << "    inital wake mesh step Dx0 = " << Dx0 << " (m)" << endl;
-    cout << right << setw(32) << "  wake stretch paprameter str = " << str << endl;
-    cout << right << setw(32) << " wake location wrt wing zwake = " << zwake << endl;
+    cout << right << setw(32) << "           canard shape 0/1/2 = " << left << setw(10) << icanar << endl;
+    cout << right << setw(32) << "                  wing span B = " << left << B << " (m)" << endl;
+    cout << right << setw(32) << "          fuselage length Lf0 = " << left << Lf0 << " (m)" << endl;
+    cout << right << setw(32) << "    inital wake mesh step Dx0 = " << left << Dx0 << " (m)" << endl;
+    cout << right << setw(32) << "  wake stretch paprameter str = " << left << str << endl;
+    cout << right << setw(32) << " wake location wrt wing zwake = " << left << zwake << endl;
 
     cout << endl;
     cout<< "air data:" << endl;
     cout << right << setw(32) << "              air density Rho = " << left << setw(10) << Rho << " (kg/m**3)" << endl;
     cout << right << setw(32) << "           wind velocity Vinf = " << left << setw(10) << Vinf << " (m/s)" << endl;
-    cout << right << setw(32) << "        dynamic viscosity Amu = " << left << setw(10) << Amu << " (kg/(m*s))" << endl;
-    cout << right << setw(32) << "        reference Reynolds Re = " << left << setw(10) << Re << endl;
+    cout << right << setw(32) << "        dynamic viscosity Amu = " << left << setw(10) << scientific << Amu << " (kg/(m*s))" << endl;
+    cout << right << setw(32) << "        reference Reynolds Re = " << left << setw(10) << fixed << Re << endl;
 
     cout << endl;
     cout << "calculated data:" << endl;
-    cout << right << setw(32) << "               canard area am = " << left << setw(10) << ac << " (ref. Bc0**2/4)" << endl;
-    cout << right << setw(32) << "      canard aspect ratio arm = " << left << setw(10) << arc << endl;
+    cout << right << setw(32) << "    individual canard area ac = " << left << setw(10) << ac << " (ref. Bc0**2/4)" << endl;
+    cout << right << setw(32) << "      canard aspect ratio arc = " << left << setw(10) << arc << endl;
     cout << right << setw(32) << "average aerodynamic chord cac = " << left << setw(10) << cac << " (ref. Bc0/2)" << endl;
 }
 
@@ -1545,7 +1617,7 @@ void wake::printResults() {
     cout << endl << "\033[1;42m canar-wake results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
-    cout << right << setw(38) << " oswald efficiency e = " << em << endl;
+    cout << right << setw(38) << " oswald efficiency e = " << ec << endl;
     cout << right << setw(38) << " viscous contribution: CDv = " << cdv << endl;
     cout << right << setw(38) << " arceff = " << arceff << endl;
     cout << right << setw(38) << " dClcda0 = " << dClcda0 << endl << endl;
@@ -1577,12 +1649,12 @@ void wake::printDistributions() {
             << right << setw(12) << " polar(j)"
             << right << setw(12) << " j" << endl;
 
-    cout << std::setprecision(6);
+    cout << fixed << std::setprecision(4);
     for (int j = 0; j < jx; ++j) {
         cout << right << setw(12) << y[j]
                 << right << setw(12) << c[j]
                 << right << setw(12) << t[j]
-                << right << setw(12) << dem[j]
+                << right << setw(12) << dec[j]
                 << right << setw(18) << g[j]
                 << right << setw(12) << w[j]
                 << right << setw(12) << l[j]

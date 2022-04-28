@@ -715,7 +715,7 @@ void canareq::init() {
 
     // wake shared vars
     if (vars->arceff) arceff=vars->arceff;
-    if (vars->em) em=vars->em;
+    if (vars->ec) em=vars->ec;
     if (vars->dClcda0) dClcda0=vars->dClcda0;
     if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
 
