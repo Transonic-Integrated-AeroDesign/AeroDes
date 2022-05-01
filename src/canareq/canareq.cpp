@@ -18,7 +18,7 @@
 
 using namespace std; // g++ canareq.cpp -c
 
-canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
+canareq::canareq(int argc, char** argv, aerodes *adshr) : vars(adshr) {
     // storage
     int nrows=3; int ncols=3;
     aa = (double **) malloc(sizeof(double *)*nrows);
@@ -816,10 +816,10 @@ void canareq::readInputParams() {
             arceff = b;
             arc = arceff;
         }
-        if(a.compare("ARMEFF")==0) {
-            armeff=b;
-            arm=armeff;
-        }
+//        if(a.compare("ARMEFF")==0) {
+//            armeff=b;
+//            arm=armeff;
+//        }
         //if(a.compare("TCD")==0) tcd = b;
         
         // airbrake data
@@ -861,6 +861,7 @@ void canareq::readInputParams() {
     }
 
     // airflow and weight calcs
+    arm=pow(bm,2) / am;
     amlb=2.205*mass;
     mg=mass*9.81;
     
@@ -972,10 +973,10 @@ void canareq::readInputParams(std::string filename) {
             arceff = b;
             arc = arceff;
         }
-        if(a.compare("ARMEFF")==0) {
-            armeff=b;
-            arm=armeff;
-        }
+//        if(a.compare("ARMEFF")==0) {
+//            armeff=b;
+//            arm=armeff;
+//        }
         //if(a.compare("TCD")==0) tcd = b;
 
         // airbrake data

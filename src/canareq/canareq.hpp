@@ -21,11 +21,11 @@
 #include "variables.hpp"
 
 //class canareq : protected variables {
-class canareq : virtual public variables {
+class canareq : protected variables {
 public:
     variables *vars;
 
-    canareq(int argc, char** argv, variables *);
+    canareq(int argc, char** argv, aerodes *);
     ~canareq();
 
     // file input
