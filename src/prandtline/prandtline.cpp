@@ -268,8 +268,6 @@ void prandtline::setMesh() {
             }
         }
 
-
-
         if (DBG) {
             cout << std::setprecision(5);
             cout << left << setw(12) << y[j]
