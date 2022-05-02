@@ -22,7 +22,7 @@
       real Cmc0,dCldac,dCmacdac,dCmacdam,dCmdac,Cdc0,Cmacc
       real aleq0,Ueq0,beteq0,Cleq0,Cdeq0,rcor,xcpm,xcpc,dCldalind
       real zeng,rav,ruh,ar,reyr,Cdr0,Cdreq,dna,lna,reyn,an
-      real Cdn0,Cdneq,dClmda0,dClcda0,armeff,arceff
+      real Cdn0,Cdneq,dClcda0,arceff
       real vr(ndatx),tr(ndatx)
       real cx(lxx),cz(lxx),cq(lxx),inc(lxx)
       doubleprecision det,usdet,b1,b2,b3
@@ -69,8 +69,6 @@ c*****data for wing
       read(15,*)cam
       read(15,*)am
       read(15,*)xacm
-      read(15,*)dClmda0
-      read(15,*)armeff
       read(15,*)dm
       read(15,*)em
       read(15,*)acw
@@ -81,7 +79,7 @@ c*****data for wing
       read(15,*)dCdtf0
       read(15,*)dCdtf1
       read(15,*)dCdtf2
-      arm=armeff
+      arm=bm**2/am
       tf=degrad*tfd
 c*****data for fuselage
       read(15,*)lf
@@ -155,10 +153,9 @@ c*****write data
       write(6,*)'               average chord=',cam,' (m)'
       write(6,*)'                   wing area=',am,' (m**2)'
       write(6,*)'  aerodynamic center of wing=',xacm,' (m)'
-      write(6,*)'     wing lift slope dClmda0=',dClmda0
-      write(6,*)'    wing effective AR armeff=',armeff
+      write(6,*)'                 wing AR arm=',arm
       write(6,*)'     relative camber of wing=',dm
-      write(6,*)'   wing effective efficiency=',em
+      write(6,*)'            wing  efficiency=',em
       write(6,*)' influence fo canard on wing=',acw
       write(6,*)'influence of canar dCldalind=',dCldalind
       write(6,*)'          flap setting angle=',tfd,' (deg)'
@@ -230,10 +227,9 @@ c*****write data
       write(24,*)'               average chord=',cam,' (m)'
       write(24,*)'                   wing area=',am,' (m**2)'
       write(24,*)'  aerodynamic center of wing=',xacm,' (m)'
-      write(24,*)'     wing lift slope dClmda0=',dClmda0
-      write(24,*)'    wing effective AR armeff=',armeff
+      write(24,*)'                 wing AR arm=',arm
       write(24,*)'     relative camber of wing=',dm
-      write(24,*)'   wing effective efficiency=',em
+      write(24,*)'             wing efficiency=',em
       write(24,*)' influence fo canard on wing=',acw
       write(24,*)'influence of canar dCldalind=',dCldalind
       write(24,*)'          flap setting angle=',tfd,' (deg)'
@@ -395,8 +391,8 @@ c     global moments
             Cm0=(am*cam*Cmm00+ac*cac*Cmc00)/(aref*lref)
          endif
 c     aerodynamic center of airplane
-         xac=(am*dClmda0*xacm+ac*dClcda0*xacc)
-     &        /(am*dClmda0+ac*dClcda0)
+         xac=(am*dCldam0*xacm+ac*dClcda0*xacc)
+     &        /(am*dCldam0+ac*dClcda0)
          write(14,*)cx(k),cz(k),cq(k),incd
          write(6,1001)k,incd,cz(k),cx(k),cq(k)
  4    continue
@@ -487,7 +483,7 @@ c     search for point on wing polar and interpolate Cd
      &        /(inc(m+1)-inc(m))
 c     wing induced drag estimate
          Cdmeq=Cdeq
-         Clmeq=Clm0+dCldam*aleq
+         Clmeq=Clm0+dCldam0*aleq
          Cdim=Clmeq**2/(pi*em*arm)
          Cdm0=Cdmeq-Cdim
 c     calculate fuselage friction drag
@@ -682,7 +678,7 @@ c     calculate rudder drag for 2 sides
          endif
          Cdreq=2.0*Cdr0
 c     if winglets are used as rudder, double contribution
-c         Cdreq=4.0*Cdr0
+         Cdreq=4.0*Cdr0
 c     calculate nacelles drag for 2 engines
          reyn=reyeq*lna/cam
          Cdn0=1.328/sqrt(reyn)
