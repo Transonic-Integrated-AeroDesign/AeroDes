@@ -21,7 +21,7 @@
 
 using namespace std; // g++ tsd.cpp -c
 
-tsd::tsd(int argc, char** argv, variables *varshr) : vars(varshr) {
+tsd::tsd(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     ixx=201;
     jxx=41;
     kxx=101;

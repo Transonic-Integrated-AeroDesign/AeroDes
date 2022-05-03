@@ -18,7 +18,7 @@
 
 using namespace std; // g++ canareq.cpp -c
 
-canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
+canareq::canareq(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     // storage
     int nrows=3; int ncols=3;
     aa = (double **) malloc(sizeof(double *)*nrows);
@@ -714,18 +714,32 @@ void canareq::init() {
     //
 
     // wake shared vars
-    if (vars->arceff) arceff=vars->arceff;
-    if (vars->ec) em=vars->ec;
-    if (vars->dClcda0) dClcda0=vars->dClcda0;
-    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
+//    if (vars->arceff) arceff=vars->arceff;
+//    if (vars->ec) em=vars->ec;
+//    if (vars->dClcda0) dClcda0=vars->dClcda0;
+////    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
+//
+//    // prandtline shared vars
+//    if (vars->kx_of_alpha) kx = vars->kx_of_alpha;
+//    for (int j = 0; j < kx; ++j) {
+//        inc[j] = vars->alr_of_alpha[j];
+//        cz[j] = vars->cl_of_alpha[j];
+//        cx[j] = vars->cd_of_alpha[j];
+//        cq[j] = vars->cq_of_alpha[j];
+//    }
+
+    if (arceff) arceff=arceff;
+    if (ec) em=ec;
+    if (dClcda0) dClcda0=dClcda0;
+//    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
 
     // prandtline shared vars
-    if (vars->kx_of_alpha) kx = vars->kx_of_alpha;
+    if (kx_of_alpha) kx = kx_of_alpha;
     for (int j = 0; j < kx; ++j) {
-        inc[j] = vars->alr_of_alpha[j];
-        cz[j] = vars->cl_of_alpha[j];
-        cx[j] = vars->cd_of_alpha[j];
-        cq[j] = vars->cq_of_alpha[j];
+        inc[j] = alr_of_alpha[j];
+        cz[j] = cl_of_alpha[j];
+        cx[j] = cd_of_alpha[j];
+        cq[j] = cq_of_alpha[j];
     }
 
     // print check
@@ -736,7 +750,7 @@ void canareq::init() {
              << " arceff = " << arceff << endl
              << " em = " << em << endl
              << " dClcda0 = " << dClcda0 << endl
-             << " dClmda0 = " << dClmda0 << endl
+//             << " dClmda0 = " << dClmda0 << endl
              << " kx = " << kx << endl << endl;
 
         cout << left << setw(10) << "alpha"
@@ -796,7 +810,7 @@ void canareq::readInputParams() {
         if(a.compare("dCdtf0")==0) dCdtf0 = b;
         if(a.compare("dCdtf1")==0) dCdtf1 = b;
         if(a.compare("dCdtf2")==0) dCdtf2 = b;
-        if(a.compare("dClmda0")==0) dClmda0 = b; // new
+//        if(a.compare("dClmda0")==0) dClmda0 = b; // new
         if(a.compare("dClcda0")==0) dClcda0 = b; // new
 
         // data for fuselage
@@ -861,6 +875,7 @@ void canareq::readInputParams() {
     }
 
     // airflow and weight calcs
+    arm=pow(bm,2) / am;
     amlb=2.205*mass;
     mg=mass*9.81;
     
@@ -952,7 +967,7 @@ void canareq::readInputParams(std::string filename) {
         if(a.compare("dCdtf0")==0) dCdtf0 = b;
         if(a.compare("dCdtf1")==0) dCdtf1 = b;
         if(a.compare("dCdtf2")==0) dCdtf2 = b;
-        if(a.compare("dClmda0")==0) dClmda0 = b; // new
+//        if(a.compare("dClmda0")==0) dClmda0 = b; // new
         if(a.compare("dClcda0")==0) dClcda0 = b; // new
 
         // data for fuselage
@@ -1239,13 +1254,17 @@ void canareq::readInputPolar(std::string filename) {
             cout << "update xac = " << xac << endl;
             cout << "update xacc = " << xacc << endl;
             cout << "update xacm = " << xacm << endl;
-            cout << "update dClmda0 = " << dClmda0 << endl;
+//            cout << "update dClmda0 = " << dClmda0 << endl;
             cout << "update dClcda0 = " << dClcda0 << endl;
             cout << "update am = " << am << endl;
             cout << "update ac = " << ac << endl;
         }
         //     aerodynamic center of airplane
-        xac=(am*dClmda0*xacm+ac*dClcda0*xacc) / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
+        // main wing contribution xac
+//        xac=(am*dClmda0*xacm+ac*dClcda0*xacc) / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
+
+        //
+        xac=(am*dCldam0*xacm+ac*dClcda0*xacc) / (am*dCldam0+ac*dClcda0);
     }
     // note: do not change kx after this point
     polarfile.close();
@@ -1357,7 +1376,8 @@ void canareq::printInputParams() {
     cout << right << setw(32) << "               average chord = " << cam <<  " (m)" << endl;
     cout << right << setw(32) << "                   wing area = " << am <<  " (m**2)" << endl;
     cout << right << setw(32) << "  aerodynamic center of wing = " << xacm <<  " (m)" << endl;
-    cout << right << setw(32) << "     wing lift slope dClmda0 = " << dClmda0 << endl;
+//    cout << right << setw(32) << "     wing lift slope dClmda0 = " << dClmda0 << endl;
+    cout << right << setw(32) << "                 wing AR arm = " << arm << endl;
     cout << right << setw(32) << "    wing effective AR armeff = " << armeff << endl;
     cout << right << setw(32) << "     relative camber of wing = " << dm << endl;
     cout << right << setw(32) << "             wing efficiency = " << em << endl;

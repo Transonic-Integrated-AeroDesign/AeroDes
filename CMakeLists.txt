@@ -26,6 +26,7 @@ add_subdirectory(src)
 include_directories(src)                # for variables.hpp
 include_directories(src/prandtline)
 include_directories(src/wake)
+include_directories(src/canareq)
 
 # executables
 add_executable(cfmactu
@@ -35,18 +36,30 @@ add_executable(cfmactu
         src/propulsion/main.cpp)
 
 add_executable(prandtl
-        src/variables.hpp
+        src/prandtline/main.cpp
         src/prandtline/prandtline.cpp
         src/prandtline/prandtline.hpp
-        src/prandtline/main.cpp)
+        src/variables.hpp
+        src/aerodes.cpp
+        src/aerodes.hpp
+        src/wake/wake.cpp
+        src/wake/wake.hpp
+        src/canareq/canareq.cpp
+        src/canareq/canareq.hpp)
 
 add_executable(wake
         src/variables.hpp
+        src/wake/main.cpp
         src/wake/wake.cpp
         src/wake/wake.hpp
-        src/wake/main.cpp)
+        src/aerodes.cpp
+        src/prandtline/prandtline.cpp
+        src/canareq/canareq.cpp)
 
 add_executable(canary
+        src/aerodes.cpp
+        src/aerodes.hpp
+        src/prandtline/prandtline.cpp
         src/variables.hpp
         src/wake/wake.cpp
         src/wake/wake.hpp
@@ -54,14 +67,21 @@ add_executable(canary
         src/canareq/canareq.hpp
         src/canareq/main.cpp)
 
-add_executable(smooth
-        src/variables.hpp
-        src/smoothpolar/smoothpolar.cpp
-        src/smoothpolar/smoothpolar.hpp
-        src/smoothpolar/main.cpp)
-
+#add_executable(smooth
+#        src/aerodes.cpp
+#        src/aerodes.hpp
+#        src/variables.hpp
+#        src/smoothpolar/smoothpolar.cpp
+#        src/smoothpolar/smoothpolar.hpp
+#        src/smoothpolar/main.cpp)
+#
 add_executable(tsd
+        src/aerodes.cpp
+        src/aerodes.hpp
         src/variables.hpp
+        src/prandtline/prandtline.cpp
+        src/wake/wake.cpp
+        src/canareq/canareq.cpp
         src/tsd/tsd.cpp
         src/tsd/tsd.hpp
         src/tsd/main.cpp)

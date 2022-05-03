@@ -14,19 +14,17 @@
 #include <string>
 #include <math.h>
 
-#include "prandtline.hpp"
-#include "canareq.hpp"
-#include "wake.hpp"
-#include "variables.hpp"
+//#include "variables.hpp"
 
 class aerodes{
 public:
-    variables* vars;
-    prandtline* prandtl;
-    canareq* canary;
-    wake* wk;
+    class prandtline* prandtl;
+    class canareq* canary;
+    class wake* wk;
     aerodes(int argc, char** argv);
     ~aerodes();
+
+    double ec;
 };
 
 #endif

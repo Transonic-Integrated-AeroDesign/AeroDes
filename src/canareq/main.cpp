@@ -11,8 +11,8 @@
 #include <string>
 #include <math.h>   // pow
 
-#include "variables.hpp"
-#include "wake.hpp"
+//#include "variables.hpp"
+//#include "wake.hpp"
 #include "canareq.hpp"
 
 /*
@@ -33,13 +33,13 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    variables *vars = new variables();
-    canareq *canary = new canareq(argc, argv, vars);
+    aerodes *ad = new aerodes(argc, argv);
+    canareq *canary = new canareq(argc, argv, ad);
 
     canary->readInputParams();
     canary->printInputParams();
 
-    canary->readInputPolar(""); // leave empty to read default "canarpolar.dat" file
+    canary->readInputPolar("canarpolar.dat"); // define input polar filename (can be changed)
     canary->printInputPolar();
     canary->printGlobalCoefs();
 
@@ -47,5 +47,4 @@ int main(int argc, char** argv) {
     canary->nonlinearModel();
 
     delete canary;
-    delete vars;
 }

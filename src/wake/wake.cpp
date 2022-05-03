@@ -10,8 +10,9 @@
 #include <fstream>  // fopen, ifstream
 #include <stdio.h>  // strcpy
 #include <math.h>   // copysign
-#include "wake.hpp"
 #include <cstring>
+
+#include "wake.hpp"
 
 #ifndef DBG
 #define DBG 0
@@ -19,7 +20,7 @@
 
 using namespace std; // g++ wake.cpp -c
 
-wake::wake(int argc, char** argv, variables *varshr) : vars(varshr) {
+wake::wake(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     ixx=201;
     lxx=102;
     nxx=10;
@@ -742,8 +743,10 @@ void wake::solveLiftingLine() {
         else {
             dClcda0=180.* (cl1-cl0) / pi;
             arceff=2.*dClcda0 / (2.*pi-dClcda0);
-            vars->arceff = arceff;
-            vars->dClcda0 = dClcda0;
+//            vars->arceff = arceff;
+//            vars->dClcda0 = dClcda0;
+            arceff = arceff;
+            dClcda0 = dClcda0;
         }
 
         printResults();
@@ -758,7 +761,8 @@ void wake::solveLiftingLine() {
     y[54] = 0.11111;
     xle[54] = 1.3;
 
-    vars->ec = ec;
+    //vars->ec = ec;
+    ec = ec;
     if (alstep < eps) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
 }
 

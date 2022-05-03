@@ -14,6 +14,10 @@
 
 #include "aerodes.hpp"
 
+#include "prandtline.hpp"
+#include "canareq.hpp"
+#include "wake.hpp"
+
 #ifndef DBG
 #define DBG 0
 #endif
@@ -23,15 +27,13 @@ using namespace std;
 // g++ aerodes.cpp -c
 // g++ -o test aerodes.cpp
 
-aerodes::aerodes(int argc, char** argv) {
-    vars = new variables();
-    prandtl = new prandtline(argc, argv, vars);
-    wk = new wake(argc, argv, vars);
-    canary = new canareq(argc, argv, vars);
+aerodes::aerodes(int argc, char** argv) : prandtl(NULL), wk(NULL), canary(NULL) {
+    prandtl = new prandtline(argc, argv, this);
+    wk = new wake(argc, argv, this);
+    canary = new canareq(argc, argv, this);
 }
 
 aerodes::~aerodes() {
-    delete vars;
     delete prandtl;
     delete wk;
     delete canary; // memory issues

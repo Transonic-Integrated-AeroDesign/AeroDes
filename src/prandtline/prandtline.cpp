@@ -25,7 +25,7 @@ using namespace std; // g++ prandtline.cpp -c
  * start with negative alpha
  */
 
-prandtline::prandtline(int argc, char** argv, variables *varshr) : vars(varshr) {
+prandtline::prandtline(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     jxx = 201;
     lxx = 101;  // n discrete wing-span points
     nxx = 10;   // n polars
@@ -696,15 +696,23 @@ void prandtline::solveLiftingLine() {
         }
 
         // set shared variables
-        if (shared) {
-            vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
-            vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
-            vars->cl_of_alpha[vars->kx_of_alpha] = cl;
-            vars->cd_of_alpha[vars->kx_of_alpha] = cd;
-            vars->cq_of_alpha[vars->kx_of_alpha] = cmac;
-            vars->kx_of_alpha += 1;
-        }
+//        if (shared) {
+//            vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
+//            vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
+//            vars->cl_of_alpha[vars->kx_of_alpha] = cl;
+//            vars->cd_of_alpha[vars->kx_of_alpha] = cd;
+//            vars->cq_of_alpha[vars->kx_of_alpha] = cmac;
+//            vars->kx_of_alpha += 1;
+//        }
 
+        if (shared) {
+            alr_of_alpha[kx_of_alpha] = alpha;
+            ald_of_alpha[kx_of_alpha] = alphad;
+            cl_of_alpha[kx_of_alpha] = cl;
+            cd_of_alpha[kx_of_alpha] = cd;
+            cq_of_alpha[kx_of_alpha] = cmac;
+            kx_of_alpha += 1;
+        }
         // print results
         printResults();
         //printDistributions();

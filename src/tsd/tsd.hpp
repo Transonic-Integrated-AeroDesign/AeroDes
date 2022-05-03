@@ -19,9 +19,9 @@
 
 class tsd : virtual public variables {
 public:
-    variables *vars;
+    //variables *vars;
 
-    tsd(int argc, char** argv, variables *);
+    tsd(int argc, char** argv, aerodes *);
     ~tsd();
 
     // input

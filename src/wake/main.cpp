@@ -11,7 +11,6 @@
 #include <string>
 #include <math.h>   // pow
 
-#include "variables.hpp"
 #include "wake.hpp"
 
 /*
@@ -30,8 +29,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    variables *vars = new variables();
-    wake *wk = new wake(argc, argv, vars);
+    aerodes *ad = new aerodes(argc, argv);
+    wake *wk = new wake(argc, argv, ad);
 
     //wk->cmdInput(argc, argv);
 
@@ -63,5 +62,5 @@ int main(int argc, char** argv) {
     wk->readInputWingGeom("wing.yxlexte");
 
     delete wk;
-    delete vars;
+    delete ad;
 }

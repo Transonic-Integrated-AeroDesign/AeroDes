@@ -30,8 +30,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    variables *vars = new variables();
-    smoothpolar *smoothy = new smoothpolar(argc, argv, vars);
+    aerodes *ad = new aerodes(argc, argv);
+    smoothpolar *smoothy = new smoothpolar(argc, argv, ad);
 
     // input
     //smoothy->readInputParams("filename.dat");   // preliminary version included, the idea is to eliminate user input that the fortran code takes in as input
@@ -40,6 +40,6 @@ int main(int argc, char** argv) {
     // print results
     //prants->printPolar();   // print smoothed polar, need to create this function
 
-    delete vars;
     delete smoothy;
+    delete ad;
 }

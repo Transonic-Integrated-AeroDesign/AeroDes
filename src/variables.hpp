@@ -5,12 +5,17 @@
 #ifndef VARIABLES_H
 #define VARIABLES_H
 
+#include "aerodes.hpp"
+
 class variables{
 public:
     // absolutely need constructor
-    variables() {
+    variables(aerodes *p) : prandtlinead(p->prandtl),
+                            wakead(p->wk),
+                            canareqad(p->canary),
+                            ec(p->ec) {
         kx_of_alpha = 0;
-        dClmda0 = 0;    // main wing lift slope
+//        dClmda0 = 0;    // main wing lift slope
         dClcda0 = 0;    // canard lift slope
         ec = 0;
         jxx=102;
@@ -28,12 +33,16 @@ public:
         delete cq_of_alpha;
     };
 
+    prandtline *&prandtlinead;
+    wake *&wakead;
+    canareq *&canareqad;
+
     int jxx;
     int kx_of_alpha;
 
     // for canard equilibrium
-    double dClmda0;         // from: wake, main wing slope
-    double ec;              // from: wake, oswald efficiency
+//    double dClmda0;         // from: wake, main wing slope
+    double &ec;              // from: wake, oswald efficiency
     double arceff, armeff;  // from: wake, corrected aspect ratio
     double dClcda0;         // from: wake, canard lift slope
 

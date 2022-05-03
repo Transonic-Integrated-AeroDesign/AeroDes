@@ -16,16 +16,14 @@
 #include <fstream>  // fopen, ifstream
 #include <sstream>  // istream
 
-//#include "prandtline.hpp"
-#include "wake.hpp"
 #include "variables.hpp"
 
 //class canareq : protected variables {
 class canareq : virtual public variables {
 public:
-    variables *vars;
+    //variables *vars;
 
-    canareq(int argc, char** argv, variables *);
+    canareq(int argc, char** argv, aerodes *);
     ~canareq();
 
     // file input

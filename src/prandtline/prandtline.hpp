@@ -18,8 +18,8 @@
 
 class prandtline : virtual public variables {
 public:
-    variables *vars;
-    prandtline(int argc, char** argv, variables *);
+    //variables *vars;
+    prandtline(int argc, char** argv, aerodes *);
     ~prandtline();
 
     // inputs

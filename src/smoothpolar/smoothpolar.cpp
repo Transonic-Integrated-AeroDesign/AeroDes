@@ -19,7 +19,7 @@
 #endif
 
 using namespace std; // g++ smoothpolar.cpp -c
-smoothpolar::smoothpolar(int argc, char** argv, variables *varshr) : vars(varshr) {
+smoothpolar::smoothpolar(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     lxx=101;
 
     // allocate double arrays

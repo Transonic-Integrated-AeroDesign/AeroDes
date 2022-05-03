@@ -19,9 +19,7 @@
 
 class smoothpolar : virtual public variables {
 public:
-    variables *vars;
-
-    smoothpolar(int argc, char** argv, variables *);
+    smoothpolar(int argc, char** argv, aerodes *);
     ~smoothpolar();
 
     // input

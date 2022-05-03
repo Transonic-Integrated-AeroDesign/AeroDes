@@ -7,6 +7,7 @@ endif()
 
 add_library(aerolib SHARED
         aerodes.cpp
+        aerodes.hpp
         variables.hpp
         prandtline/prandtline.cpp
         canareq/canareq.cpp

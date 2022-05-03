@@ -25,8 +25,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    variables *vars = new variables();
-    prandtline *prants = new prandtline(argc, argv, vars);
+    aerodes *ad = new aerodes(argc, argv);
+    prandtline *prants = new prandtline(argc, argv, ad);
 
     // input
     prants->readInputParams();
@@ -42,5 +42,5 @@ int main(int argc, char** argv) {
     //prants->printSetupSummary();  // optional
 
     delete prants;
-    delete vars;
+    delete ad;
 }
