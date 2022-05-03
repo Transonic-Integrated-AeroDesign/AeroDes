@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 
     double angle=0, d_angle=0.5, angle0=1;
     // canar equillibrium
-    aero->canary->readInputParams("canareq.data");
+    aero->canary->readInputParams("ADcanareq.data");
     aero->canary->readInputPolar("canarpolar.dat");
 
     std::string filename = "results.dat";

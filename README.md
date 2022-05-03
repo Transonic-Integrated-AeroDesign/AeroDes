@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     
     // aero->some_sub_object->function()
     
-    // canard wake
+    // canard ADwake
     aero->wk->readInputPolar("polarbl.dat"); // reads in 2d polar from xfoil
     
     // canard equilibium
@@ -130,7 +130,7 @@ main.cpp
 int main(int argc, char** argv) {
     aerodes *aero = new aerodes(argc, argv);
 
-    // canard wake
+    // canard ADwake
     aero->wk->readInputPolar("polarbl.dat");
 
     // canard equilibium

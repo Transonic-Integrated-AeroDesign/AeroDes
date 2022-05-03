@@ -14,13 +14,13 @@
 #include <string>
 #include <math.h>
 
-#include "variables.hpp"
+#include "ADvariables.hpp"
 
-class prandtline : virtual public variables {
+class ADprandtline : virtual public ADvariables {
 public:
-    //variables *vars;
-    prandtline(int argc, char** argv, aerodes *);
-    ~prandtline();
+    //ADvariables *vars;
+    ADprandtline(int argc, char** argv, AD *);
+    ~ADprandtline();
 
     // inputs
     void readInputParams();

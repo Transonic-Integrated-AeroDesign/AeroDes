@@ -15,13 +15,13 @@
 #include <math.h>
 
 #include "config.hpp"
-#include "variables.hpp"
+#include "ADvariables.hpp"
 
-class tsd : virtual public variables {
+class tsd : virtual public ADvariables {
 public:
-    //variables *vars;
+    //ADvariables *vars;
 
-    tsd(int argc, char** argv, aerodes *);
+    tsd(int argc, char** argv, AD *);
     ~tsd();
 
     // input

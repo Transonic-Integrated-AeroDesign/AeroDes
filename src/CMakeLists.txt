@@ -1,18 +1,18 @@
 #[[
 if(USE_PRANDTLINE)
-    add_subdirectory(prandtline)
-    list(APPEND EXTRA_LIBS prandtline)
+    add_subdirectory(ADprandtline)
+    list(APPEND EXTRA_LIBS ADprandtline)
 endif()
 ]]
 
 add_library(aerolib SHARED
-        aerodes.cpp
-        aerodes.hpp
-        variables.hpp
-        prandtline/prandtline.cpp
-        canareq/canareq.cpp
+        AD.cpp
+        AD.hpp
+        ADvariables.hpp
+        ADprandtline/ADprandtline.cpp
+        ADcanareq/ADcanareq.cpp
         propulsion/cfmactu.cpp
-        wake/wake.cpp)
+        ADwake/ADwake.cpp)
 
 # assign target info after adding library
 set_target_properties(aerolib PROPERTIES VERSION ${PROJECT_VERSION})
@@ -21,15 +21,15 @@ set_target_properties(aerolib PROPERTIES SOVERSION 1)
 set_target_properties(aerolib PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION 1
-        PUBLIC_HEADER "aerodes.hpp;prandtline/prandtline.hpp;canareq/canareq.hpp;wake/wake.hpp;wake/config.hpp;variables.hpp")
+        PUBLIC_HEADER "AD.hpp;ADvariables.hpp;ADprandtline/ADprandtline.hpp;ADcanareq/ADcanareq.hpp;ADwake/ADwake.hpp;ADwake/config.hpp")
 
 # configure a header file to pass the version number only
 target_include_directories(aerolib PRIVATE .)
 
 include_directories("${CMAKE_SOURCE_DIR}/src"
-        "${CMAKE_SOURCE_DIR}/src/prandtline"
-        "${CMAKE_SOURCE_DIR}/src/canareq"
-        "${CMAKE_SOURCE_DIR}/src/wake")
+        "${CMAKE_SOURCE_DIR}/src/ADprandtline"
+        "${CMAKE_SOURCE_DIR}/src/ADcanareq"
+        "${CMAKE_SOURCE_DIR}/src/ADwake")
 
 #install(TARGETS aerolib DESTINATION bin
 install(TARGETS aerolib

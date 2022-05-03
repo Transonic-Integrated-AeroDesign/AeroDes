@@ -10,15 +10,15 @@
 #include <cstring>
 
 #include "config.hpp"
-#include "canareq.hpp"
+#include "ADcanareq.hpp"
 
 #ifndef DBG
 #define DBG 0
 #endif
 
-using namespace std; // g++ canareq.cpp -c
+using namespace std; // g++ ADcanareq.cpp -c
 
-canareq::canareq(int argc, char** argv, aerodes *adshr) : variables(adshr) {
+ADcanareq::ADcanareq(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
     // storage
     int nrows=3; int ncols=3;
     aa = (double **) malloc(sizeof(double *)*nrows);
@@ -36,20 +36,20 @@ canareq::canareq(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     inc = (double *) malloc(sizeof(double)*lxx);
     
     filenameInputPolar = "canarpolar.dat";
-    filenamePolarPrandtline = "canarpolar.prandtline";
+    filenamePolarPrandtline = "canarpolar.ADprandtline";
     filenamePolarCdClCq = "canarpolar.cdclcq";
-    filenameEqData = "canareq.data";
-    filenameEqCdClCqm = "canareq.cdclcqm";
-    filenameEqItres = "canareq.itres";
-    filenameEqCdClCq = "canareq.cdclcq";
-    filenameEqCdMcln = "canareq.cdmcln";
-    filenameEqCmCg = "canareq.cmcg";
-    filenameEqxtabCl = "canareq.xtabvcl";
-    filenameEqCdClCqMeq = "canareq.cdclcqmeq";
-    filenameEqCdClCqCmCgEq = "canareq.cdclcqcmcgeq";
-    filenameEqList = "canareq.list";
-    filenameEqStab = "canareq.stab";
-    filenameEqDataOpt = "canareq.optimized";
+    filenameEqData = "ADcanareq.data";
+    filenameEqCdClCqm = "ADcanareq.cdclcqm";
+    filenameEqItres = "ADcanareq.itres";
+    filenameEqCdClCq = "ADcanareq.cdclcq";
+    filenameEqCdMcln = "ADcanareq.cdmcln";
+    filenameEqCmCg = "ADcanareq.cmcg";
+    filenameEqxtabCl = "ADcanareq.xtabvcl";
+    filenameEqCdClCqMeq = "ADcanareq.cdclcqmeq";
+    filenameEqCdClCqCmCgEq = "ADcanareq.cdclcqcmcgeq";
+    filenameEqList = "ADcanareq.list";
+    filenameEqStab = "ADcanareq.stab";
+    filenameEqDataOpt = "ADcanareq.optimized";
     
     // constants
     pi=2.*asin(1.);
@@ -96,7 +96,7 @@ canareq::canareq(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     }
 }
 
-canareq::~canareq() {
+ADcanareq::~ADcanareq() {
     delete_2d_double_array(aa);
     free(bb);
 
@@ -111,13 +111,13 @@ canareq::~canareq() {
     if (!file1) file1.close();
 }
 
-double *canareq::create_1d_double_array(int n2, double *array) {
+double *ADcanareq::create_1d_double_array(int n2, double *array) {
     // create a n2 x 1 matrix
     array = (double *) malloc(n2*sizeof(double));
     return array;
 }
 
-double **canareq::create_2d_double_array(int n1, int n2, double **array) {
+double **ADcanareq::create_2d_double_array(int n1, int n2, double **array) {
     // create a n1 x n2 matrix
     int n=0;
     double *data = (double *) malloc(n1*n2*sizeof(double));
@@ -128,12 +128,12 @@ double **canareq::create_2d_double_array(int n1, int n2, double **array) {
     return array;
 }
 
-void canareq::delete_2d_double_array(double **array) {
+void ADcanareq::delete_2d_double_array(double **array) {
     free(array[0]);
     free(array);
 }
 
-double canareq::thrust(int ndat, double v){
+double ADcanareq::thrust(int ndat, double v){
     // return thrust slope dT/dv
     int im;
     double prod;
@@ -161,7 +161,7 @@ double canareq::thrust(int ndat, double v){
     return dTdv;
 }
 
-double canareq::mat3(double **a, double *b) {
+double ADcanareq::mat3(double **a, double *b) {
     double usdet, c1, c2, c3;
     usdet=1./(a[0][0]*(a[1][1]*a[2][2]-a[1][2]*a[2][1])
             -a[1][0]*(a[0][1]*a[2][2]-a[0][2]*a[2][1])
@@ -190,7 +190,7 @@ double canareq::mat3(double **a, double *b) {
     return usdet;
 }
 
-void canareq::linearModel() {
+void ADcanareq::linearModel() {
     //
     // linear model results
     //
@@ -279,9 +279,9 @@ void canareq::linearModel() {
     cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl << endl;
 }
 
-void canareq::nonlinearModel() {
+void ADcanareq::nonlinearModel() {
     if (DBG) cout << endl << "=========================================" << endl;
-    if (DBG) cout << " canareq::nonlinearModel()" << endl;
+    if (DBG) cout << " ADcanareq::nonlinearModel()" << endl;
 
     // read canar setting angle tcd (deg)
     //tcd = 5;
@@ -708,18 +708,18 @@ void canareq::nonlinearModel() {
     cout << right << setw(32) << " nsteps = " << nsteps << endl;
 }
 
-void canareq::init() {
+void ADcanareq::init() {
     //
-    // canareq::init()
+    // ADcanareq::init()
     //
 
-    // wake shared vars
+    // ADwake shared vars
 //    if (vars->arceff) arceff=vars->arceff;
 //    if (vars->ec) em=vars->ec;
 //    if (vars->dClcda0) dClcda0=vars->dClcda0;
 ////    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
 //
-//    // prandtline shared vars
+//    // ADprandtline shared vars
 //    if (vars->kx_of_alpha) kx = vars->kx_of_alpha;
 //    for (int j = 0; j < kx; ++j) {
 //        inc[j] = vars->alr_of_alpha[j];
@@ -733,7 +733,7 @@ void canareq::init() {
     if (dClcda0) dClcda0=dClcda0;
 //    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
 
-    // prandtline shared vars
+    // ADprandtline shared vars
     if (kx_of_alpha) kx = kx_of_alpha;
     for (int j = 0; j < kx; ++j) {
         inc[j] = alr_of_alpha[j];
@@ -746,7 +746,7 @@ void canareq::init() {
     if (1) {
         cout << fixed << std::setprecision(4);
         cout << endl;
-        cout << " canareq::init()" << endl
+        cout << " ADcanareq::init()" << endl
              << " arceff = " << arceff << endl
              << " em = " << em << endl
              << " dClcda0 = " << dClcda0 << endl
@@ -766,7 +766,7 @@ void canareq::init() {
     }
 }
 
-void canareq::readInputParams() {
+void ADcanareq::readInputParams() {
     // open input file
     ifstream paramfile(filenameEqData);
     if (!paramfile.is_open()) {
@@ -777,10 +777,19 @@ void canareq::readInputParams() {
 
     std::string line;
     std::string a; double b; std::string c; double v; double t;
+    std::string afirst;
     for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) break;
+        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) {
+            afirst = a.at(0);
+            // check for comment line
+            if (afirst.compare("#") == 0) {
+                if (DBG) cout << "comment = " << afirst << endl;
+                continue;
+            }
+            break;
+        }
         
         // newton method parameters
         if(a.compare("ITX")==0) itx = b;
@@ -917,10 +926,10 @@ void canareq::readInputParams() {
     paramfile.close();
 }
 
-void canareq::readInputParams(std::string filename) {
+void ADcanareq::readInputParams(std::string filename) {
     // open input file
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputParams()" << endl;
+    if (DBG) cout << " ADprandtline::readInputParams()" << endl;
 
     if (filename.compare("")==0);
     else filenameInputPolar = filename;
@@ -934,10 +943,19 @@ void canareq::readInputParams(std::string filename) {
 
     std::string line;
     std::string a; double b; std::string c; double v; double t;
+    std::string afirst;
     for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) break;
+        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) {
+            afirst = a.at(0);
+            // check for comment line
+            if (afirst.compare("#") == 0) {
+                if (DBG) cout << "comment = " << afirst << endl;
+                continue;
+            }
+            break;
+        }
 
         // newton method parameters
         if(a.compare("ITX")==0) itx = b;
@@ -1073,7 +1091,7 @@ void canareq::readInputParams(std::string filename) {
     paramfile.close();
 }
 
-void canareq::readInputPolar(std::string filename) {
+void ADcanareq::readInputPolar(std::string filename) {
     // read given input polar filename:
     //
     // input polars should be structured columnwise with a single breakpoint at the end.
@@ -1088,7 +1106,7 @@ void canareq::readInputPolar(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " canareq::readInputPolar()" << endl;
+    if (DBG) cout << " ADcanareq::readInputPolar()" << endl;
 
     // polar data
     polarBool = true;
@@ -1099,7 +1117,7 @@ void canareq::readInputPolar(std::string filename) {
     polarfile.open(filenameInputPolar);
     if (!polarfile.is_open()) {
         cout << "\n\nCannot Read: \'" << filenameInputPolar
-             << "\' [file error in, canareq::readInputPolar()]" << endl;
+             << "\' [file error in, ADcanareq::readInputPolar()]" << endl;
         abort();
     }
 
@@ -1270,12 +1288,12 @@ void canareq::readInputPolar(std::string filename) {
     polarfile.close();
 }
 
-void canareq::setCanardAngle(double tcd) {
+void ADcanareq::setCanardAngle(double tcd) {
     tcd0=tcd;
     tcdBool=true;
 }
 
-void canareq::mainwingModel() {
+void ADcanareq::mainwingModel() {
     tfd=tf*radeg;
     // *****loop on incidence
     nalmin = radeg * inc[0];
@@ -1352,10 +1370,10 @@ void canareq::mainwingModel() {
     Cmmeq=Cmeq;
 }
 
-void canareq::printInputParams() {
+void ADcanareq::printInputParams() {
     // print to screen
     if (DBG) cout << endl << "======================================" << endl;
-    if (DBG) cout << " canareq::printInputParams()" << endl ;
+    if (DBG) cout << " ADcanareq::printInputParams()" << endl ;
     cout << endl <<  "convergence parameters:" << endl;
     cout << right << setw(32) <<  "                        itx = " << itx << endl;
     cout << right << setw(32) <<  "                      omega = " << omega << endl;
@@ -1450,9 +1468,9 @@ void canareq::printInputParams() {
     cout << right << setw(32) << " cmac = " << CmacB <<  endl << endl;
 }
 
-int canareq::printInputPolar() {
+int ADcanareq::printInputPolar() {
     cout << endl << "=============================================="<< endl;
-    cout << " canareq::printInputPolar()" << endl;
+    cout << " ADcanareq::printInputPolar()" << endl;
     cout << " (wing polar; profile data from Xfoil)\n";
     cout << left << setw(16) << "i ";
     cout << left << setw(16) << "Cx ";
@@ -1483,7 +1501,7 @@ int canareq::printInputPolar() {
     return 1;
 }
 
-void canareq::printGlobalCoefs() {
+void ADcanareq::printGlobalCoefs() {
     //cout << endl << "extrema pointer:" << endl;
     //for (int j = 0; j < kx; ++j) {
     //    cout << "kxtrm(" << j << ") = " << kxtrm[j] << endl;
@@ -1492,7 +1510,7 @@ void canareq::printGlobalCoefs() {
     // global coefficients
     cout << std::setprecision(8);
     cout << endl << "=============================================="<< endl;
-    cout << " canareq::printGlobalCoefs()" << endl;
+    cout << " ADcanareq::printGlobalCoefs()" << endl;
     cout << " (zero incidence aerodynamic coefficients)" << endl;
     cout << " k0 = " << k0<< endl << endl;
     cout << " lift:" << endl;
@@ -1511,7 +1529,7 @@ void canareq::printGlobalCoefs() {
     cout << "           xac (m) = " << left << setw(15) << xac << left << setw(15) << "  xcg (m) = " << xcg << endl;
 }
 
-int canareq::outputPolarPrandtline() {
+int ADcanareq::outputPolarPrandtline() {
     ofstream file;
 
     // open new file
@@ -1533,7 +1551,7 @@ int canareq::outputPolarPrandtline() {
     return 1;
 }
 
-int canareq::outputPolarCdClCq() {
+int ADcanareq::outputPolarCdClCq() {
     ofstream file;
 
     // open new file
@@ -1557,7 +1575,7 @@ int canareq::outputPolarCdClCq() {
     return 1;
 }
 
-int canareq::outputEqList(){
+int ADcanareq::outputEqList(){
     // formerly known as write(24,...)
     ofstream file;
 
@@ -1592,7 +1610,7 @@ int canareq::outputEqList(){
     return 1;
 }
 
-void canareq::outputResults2Dat(std::string filename) {
+void ADcanareq::outputResults2Dat(std::string filename) {
     if(!file1index) file1.open(filename);
     file1 << fixed << std::setprecision(8);
     file1 << left << setw(12) << tcd;

@@ -9,12 +9,12 @@
 #include <stdio.h>  // strcpy
 
 //#include "aerodes.hpp"
-//#include "prandtline.hpp"
-//#include "wake.hpp"
-//#include "canareq.hpp"
+//#include "ADprandtline.hpp"
+//#include "ADwake.hpp"
+//#include "ADcanareq.hpp"
 
-#include "aerodes.hpp"
-#include "canareq.hpp"
+#include "AD.hpp"
+#include "ADcanareq.hpp"
 
 /*
  *  compile (on mac os x):
@@ -28,12 +28,12 @@
  */
 
 int main(int argc, char** argv) {
-    aerodes *ad = new aerodes(argc, argv);
-    canareq *canary = new canareq(argc, argv, ad);
+    AD *aerodes = new AD(argc, argv);
+    ADcanareq *canary = new ADcanareq(argc, argv, aerodes);
 
     double angle=0, d_angle=0.5, angle0=1;
     // canar equillibrium
-    canary->readInputParams("canareq.data");
+    canary->readInputParams("ADcanareq.data");
     canary->readInputPolar("canarpolar.dat");
 
     std::string filename = "results.dat";
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         canary->outputResults2Dat(filename);
     }
 
-    delete ad;
+    delete aerodes;
     delete canary;
     return 1;
 }

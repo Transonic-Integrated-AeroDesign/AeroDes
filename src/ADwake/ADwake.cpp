@@ -12,15 +12,15 @@
 #include <math.h>   // copysign
 #include <cstring>
 
-#include "wake.hpp"
+#include "ADwake.hpp"
 
 #ifndef DBG
 #define DBG 0
 #endif
 
-using namespace std; // g++ wake.cpp -c
+using namespace std; // g++ ADwake.cpp -c
 
-wake::wake(int argc, char** argv, aerodes *adshr) : variables(adshr) {
+ADwake::ADwake(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
     ixx=201;
     lxx=102;
     nxx=10;
@@ -80,7 +80,7 @@ wake::wake(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     mxtrm  = (int *) malloc(sizeof(int)*nxx);
 
     // filenames
-    filenameInputData = "wake.data";
+    filenameInputData = "ADwake.data";
     inputBool = false;
 
     filenameInputPolar = "polarbl.dat";
@@ -110,7 +110,7 @@ wake::wake(int argc, char** argv, aerodes *adshr) : variables(adshr) {
     degrad=pi/180.;
 }
 
-wake::~wake() {
+ADwake::~ADwake() {
     free(c);
     free(g);
     free(dg);
@@ -169,7 +169,7 @@ wake::~wake() {
     //free(cqres);
 }
 
-void wake::setMesh() {
+void ADwake::setMesh() {
     //
     // set mesh, geometry, and flow along wing-span
     //
@@ -177,7 +177,7 @@ void wake::setMesh() {
     //       this may in turn effect the resulting distributions. this is likely due to switching
     //       to double precision instead of float. -cp 3/28/22
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::setMesh()" << endl;
+    if (DBG) cout << " ADwake::setMesh()" << endl;
     if (DBG) cout << " (point distribution, geometry and flow)" << endl;
 
     if(DBG) {
@@ -192,7 +192,7 @@ void wake::setMesh() {
              << left << setw(16) << "polar(j) " << endl;
     }
 
-    // init variables
+    // init ADvariables
     acdum=0.;
     cacdum=0.;
     dtet=pi/(jxs2-1);
@@ -388,7 +388,7 @@ void wake::setMesh() {
     if (DBG) cout << " ARC = " << arc << endl;
 }
 
-void wake::solveLiftingLine() {
+void ADwake::solveLiftingLine() {
     //
     // iterative solver for gamma and downwash distribtions.
     //
@@ -398,7 +398,7 @@ void wake::solveLiftingLine() {
     int n = 0;  // polar index
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::solveLiftingLine() " << endl;
+    if (DBG) cout << " ADwake::solveLiftingLine() " << endl;
     if (DBG) cout << endl << left << setw(10) << " alphain = " << left << setw(10) << alphain << endl;
     if (DBG) cout << left << setw(10) << " alphafi = " << left << setw(10) << alphafi << endl;
     if (DBG) cout << left << setw(10) << " alstep =" << left << setw(10) << alstep << endl;
@@ -762,11 +762,11 @@ void wake::solveLiftingLine() {
     xle[54] = 1.3;
 
     //vars->ec = ec;
-    ec = ec;
+    //ec = ec;
     if (alstep < eps) cout << endl << "run alpha=0 to 1 deg to get effective aspect ratio of canard arceff and dClcda0" << endl;
 }
 
-void wake::integrate_canard() {
+void ADwake::integrate_canard() {
     //
     // calcluate the lift of the canard profile
     //
@@ -774,9 +774,9 @@ void wake::integrate_canard() {
     // fortran version outputs to "canarwake.xz"
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::integrate_canard()" << endl;
+    if (DBG) cout << " ADwake::integrate_canard()" << endl;
 
-    // integration of wake trajectory in canard coordinates (ref Bc0/2)
+    // integration of ADwake trajectory in canard coordinates (ref Bc0/2)
     ixw=1+log(1.0+(str-1.0)*(lf/dxm)) / log(str);
     if (DBG) cout << " ix = " << ix << " ixw = " << ixw << endl;
 
@@ -832,7 +832,7 @@ void wake::integrate_canard() {
     }
 }
 
-void wake::integrate_wing() {
+void ADwake::integrate_wing() {
     //
     // integrate downwash profile on wing
     //
@@ -885,7 +885,7 @@ void wake::integrate_wing() {
     cacdum=0.7972;
 }
 
-/*int **wake::create_2d_int_array(int n1, int n2, int **array) {
+/*int **ADwake::create_2d_int_array(int n1, int n2, int **array) {
     // create a n1 x n2 matrix
     int n=0;
     int *data = (int *) malloc(n1*n2*sizeof(int));
@@ -896,7 +896,7 @@ void wake::integrate_wing() {
     return array;
 }*/
 
-int **wake::create_2d_int_array(int n1, int n2, int **&array) {
+int **ADwake::create_2d_int_array(int n1, int n2, int **&array) {
     //
     // create a n1 x n2 matrix
     //
@@ -910,7 +910,7 @@ int **wake::create_2d_int_array(int n1, int n2, int **&array) {
     return array;
 }
 
-/*double **wake::create_2d_double_array(int n1, int n2, double **array) {
+/*double **ADwake::create_2d_double_array(int n1, int n2, double **array) {
     // create a n1 x n2 matrix
     int n=0;
     double *data = (double *) malloc(n1*n2*sizeof(double));
@@ -921,7 +921,7 @@ int **wake::create_2d_int_array(int n1, int n2, int **&array) {
     return array;
 }*/
 
-double **wake::create_2d_double_array(int n1, int n2, double **&array) {
+double **ADwake::create_2d_double_array(int n1, int n2, double **&array) {
     //
     // create a n1 x n2 matrix
     //
@@ -935,23 +935,23 @@ double **wake::create_2d_double_array(int n1, int n2, double **&array) {
     return array;
 }
 
-void wake::delete_2d_int_array(int **array) {
+void ADwake::delete_2d_int_array(int **array) {
     free(array[0]);
     free(array);
 }
 
-void wake::delete_2d_double_array(double **array) {
+void ADwake::delete_2d_double_array(double **array) {
     free(array[0]);
     free(array);
 }
 
-void wake::readInputParams() {
+void ADwake::readInputParams() {
     //
     // open input file
     // add the ability to read any input filename -cp 3/29/22
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::readInputParams()" << endl;
+    if (DBG) cout << " ADwake::readInputParams()" << endl;
 
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -962,13 +962,21 @@ void wake::readInputParams() {
 
     std::string line;
     std::string a; double b; std::string c;
-
+    std::string afirst;
     // read in data
     for (int i=0; i<lxx; i++) {
         std::getline(paramfile, line);
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if(!(iss >> a >> b >> c)) break;
+        if(!(iss >> a >> b >> c)) {
+            afirst = a.at(0);
+            // check for comment line
+            if (afirst.compare("#") == 0) {
+                if (DBG) cout << "comment = " << afirst << endl;
+                continue;
+            }
+            break;
+        }
 
         if (a.compare("JXS2") == 0) {
             jxs2 = b;
@@ -1010,17 +1018,18 @@ void wake::readInputParams() {
             cout << " command: '" << a << "' not known" << endl;
             abort();
         }
-        //if (a.compare("NPOLAR") == 0) { nx = b; }
     }
 
     // initializations -move this to init() function later -cp 3/27/22
     jx=2*jxs2;
+    tc=degrad*tcd;
+    theq=degrad*theqd;
     bc=2.0;
     cxc=2.0*Cc0/Bc0;
     zcanar=2.0*Zc0/B;
     lamb=degrad*Lambd;
     rf=2.0*Rf0/Bc0;
-    tc=degrad*tcd;
+    zwing=2.0*Zw0/B;
     lf=2.0*Lf0/Bc0;
     dxm=2.0*Dx0/Bc0;
 
@@ -1028,16 +1037,16 @@ void wake::readInputParams() {
     //if(acwash) readInputDownwash();
 }
 
-void wake::readInputParams(std::string filename) {
+void ADwake::readInputParams(std::string filename) {
     //
     // open input file
     // add the ability to read any input filename -cp 3/29/22
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::readInputParams()" << endl;
+    if (DBG) cout << " ADwake::readInputParams()" << endl;
 
     if (filename.compare("")==0);
-    else filenameInputPolar = filename;
+    else filenameInputData = filename;
 
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -1048,13 +1057,21 @@ void wake::readInputParams(std::string filename) {
 
     std::string line;
     std::string a; double b; std::string c;
-
+    std::string afirst;
     // read in data
     for (int i=0; i<lxx; i++) {
         std::getline(paramfile, line);
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if(!(iss >> a >> b >> c)) break;
+        if(!(iss >> a >> b >> c)) {
+            afirst = a.at(0);
+            // check for comment line
+            if (afirst.compare("#") == 0) {
+                if (DBG) cout << "comment = " << afirst << endl;
+                continue;
+            }
+            break;
+        }
 
         if (a.compare("JXS2") == 0) {
             jxs2 = b;
@@ -1075,6 +1092,7 @@ void wake::readInputParams(std::string filename) {
         else if (a.compare("RF0") == 0) Rf0 = b;
         else if (a.compare("DC") == 0) dc = b;
         else if (a.compare("TCD") == 0) tcd = b;
+        else if (a.compare("TAD") == 0) theqd = b;
         else if (a.compare("ICANAR") == 0) icanar = b;
         else if (a.compare("B") == 0) B = b;
         else if (a.compare("XACMSTR") == 0) xacmstr = b;
@@ -1082,7 +1100,7 @@ void wake::readInputParams(std::string filename) {
         else if (a.compare("LF0") == 0) Lf0 = b;
         else if (a.compare("DX0") == 0) Dx0 = b;
         else if (a.compare("STR") == 0) str = b;
-        //else if (a.compare("ZWAKE") == 0) zwake = b; // obsolete
+            //else if (a.compare("ZWAKE") == 0) zwake = b; // obsolete
         else if (a.compare("RHO") == 0) Rho = b;
         else if (a.compare("VINF") == 0) Vinf = b;
         else if (a.compare("AMU") == 0) Amu = b;
@@ -1092,10 +1110,9 @@ void wake::readInputParams(std::string filename) {
         else if (a.compare("ALPHAFI") == 0) alphafi = b;
         else if (a.compare("ALPHASTEP") == 0) alstep = b;
         else {
-            cout << " command: " << a << " not known" << endl;
+            cout << " command: '" << a << "' not known" << endl;
             abort();
         }
-        //if (a.compare("NPOLAR") == 0) { nx = b; }
     }
 
     // initializations -move this to init() function later -cp 3/27/22
@@ -1115,7 +1132,7 @@ void wake::readInputParams(std::string filename) {
     //if(acwash) readInputDownwash();
 }
 
-void wake::readInputPolar(std::string filename) {
+void ADwake::readInputPolar(std::string filename) {
     // read given input polar filename:
     //
     // input polars should be structured columnwise with a single breakpoint at the end.
@@ -1130,7 +1147,7 @@ void wake::readInputPolar(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::readInputPolar()" << endl;
+    if (DBG) cout << " ADwake::readInputPolar()" << endl;
 
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
@@ -1289,13 +1306,13 @@ void wake::readInputPolar(std::string filename) {
     nx++;
 }
 
-void wake::readInputDownwash() {
+void ADwake::readInputDownwash() {
     //
     // downwash due to canard on wing for Clc/(pi*arc)=0.1
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << endl << " wake::readInputDownwash()" << endl;
+    if (DBG) cout << endl << " ADwake::readInputDownwash()" << endl;
     // open input file
     ifstream inputfile(filenameInputDownwash);
     if (!inputfile.is_open()) {
@@ -1330,7 +1347,7 @@ void wake::readInputDownwash() {
     // unit 32 -> canarwash.ylwl
 }
 
-void wake::readInputCanardGeom(std::string filename) {
+void ADwake::readInputCanardGeom(std::string filename) {
     //
     // read in canard profile (usually filename = "geocanard.xzmses")
     //
@@ -1344,7 +1361,7 @@ void wake::readInputCanardGeom(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::readInputCanardGeom()" << endl;
+    if (DBG) cout << " ADwake::readInputCanardGeom()" << endl;
 
     // open input file
     ifstream inputfile(filename);
@@ -1383,7 +1400,7 @@ void wake::readInputCanardGeom(std::string filename) {
     }
 }
 
-void wake::readInputWingGeom(std::string filename) {
+void ADwake::readInputWingGeom(std::string filename) {
     //
     // read in wing profile (usually filename = "wing.yxlexte")
     //
@@ -1397,7 +1414,7 @@ void wake::readInputWingGeom(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::readInputWingGeom()" << endl;
+    if (DBG) cout << " ADwake::readInputWingGeom()" << endl;
 
     // open input file
     ifstream inputfile(filename);
@@ -1433,13 +1450,13 @@ void wake::readInputWingGeom(std::string filename) {
     }
 }
 
-void wake::outputGammaDownwash(std::string filename) {
+void ADwake::outputGammaDownwash(std::string filename) {
     //
-    // output legacy 'prandtline.ygw' file
+    // output legacy 'ADprandtline.ygw' file
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::outputGammaDownwash()" << endl;
+    cout << " ADwake::outputGammaDownwash()" << endl;
 
     ofstream file;
 
@@ -1463,13 +1480,13 @@ void wake::outputGammaDownwash(std::string filename) {
     file.close();
 }
 
-void wake::outputCanardWake(std::string filename) {
+void ADwake::outputCanardWake(std::string filename) {
     //
     // output legacy 'canarwake.xz' file
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::outputCanardWake()" << endl;
+    cout << " ADwake::outputCanardWake()" << endl;
 
     ofstream file;
 
@@ -1493,12 +1510,12 @@ void wake::outputCanardWake(std::string filename) {
     file.close();
 }
 
-void wake::printInputParams() {
+void ADwake::printInputParams() {
     //
     // print input parameters to screen
     //
     if (DBG) cout << endl << "=========================================\n";
-    cout << " wake::printInputParams()" << endl;
+    cout << " ADwake::printInputParams()" << endl;
     cout << right << setw(20) << "ITX = " << itx << endl;
     cout << right << setw(20) << "OMEGA = " <<  omega << endl;
     cout << right << setw(20) << "AVIS = " <<  avis << endl;
@@ -1526,12 +1543,12 @@ void wake::printInputParams() {
     cout << right << setw(20) << "ALPHASTEP = " <<  alstep << endl;
 }
 
-void wake::printGeomSummary() {
+void ADwake::printGeomSummary() {
     //
     // print geometry summary
     //
     cout << endl << "=========================================\n";
-    cout << " wake::printGeomSummary()" << endl;
+    cout << " ADwake::printGeomSummary()" << endl;
 
     cout << endl;
     cout << "numerical data:" << endl;
@@ -1554,9 +1571,9 @@ void wake::printGeomSummary() {
     cout << right << setw(32) << "           canard shape 0/1/2 = " << left << setw(10) << icanar << endl;
     cout << right << setw(32) << "                  wing span B = " << left << B << " (m)" << endl;
     cout << right << setw(32) << "          fuselage length Lf0 = " << left << Lf0 << " (m)" << endl;
-    cout << right << setw(32) << "    inital wake mesh step Dx0 = " << left << Dx0 << " (m)" << endl;
-    cout << right << setw(32) << "  wake stretch paprameter str = " << left << str << endl;
-    cout << right << setw(32) << " wake location wrt wing zwake = " << left << zwake << endl;
+    cout << right << setw(32) << "    inital ADwake mesh step Dx0 = " << left << Dx0 << " (m)" << endl;
+    cout << right << setw(32) << "  ADwake stretch paprameter str = " << left << str << endl;
+    cout << right << setw(32) << " ADwake location wrt wing zwake = " << left << zwake << endl;
 
     cout << endl;
     cout<< "air data:" << endl;
@@ -1572,9 +1589,9 @@ void wake::printGeomSummary() {
     cout << right << setw(32) << "average aerodynamic chord cac = " << left << setw(10) << cac << " (ref. Bc0/2)" << endl;
 }
 
-void wake::printXFoilValues() {
+void ADwake::printXFoilValues() {
     cout << endl << "======================================" << endl;
-    cout << " wake::printXFoilValues()" << endl;
+    cout << " ADwake::printXFoilValues()" << endl;
     if(DBG) cout << " (profile data from Xfoil)" << endl;
     cout << right << setw(12) << " n"
         << right << setw(12) << " k"
@@ -1595,14 +1612,14 @@ void wake::printXFoilValues() {
     }
 }
 
-void wake::printResults() {
+void ADwake::printResults() {
     //
     // print results
     //
 
     // essential formula
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " wake::printResults()" << endl << endl
+    if (DBG) cout << " ADwake::printResults()" << endl << endl
                   << "                      Y=0.5*Bc0*y" << endl
                   << "                      C=0.5*Bc0*c" << endl
                   << "                      A=0.25*Bc0**2*ac" << endl
@@ -1618,7 +1635,7 @@ void wake::printResults() {
                   << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
 
     cout << fixed << std::setprecision(4);
-    cout << endl << "\033[1;42m canar-wake results: " << alphad << " (deg) \033[0m" << endl;
+    cout << endl << "\033[1;42m canar-ADwake results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
     cout << right << setw(38) << " oswald efficiency e = " << ec << endl;
@@ -1626,7 +1643,7 @@ void wake::printResults() {
     cout << right << setw(38) << " arceff = " << arceff << endl;
     cout << right << setw(38) << " dClcda0 = " << dClcda0 << endl << endl;
 
-    cout<< "\033[1;42m canar-wake global results: " << alphad << " (deg) \033[0m" << endl;
+    cout<< "\033[1;42m canar-ADwake global results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "CD = " << cd << endl;
     cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
     cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;
@@ -1638,7 +1655,7 @@ void wake::printResults() {
     cout << right << setw(38) << " ivis = " << ivis << endl << endl;
 }
 
-void wake::printDistributions() {
+void ADwake::printDistributions() {
     cout << endl << "=========================================\n";
     cout << " printDistributions()" << endl;
 
@@ -1668,7 +1685,7 @@ void wake::printDistributions() {
     }
 }
 
-void wake::printCanarWake() {
+void ADwake::printCanarWake() {
     cout << endl << "=========================================\n";
     cout << " printCanarWake()" << endl;
 

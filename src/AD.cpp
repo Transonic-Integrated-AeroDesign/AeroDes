@@ -12,11 +12,11 @@
 #include <string>
 #include <stdio.h>  // strcpy
 
-#include "aerodes.hpp"
+#include "AD.hpp"
 
-#include "prandtline.hpp"
-#include "canareq.hpp"
-#include "wake.hpp"
+#include "ADprandtline.hpp"
+#include "ADcanareq.hpp"
+#include "ADwake.hpp"
 
 #ifndef DBG
 #define DBG 0
@@ -24,16 +24,16 @@
 
 using namespace std;
 
-// g++ aerodes.cpp -c
-// g++ -o test aerodes.cpp
+// g++ AD.cpp -c
+// g++ -o test AD.cpp
 
-aerodes::aerodes(int argc, char** argv) : prandtl(NULL), wk(NULL), canary(NULL) {
-    prandtl = new prandtline(argc, argv, this);
-    wk = new wake(argc, argv, this);
-    canary = new canareq(argc, argv, this);
+AD::AD(int argc, char** argv) : prandtl(NULL), wk(NULL), canary(NULL) {
+    prandtl = new ADprandtline(argc, argv, this);
+    wk = new ADwake(argc, argv, this);
+    canary = new ADcanareq(argc, argv, this);
 }
 
-aerodes::~aerodes() {
+AD::~AD() {
     delete prandtl;
     delete wk;
     delete canary; // memory issues

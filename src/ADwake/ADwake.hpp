@@ -15,12 +15,12 @@
 #include <math.h>
 
 #include "config.hpp"
-#include "variables.hpp"
+#include "ADvariables.hpp"
 
-class wake : virtual public variables {
+class ADwake : virtual public ADvariables {
 public:
-    wake(int argc, char** argv, aerodes *);
-    ~wake();
+    ADwake(int argc, char** argv, AD *);
+    ~ADwake();
 
     // inputs
     void readInputParams();
@@ -67,11 +67,11 @@ private:
     double alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2;
     double rey,cdi,cdv;
-    double ec; // shared variable
+//    double ec; // shared variable
     double cd,xcp,Bc0,bc,Cc0,cl0,cl1;
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
     double base, expn, realpart, imagpart, denom;
-    double dClcda0,arceff; // shared variables*
+    double dClcda0,arceff; // shared ADvariables*
     double Dx0,xi,str,dxm,Lf0,lf,Zc0,zcanar,xcim,zcim,zwake;
     double Zw0,zwing,xacmstr,theqd,theq;
     double *c,*g,*dg,*y,*eta;

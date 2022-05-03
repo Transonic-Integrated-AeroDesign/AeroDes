@@ -11,16 +11,16 @@
 #include <string>
 #include <math.h>   // pow
 
-//#include "variables.hpp"
-//#include "wake.hpp"
-#include "canareq.hpp"
+//#include "ADvariables.hpp"
+//#include "ADwake.hpp"
+#include "ADcanareq.hpp"
 
 /*
  * compile for acceleration:
  * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp algorithmic.cpp
  *
  * compile for regular build:
- * 	g++ -o test main.cpp canareq.cpp
+ * 	g++ -o test main.cpp ADcanareq.cpp
  *  ./test
  *
  *  leak check (linux):
@@ -33,8 +33,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    aerodes *ad = new aerodes(argc, argv);
-    canareq *canary = new canareq(argc, argv, ad);
+    AD *ad = new AD(argc, argv);
+    ADcanareq *canary = new ADcanareq(argc, argv, ad);
 
     canary->readInputParams();
     canary->printInputParams();

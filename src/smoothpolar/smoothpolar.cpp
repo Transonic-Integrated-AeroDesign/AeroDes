@@ -19,7 +19,7 @@
 #endif
 
 using namespace std; // g++ smoothpolar.cpp -c
-smoothpolar::smoothpolar(int argc, char** argv, aerodes *adshr) : variables(adshr) {
+smoothpolar::smoothpolar(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
     lxx=101;
 
     // allocate double arrays
@@ -101,7 +101,7 @@ void smoothpolar::readInputPolar(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputPolar(\"" << filename << "\")" << endl;
+    if (DBG) cout << " ADprandtline::readInputPolar(\"" << filename << "\")" << endl;
 
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {

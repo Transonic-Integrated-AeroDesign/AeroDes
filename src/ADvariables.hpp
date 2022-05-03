@@ -5,15 +5,15 @@
 #ifndef VARIABLES_H
 #define VARIABLES_H
 
-#include "aerodes.hpp"
+#include "AD.hpp"
 
-class variables{
+class ADvariables{
 public:
     // absolutely need constructor
-    variables(aerodes *p) : prandtlinead(p->prandtl),
-                            wakead(p->wk),
-                            canareqad(p->canary),
-                            ec(p->ec) {
+    ADvariables(AD *p) : prandtlinead(p->prandtl),
+                         wakead(p->wk),
+                         canareqad(p->canary),
+                         ec(p->ec) {
         kx_of_alpha = 0;
 //        dClmda0 = 0;    // main wing lift slope
         dClcda0 = 0;    // canard lift slope
@@ -25,7 +25,7 @@ public:
         cd_of_alpha = (double *) malloc(sizeof(double)*jxx);
         cq_of_alpha = (double *) malloc(sizeof(double)*jxx);
     };
-    ~variables() {
+    ~ADvariables() {
         delete alr_of_alpha;
         delete ald_of_alpha;
         delete cl_of_alpha;
@@ -33,18 +33,18 @@ public:
         delete cq_of_alpha;
     };
 
-    prandtline *&prandtlinead;
-    wake *&wakead;
-    canareq *&canareqad;
+    ADprandtline *&prandtlinead;
+    ADwake *&wakead;
+    ADcanareq *&canareqad;
 
     int jxx;
     int kx_of_alpha;
 
     // for canard equilibrium
-//    double dClmda0;         // from: wake, main wing slope
-    double &ec;              // from: wake, oswald efficiency
-    double arceff, armeff;  // from: wake, corrected aspect ratio
-    double dClcda0;         // from: wake, canard lift slope
+//    double dClmda0;         // from: ADwake, main wing slope
+    double &ec;              // from: ADwake, oswald efficiency
+    double arceff, armeff;  // from: ADwake, corrected aspect ratio
+    double dClcda0;         // from: ADwake, canard lift slope
 
     // polar
     double *alr_of_alpha;   // alpha in radians

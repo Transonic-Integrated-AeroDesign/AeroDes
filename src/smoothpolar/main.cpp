@@ -17,7 +17,7 @@
 /*
  * compile:
  * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp algorithmic.cpp
- * 	g++ -o test main.cpp prandtline.cpp
+ * 	g++ -o test main.cpp ADprandtline.cpp
  *  ./test
  *
  *  leak check (linux)
@@ -30,7 +30,7 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    aerodes *ad = new aerodes(argc, argv);
+    AD *ad = new AD(argc, argv);
     smoothpolar *smoothy = new smoothpolar(argc, argv, ad);
 
     // input

@@ -11,13 +11,13 @@
 #include <cstring>
 
 #include "config.hpp"
-#include "prandtline.hpp"
+#include "ADprandtline.hpp"
 
 #ifndef DBG
 #define DBG 0
 #endif
 
-using namespace std; // g++ prandtline.cpp -c
+using namespace std; // g++ ADprandtline.cpp -c
 /*
  * -20 to 25 at incriments of 1 (depending on the geometry)
  * run again through smooth polar!
@@ -25,7 +25,7 @@ using namespace std; // g++ prandtline.cpp -c
  * start with negative alpha
  */
 
-prandtline::prandtline(int argc, char** argv, aerodes *adshr) : variables(adshr) {
+ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
     jxx = 201;
     lxx = 101;  // n discrete wing-span points
     nxx = 10;   // n polars
@@ -82,7 +82,7 @@ prandtline::prandtline(int argc, char** argv, aerodes *adshr) : variables(adshr)
     mxtrm  = (int *__restrict) malloc(sizeof(int)*nxx);
 
     // filenames
-    filenameInputData = "prandtline.data";
+    filenameInputData = "ADprandtline.data";
     inputBool = false;
 
     filenameInputPolar = "polarbl.dat";
@@ -113,7 +113,7 @@ prandtline::prandtline(int argc, char** argv, aerodes *adshr) : variables(adshr)
     shared=true;
 }
 
-prandtline::~prandtline() {
+ADprandtline::~ADprandtline() {
     free(c);
     free(g);
     free(dg);
@@ -163,18 +163,18 @@ prandtline::~prandtline() {
     delete [] mxtrm;
 }
 
-void prandtline::setAlpha(double al) {
+void ADprandtline::setAlpha(double al) {
     // set singular alpha (degrees)
     alstep=0;
     alphain=al;
 }
 
-void prandtline::setMesh() {
+void ADprandtline::setMesh() {
     //
     // set mesh, geometry, and flow along wing-span
     //
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::setMesh()" << endl;
+    if (DBG) cout << " ADprandtline::setMesh()" << endl;
     if (DBG) cout << left << setw(12) << "y(j) "
                   << left << setw(12) << "eta(j) "
                   << left << setw(12) << "c(j) "
@@ -318,9 +318,9 @@ void prandtline::setMesh() {
     xiac[jmax] = xiac[jmax-1];
 }
 
-void prandtline::solveLiftingLine() {
+void ADprandtline::solveLiftingLine() {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::solveLiftingLine()" << endl;
+    if (DBG) cout << " ADprandtline::solveLiftingLine()" << endl;
 
     int jp, jm;
     int n=0;  // polar index
@@ -695,7 +695,7 @@ void prandtline::solveLiftingLine() {
             cmt[j]=0.25*arm*cmt[j] / cam;
         }
 
-        // set shared variables
+        // set shared ADvariables
 //        if (shared) {
 //            vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
 //            vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
@@ -729,7 +729,7 @@ void prandtline::solveLiftingLine() {
     xle[54] = 1.3;*/
 }
 
-int **prandtline::create_2d_int_array(int n1, int n2, int **&array) {
+int **ADprandtline::create_2d_int_array(int n1, int n2, int **&array) {
     //
     // create a n1 x n2 matrix
     //
@@ -743,7 +743,7 @@ int **prandtline::create_2d_int_array(int n1, int n2, int **&array) {
     return array;
 }
 
-double **prandtline::create_2d_double_array(int n1, int n2, double **&array) {
+double **ADprandtline::create_2d_double_array(int n1, int n2, double **&array) {
     //
     // create a n1 x n2 matrix
     //
@@ -757,19 +757,19 @@ double **prandtline::create_2d_double_array(int n1, int n2, double **&array) {
     return array;
 }
 
-void prandtline::delete_2d_int_array(int **__restrict array) {
+void ADprandtline::delete_2d_int_array(int **__restrict array) {
     delete [] array[0];
     delete [] array;
 }
 
-void prandtline::delete_2d_double_array(double **array) {
+void ADprandtline::delete_2d_double_array(double **array) {
     free(array[0]);
     free(array);
 }
 
-void prandtline::readInputParams() {
+void ADprandtline::readInputParams() {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputParams()" << endl;
+    if (DBG) cout << " ADprandtline::readInputParams()" << endl;
 
     ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
@@ -841,9 +841,9 @@ void prandtline::readInputParams() {
     if(acwash) readInputDownwash();
 }
 
-void prandtline::readInputParams(std::string filename) {
+void ADprandtline::readInputParams(std::string filename) {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputParams()" << endl;
+    if (DBG) cout << " ADprandtline::readInputParams()" << endl;
 
     if (filename.compare("")==0);
     else filenameInputPolar = filename;
@@ -910,7 +910,7 @@ void prandtline::readInputParams(std::string filename) {
     if(acwash) readInputDownwash();
 }
 
-void prandtline::readInputPolar() {
+void ADprandtline::readInputPolar() {
     // read multiple input polars in single filename:
     //
     // input polars should be structured columnwise with a single breakpoint at the end.
@@ -925,7 +925,7 @@ void prandtline::readInputPolar() {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputPolarMulti(\"" << filenameInputPolar << "\")" << endl;
+    if (DBG) cout << " ADprandtline::readInputPolarMulti(\"" << filenameInputPolar << "\")" << endl;
 
     ifstream polarfile(filenameInputPolar);
     if (!polarfile.is_open()) {
@@ -1084,7 +1084,7 @@ void prandtline::readInputPolar() {
     }
 }
 
-void prandtline::readInputPolar(std::string filename) {
+void ADprandtline::readInputPolar(std::string filename) {
     // read given input polar filename:
     //
     // input polars should be structured columnwise with a single breakpoint at the end.
@@ -1099,7 +1099,7 @@ void prandtline::readInputPolar(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputPolar(\"" << filename << "\")" << endl;
+    if (DBG) cout << " ADprandtline::readInputPolar(\"" << filename << "\")" << endl;
 
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
@@ -1234,7 +1234,7 @@ void prandtline::readInputPolar(std::string filename) {
     nx++;
 }
 
-void prandtline::readInputPolarMulti(std::string filename) {
+void ADprandtline::readInputPolarMulti(std::string filename) {
     // read multiple input polars in single filename:
     //
     // input polars should be structured columnwise with a single breakpoint at the end.
@@ -1249,7 +1249,7 @@ void prandtline::readInputPolarMulti(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputPolarMulti(\"" << filename << "\")" << endl;
+    if (DBG) cout << " ADprandtline::readInputPolarMulti(\"" << filename << "\")" << endl;
 
     ifstream polarfile(filename);
     if (!polarfile.is_open()) {
@@ -1406,7 +1406,7 @@ void prandtline::readInputPolarMulti(std::string filename) {
     }
 }
 
-void prandtline::readInputDownwash() {
+void ADprandtline::readInputDownwash() {
     //     downwash due to canard on wing for Clc/(pi*arc)=0.1
     cout << endl << " readInputDownwash()" << endl;
     // open input file
@@ -1443,9 +1443,9 @@ void prandtline::readInputDownwash() {
     // unit 32 -> canarwash.ylwl
 }
 
-void prandtline::printInputParams() {
+void ADprandtline::printInputParams() {
     if (DBG) cout << endl << "=========================================" << endl;
-    if (DBG) cout << " prandtline::printInputParams()" << endl << endl;
+    if (DBG) cout << " ADprandtline::printInputParams()" << endl << endl;
 
     cout << " printInputParams()" << endl << endl;
     cout << " dimensionless:" << endl << endl;
@@ -1485,7 +1485,7 @@ void prandtline::printInputParams() {
     cout << right << setw(10) << "NPOLAR = " << nx << endl << endl;
 }
 
-void prandtline::printSetupSummary() {
+void ADprandtline::printSetupSummary() {
     if (DBG) cout << endl << "=========================================" << endl;
     cout << " printSetupSummary()" << endl << endl;
     cout << "numerical data:" << endl << endl;
@@ -1519,9 +1519,9 @@ void prandtline::printSetupSummary() {
     cout << right << setw(32) << "           fuselage radius rf = " << left << setw(10) << rf << " (ref. B/2)" << endl << endl;
 }
 
-void prandtline::printInputPolar() {
+void ADprandtline::printInputPolar() {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::printInputPolar()" << endl;
+    if (DBG) cout << " ADprandtline::printInputPolar()" << endl;
     cout << right << setw(12) << " n"
          << right << setw(12) << " k"
          << right << setw(12) << " inc[n][k]"
@@ -1542,9 +1542,9 @@ void prandtline::printInputPolar() {
     }
 }
 
-void prandtline::printDistributions() {
+void ADprandtline::printDistributions() {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::printDistributions()" << endl;
+    if (DBG) cout << " ADprandtline::printDistributions()" << endl;
 
     cout << endl << right << setw(12) << " y(j)"
             << right << setw(12) << "eta(j)"
@@ -1574,9 +1574,9 @@ void prandtline::printDistributions() {
     }
 }
 
-void prandtline::printResults() {
+void ADprandtline::printResults() {
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::printResults()" << endl;
+    if (DBG) cout << " ADprandtline::printResults()" << endl;
 
     cout << endl << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
 

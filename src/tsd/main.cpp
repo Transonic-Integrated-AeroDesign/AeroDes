@@ -12,7 +12,7 @@
 #include <math.h>   // pow
 #include <cstring>
 
-#include "aerodes.hpp"
+#include "AD.hpp"
 #include "tsd.hpp"
 
 /*
@@ -23,7 +23,7 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    aerodes *ad = new aerodes(argc, argv);
+    AD *ad = new AD(argc, argv);
     tsd *sonic = new tsd(argc, argv, ad);
 
     // input

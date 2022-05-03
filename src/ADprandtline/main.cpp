@@ -12,12 +12,13 @@
 #include <math.h>   // pow
 #include <cstring>
 
-#include "prandtline.hpp"
+//#include "AD.hpp"
+#include "ADprandtline.hpp"
 
 /*
  * compile:
  * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp algorithmic.cpp
- * 	g++ -o test main.cpp prandtline.cpp
+ * 	g++ -o test main.cpp ADprandtline.cpp
  *  ./test
  *	valgrind --leak-check=yes ./test
  */
@@ -25,8 +26,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    aerodes *ad = new aerodes(argc, argv);
-    prandtline *prants = new prandtline(argc, argv, ad);
+    AD *ad = new AD(argc, argv);
+    ADprandtline *prants = new ADprandtline(argc, argv, ad);
 
     // input
     prants->readInputParams();

@@ -16,15 +16,15 @@
 #include <fstream>  // fopen, ifstream
 #include <sstream>  // istream
 
-#include "variables.hpp"
+#include "ADvariables.hpp"
 
-//class canareq : protected variables {
-class canareq : virtual public variables {
+//class ADcanareq : protected ADvariables {
+class ADcanareq : virtual public ADvariables {
 public:
-    //variables *vars;
+    //ADvariables *vars;
 
-    canareq(int argc, char** argv, aerodes *);
-    ~canareq();
+    ADcanareq(int argc, char** argv, AD *);
+    ~ADcanareq();
 
     // file input
     void init();
@@ -79,7 +79,8 @@ public:
         double daleq,dUeq,reyeq,reym,Cdf0,Cdfeq,dbeteq,beteqd,theq,theqd;
         double ClCdeq,reseq,winglift,alphd,alph,Cl,Cm,Cd,Cl3,Cd2,ratio1;
         double ratio2,Cmmeq,Cmeq,Cmm0,dyn,hpokwatt,lf,reyf,weq;
-        double reseq0,bc,cxc,cac,ac,xacc,dc,ec,tcd,tc,awc,acw,xacm;
+        double reseq0,bc,cxc,cac,ac,xacc,dc,tcd,tc,awc,acw,xacm;
+//        double ec; // shared variable
         double arc,dCmacdac0,Cmacc00,Clc00,dCldac0,Cmac00,Cmc00,dCmdac0;
         double Clceq,canarlift,reyc,Cdic,Cdceq,Clc0,Cmacc0,Cmacm0,Cmacm;
         double Cmc0,dCldac,dCmacdac,dCmacdam,dCmdac,Cdc0,Cmacc;
@@ -100,7 +101,7 @@ public:
         // slope
         // Cl (canard)
 
-        // input resulting polar from smoothpolar or prandtline
+        // input resulting polar from smoothpolar or ADprandtline
         double *alphares, *czres, *cxres, *cqres;
         int nsteps;
     

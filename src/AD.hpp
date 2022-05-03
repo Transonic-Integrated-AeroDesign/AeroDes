@@ -14,15 +14,13 @@
 #include <string>
 #include <math.h>
 
-//#include "variables.hpp"
-
-class aerodes{
+class AD{
 public:
-    class prandtline* prandtl;
-    class canareq* canary;
-    class wake* wk;
-    aerodes(int argc, char** argv);
-    ~aerodes();
+    class ADprandtline* prandtl;
+    class ADcanareq* canary;
+    class ADwake* wk;
+    AD(int argc, char** argv);
+    ~AD();
 
     double ec;
 };
