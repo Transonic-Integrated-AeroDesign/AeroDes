@@ -1,5 +1,5 @@
 JX          101		    # jx number of points along wing span (<202)
-ITX         1000	    # itx maximum number of iterations
+ITX         5001	    # itx maximum number of iterations
 OMEGA       0.2		    # omega relaxation factor
 AVIS        0.0	        # avis viscosity coefficient
 B           36.0	    # B wing span (m)
@@ -12,6 +12,7 @@ TM          0.		    # tm setting angle at root (typically zero)
 IWING       2		    # iwing elliptic/rectangular/general shape/0/1/2
 ALPHAD      0.0		    # alphad geometric incidence (deg)
 ACWASH      0		    # acwash  reference (-1 rd) downwash of canard on main wing
+			    # run acwash only after canarline (aka canarwake - one of the outputs is canarwash.ylwl)
 RHO         1.2		    # Rho air density (kg/m**3)
 VINF        100.	    # Vinf  wind velocity (m/s)
 AMU         0.0000181	# Amu dynamic viscosity (kg/(m*s))
@@ -19,6 +20,6 @@ IVIS        1           # do you want to introduce viscous effects? Y/N=1/0
 
 IPOLAR      1           # do you want to use polar data? Y/N=1/0
 
-ALPHAIN     0           # initial angle
+ALPHAIN     1.0           # initial angle
 ALPHAFI     1.0           # final angle
-ALPHASTEP   0.5           # increment in angle
+ALPHASTEP   0.0           # increment in angle

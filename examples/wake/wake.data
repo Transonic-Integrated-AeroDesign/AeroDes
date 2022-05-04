@@ -1,5 +1,5 @@
 JXS2	21		# jxs2 number of points along one canard span (<103)
-ITX 	1		# itx maximum number of iterations
+ITX 	5001		# itx maximum number of iterations
 OMEGA 	0.2		# omega relaxation factor
 AVIS 	0.0		# avis viscosity coefficient
 
@@ -32,6 +32,6 @@ ICANAR	3		# icanar elliptic/rectangular/general-shape/general-shape-new/0/1/2/3
 IVIS    1           	# do you want to introduce viscous effects? Y/N=1/0
 IPOLAR  1           	# do you want to use polar data? Y/N=1/0
 
-ALPHAIN     5           # initial angle
-ALPHAFI     5           # final angle
-ALPHASTEP   0           # increment in angle (zwake output + val = above wing at half span) plot taillessgo.xyz canarwake.xz
+ALPHAIN     1           # initial angle
+ALPHAFI     2           # final angle
+ALPHASTEP   1           # increment in angle (zwake output + val = above wing at half span) plot taillessgo.xyz canarwake.xz
