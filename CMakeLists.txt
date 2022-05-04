@@ -30,7 +30,7 @@ include_directories(src/ADwake)
 include_directories(src/ADcanareq)
 
 # executables
-add_executable(cfmactu
+add_executable(ADcfmactu
         src/ADvariables.hpp
         src/ADmemory.hpp
         src/propulsion/cfmactu.cpp
@@ -45,7 +45,7 @@ add_executable(cfmactu
         src/ADprandtline/ADprandtline.cpp
         src/ADprandtline/ADprandtline.hpp)
 
-add_executable(prandtl
+add_executable(ADprandtline
         src/ADprandtline/main.cpp
         src/ADprandtline/ADprandtline.cpp
         src/ADprandtline/ADprandtline.hpp
@@ -58,7 +58,7 @@ add_executable(prandtl
         src/ADcanareq/ADcanareq.cpp
         src/ADcanareq/ADcanareq.hpp)
 
-add_executable(wake
+add_executable(ADwake
         src/ADvariables.hpp
         src/ADmemory.hpp
         src/ADwake/main.cpp
@@ -71,7 +71,7 @@ add_executable(wake
         src/ADcanareq/ADcanareq.cpp
         src/ADcanareq/ADcanareq.hpp)
 
-add_executable(canary
+add_executable(ADcanary
         src/AD.cpp
         src/AD.hpp
         src/ADprandtline/ADprandtline.cpp
@@ -91,7 +91,7 @@ add_executable(canary
 #        src/smoothpolar/smoothpolar.hpp
 #        src/smoothpolar/main.cpp)
 
-add_executable(tsd
+add_executable(ADtsd
         src/AD.cpp
         src/AD.hpp
         src/ADvariables.hpp
@@ -103,8 +103,8 @@ add_executable(tsd
         src/tsd/tsd.hpp
         src/tsd/main.cpp)
 
-install(TARGETS cfmactu)
-install(TARGETS prandtl)
-install(TARGETS wake)
-install(TARGETS canary)
-install(TARGETS tsd)
+install(TARGETS ADcfmactu)
+install(TARGETS ADprandtline)
+install(TARGETS ADwake)
+install(TARGETS ADcanary)
+install(TARGETS ADtsd)
