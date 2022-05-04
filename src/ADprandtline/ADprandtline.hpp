@@ -55,7 +55,8 @@ private:
     double alphain,alphafi,alstep, alphad; // alphad;
     double vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2,clf;
-    double rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
+    double rey,cdi,cdv,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
+//    double em;    // shared variable
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
     double base, expn, realpart, imagpart, denom;
     double *c, *g, *dg, *y, *eta;

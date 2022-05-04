@@ -21,7 +21,10 @@ public:
                          cd_al(p->cd_al),
                          cq_al(p->cq_al),
                          jxx(p->jxx),
-                         ec(p->ec) {
+                         ec(p->ec),
+                         em(p->em),
+                         dClcda0(p->dClcda0),
+                         arceff(p->arceff) {
 
         jxx = 201;
         kx_of_alpha = 0;
@@ -48,10 +51,11 @@ public:
     int kx_of_alpha;
 
     // for canard equilibrium
-//    double dClmda0;         // from: ADwake, main wing slope
-    double &ec;              // from: ADwake, oswald efficiency
-    double arceff, armeff;  // from: ADwake, corrected aspect ratio
-    double dClcda0;         // from: ADwake, canard lift slope
+//    double dClmda0;       // from: ADwake, main wing slope
+    double &em;             // from: ADprandtline, main wing efficiency
+    double &ec;             // from: ADwake, oswald efficiency
+    double &arceff, armeff;  // from: ADwake, corrected aspect ratio
+    double &dClcda0;         // from: ADwake, canard lift slope
 
     // polar
     double *&alr;   // alpha in radians

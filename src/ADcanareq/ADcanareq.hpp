@@ -61,7 +61,7 @@ public:
         double pi,eps,degrad,radeg,us3,omega,epser,rho,amu,mass;
         double xcg,statmarg,amlb,mg,bm,cxm,cam,am,xac,tfd,dClmdtf;
         double dCmmdtf,dCdtf0,dCdtf1,dCdtf2,dm;
-        double em; // shared variable
+//        double em; // shared variable
         double tf,rf,hf,af;
         double Cdbrake,aref,lref,hpower,Pcent,Ueq,Ref;
         double T,dTdv,tr0,dtrdv,arm,prod,dum,dcz,dcxm,dcxp,incd;

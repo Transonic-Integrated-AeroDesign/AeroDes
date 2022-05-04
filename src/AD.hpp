@@ -24,7 +24,10 @@ public:
     ~AD();
 
     int jxx;
-    double ec;
+    double em;
+    double ec; // wake
+    double dClcda0; // wake
+    double arceff;
     double *alr;
     double *ald;
     double *cl_al;
