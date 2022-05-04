@@ -25,17 +25,17 @@ wake
 Custom usage where user defined input filename is "custom.data".
 
 ```
-wake --wk_in wake.data
+ADwake --wk_in wake.data
 ```
 
 Custom user defined input **polar** file is whatever file you want.
 
 ```
-wake --wk_polar polarbl.dat
+ADwake --wk_polar polarbl.dat
 ```
 Then of course all of these input flags can be used simultaneously.
 ```
-wake --wk_in wake.data --wk_polar polarbl.dat
+ADwake --wk_in wake.data --wk_polar polarbl.dat
 ```
 
 ## Results:

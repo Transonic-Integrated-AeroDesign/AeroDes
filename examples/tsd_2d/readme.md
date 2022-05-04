@@ -21,23 +21,23 @@ You may run this example using two methods. Using the executables or with the Ae
 ### Using the TSD Exectuable
 By default the executable automatically reads in a parameter file named, *tsd.data*:
 ```
-tsd
+ADtsd
 ```
 
 To specify the input file to whatever file you want:
 ```
-tsd --tsd_in tsd.data
+ADtsd --tsd_in tsd.data
 ```
 
 To specify the number of solver iterations:
 
 ```
-tsd --tsd_it 1000
+ADtsd --tsd_it 1000
 ```
 
 To use these flags simultaneously do the following:
 ```
-tsd --tsd_in prandtline.data --tsd_it 1000
+ADtsd --tsd_in prandtline.data --tsd_it 1000
 ```
 
 ## Input File Commands:
