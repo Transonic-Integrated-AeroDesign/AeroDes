@@ -33,7 +33,7 @@ cd build
 ```
 cmake ../.
 make
-make install
+sudo make install
 ```
 
 ```make``` compiles the code. ```make install``` installs the executables to your system.
