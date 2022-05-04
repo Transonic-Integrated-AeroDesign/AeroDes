@@ -21,7 +21,7 @@
 
 using namespace std; // g++ tsd.cpp -c
 
-tsd::tsd(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
+tsd::tsd(int argc, char** argv, AD *adshr) : ADvariables(adshr), ADmemory(adshr) {
     ixx=201;
     jxx=41;
     kxx=101;
@@ -99,50 +99,6 @@ tsd::~tsd() {
     free(ax); free(ay); free(xle); free(xte); free(c); free(ga);
     free(cz); free(cx); free(cmo); free(xcp);
     if (iconvrg) outfileIter.close();
-}
-
-double **tsd::create_2d_double_array(int n1, int n2, double **&array) {
-    //
-    // create a n1 x n2 matrix
-    //
-    int n=0;
-    double *data = (double *) malloc(n1*n2*sizeof(double));
-    array =(double **) malloc(sizeof(double *)*n1);
-    for (int i=0; i<n1; i++) {
-        array[i] = &data[n];
-        n += n2;
-    }
-    return array;
-}
-
-double ***tsd::create_3d_double_array(int n1, int n2, int n3, double ***&array) {
-    //
-    // create a n1 x n2 x n3 matrix
-    //
-    int n=0, m=0;
-    double *data = (double *) malloc(n1*n2*n3*sizeof(double));  // vector R^{n} ; n = n1*n2*n3
-    double **plane = (double **) malloc(n1*n2*sizeof(double*)); // matrix R^{n1 x n2}
-    array = (double ***) malloc(n1*sizeof(double**)); // matrix R^{n1 x n2}
-    for (int i = 0; i < n1; ++i) {
-        m = i * n2;
-        array[i] = &plane[m];
-        for (int j = 0; j < n2; ++j) {
-            plane[m + j] = &data[n];
-            n += n3;
-        }
-    }
-    return array;
-}
-
-void tsd::delete_2d_double_array(double **array) {
-    free(array[0]);
-    free(array);
-}
-
-void tsd::delete_3d_double_array(double ***array) {
-    free(array[0][0]);
-    free(array[0]);
-    free(array);
 }
 
 void tsd::readInputParams(std::string filename) {

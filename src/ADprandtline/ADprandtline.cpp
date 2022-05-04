@@ -11,6 +11,7 @@
 #include <cstring>
 
 #include "config.hpp"
+
 #include "ADprandtline.hpp"
 
 #ifndef DBG
@@ -25,8 +26,7 @@ using namespace std; // g++ ADprandtline.cpp -c
  * start with negative alpha
  */
 
-ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
-    jxx = 201;
+ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr), ADmemory(adshr) {
     lxx = 101;  // n discrete wing-span points
     nxx = 10;   // n polars
     nx = 1;     // start from 1 (0 = fuselage)
@@ -82,7 +82,7 @@ ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr
     mxtrm  = (int *__restrict) malloc(sizeof(int)*nxx);
 
     // filenames
-    filenameInputData = "ADprandtline.data";
+    filenameInputData = "prandtline.data";
     inputBool = false;
 
     filenameInputPolar = "polarbl.dat";
@@ -96,13 +96,13 @@ ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr
             inputBool=true;
             inputFlag=iarg+1;
             filenameInputData = std::string(argv[inputFlag]);
-            iarg+=2;
+            iarg+=1;
         }
         else if (!strcmp(argv[iarg],"--prandtl_polar")){
             polarBool=true;
             inputFlag=iarg+1;
             filenameInputPolar = argv[inputFlag];
-            iarg+=2;
+            iarg+=1;
         }
     }
 
@@ -695,24 +695,17 @@ void ADprandtline::solveLiftingLine() {
             cmt[j]=0.25*arm*cmt[j] / cam;
         }
 
-        // set shared ADvariables
-//        if (shared) {
-//            vars->alr_of_alpha[vars->kx_of_alpha] = alpha;
-//            vars->ald_of_alpha[vars->kx_of_alpha] = alphad;
-//            vars->cl_of_alpha[vars->kx_of_alpha] = cl;
-//            vars->cd_of_alpha[vars->kx_of_alpha] = cd;
-//            vars->cq_of_alpha[vars->kx_of_alpha] = cmac;
-//            vars->kx_of_alpha += 1;
-//        }
+        // set shared AD variables
+        if (DBG) cout << "share before k = " << kx_of_alpha << endl;
+        if (DBG) cout << "jxx = " << jxx << endl;
+//        alr[kx_of_alpha]=alpha;
+//        ald[kx_of_alpha]=alphad;
+//        cl_al[kx_of_alpha]=cl;
+//        cd_al[kx_of_alpha]=cd;
+//        cq_al[kx_of_alpha]=cmac;
+        kx_of_alpha += 1;
+        if (DBG) cout << "share after" << endl;
 
-        if (shared) {
-            alr_of_alpha[kx_of_alpha] = alpha;
-            ald_of_alpha[kx_of_alpha] = alphad;
-            cl_of_alpha[kx_of_alpha] = cl;
-            cd_of_alpha[kx_of_alpha] = cd;
-            cq_of_alpha[kx_of_alpha] = cmac;
-            kx_of_alpha += 1;
-        }
         // print results
         printResults();
         //printDistributions();
@@ -727,44 +720,6 @@ void ADprandtline::solveLiftingLine() {
     xle[53] = cxm;
     y[54] = 0.11111;
     xle[54] = 1.3;*/
-}
-
-int **ADprandtline::create_2d_int_array(int n1, int n2, int **&array) {
-    //
-    // create a n1 x n2 matrix
-    //
-    int n=0;
-    int *__restrict data = (int *) malloc(n1*n2*sizeof(int));
-    array =(int **) malloc(sizeof(int *)*n1);
-    for (int i=0; i<n1; i++) {
-        array[i] = &data[n];
-        n += n2;
-    }
-    return array;
-}
-
-double **ADprandtline::create_2d_double_array(int n1, int n2, double **&array) {
-    //
-    // create a n1 x n2 matrix
-    //
-    int n=0;
-    double *data = (double *) malloc(n1*n2*sizeof(double));
-    array =(double **) malloc(sizeof(double *)*n1);
-    for (int i=0; i<n1; i++) {
-        array[i] = &data[n];
-        n += n2;
-    }
-    return array;
-}
-
-void ADprandtline::delete_2d_int_array(int **__restrict array) {
-    delete [] array[0];
-    delete [] array;
-}
-
-void ADprandtline::delete_2d_double_array(double **array) {
-    free(array[0]);
-    free(array);
 }
 
 void ADprandtline::readInputParams() {

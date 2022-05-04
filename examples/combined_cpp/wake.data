@@ -1,0 +1,37 @@
+JXS2	21		# jxs2 number of points along one canard span (<103)
+ITX 	5001		# itx maximum number of iterations
+OMEGA 	0.2		# omega relaxation factor
+AVIS 	0.0		# avis viscosity coefficient
+
+TCD 	5.8		# (new) tcd setting angle of the canard from canareq.f (deg)
+TAD 	3.2		# (new) theqd airplane setting angle (deg) 
+
+BC0 	18.0		# Bc0 canard span (m)
+CC0 	3.2		# Cc0 root chord of canard (m)
+ZC0 	1.5		# Zc0 canard location in z (m)
+
+LAMBD 	0.0		# Lambd a.c. sweep angle (deg)
+RF0 	2.0		# Rf0 diameter of fuselage (m)
+DC 	0.0		# dc relative camber of canar (ref.=Cc)
+
+ARCEFF	0.96 	        # ARceff canard effective aspect ratio (initial value to be iteratively solved for)
+
+B	36.0		# B wing span (m)
+
+XACMSTR	1.937		# xacmstr absolute value of x-location of wing strake end (ref. B/2)
+ZW0	0.0		# Zw0 wing z-location wrt fuselage axis
+
+LF0	39.0		# Lf0 fuselage length (m)
+DX0	0.2		# Dx0 wake initial step (m)
+STR	1.1		# str stretching parameter for wake
+RHO	0.36		# Rho air density (kg/m**3)
+VINF	100.		# Vinf  wind velocity (m/s)
+AMU	0.0000181	# Amu dynamic viscosity (kg/(m*s))
+
+ICANAR	3		# icanar elliptic/rectangular/general-shape/general-shape-new/0/1/2/3
+IVIS    1           	# do you want to introduce viscous effects? Y/N=1/0
+IPOLAR  1           	# do you want to use polar data? Y/N=1/0
+
+ALPHAIN     1           # initial angle
+ALPHAFI     5           # final angle
+ALPHASTEP   1           # increment in angle (zwake output + val = above wing at half span) plot taillessgo.xyz canarwake.xz

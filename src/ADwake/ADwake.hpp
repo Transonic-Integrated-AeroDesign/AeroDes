@@ -15,9 +15,11 @@
 #include <math.h>
 
 #include "config.hpp"
-#include "ADvariables.hpp"
 
-class ADwake : virtual public ADvariables {
+#include "ADvariables.hpp"
+#include "ADmemory.hpp"
+
+class ADwake : virtual public ADvariables, virtual public ADmemory {
 public:
     ADwake(int argc, char** argv, AD *);
     ~ADwake();

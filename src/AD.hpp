@@ -14,15 +14,22 @@
 #include <string>
 #include <math.h>
 
-class AD{
+class AD {
 public:
+    class ADmemory *mem;
     class ADprandtline* prandtl;
     class ADcanareq* canary;
     class ADwake* wk;
     AD(int argc, char** argv);
     ~AD();
 
+    int jxx;
     double ec;
+    double *alr;
+    double *ald;
+    double *cl_al;
+    double *cd_al;
+    double *cq_al;
 };
 
 #endif

@@ -34,17 +34,18 @@ using namespace std;
 
 int main(int argc, char** argv) {
     AD *ad = new AD(argc, argv);
-    ADcanareq *canary = new ADcanareq(argc, argv, ad);
+//    ADcanareq *canary = new ADcanareq(argc, argv, ad);
 
-    canary->readInputParams();
-    canary->printInputParams();
+    ad->canary->readInputParams();
+    ad->canary->printInputParams();
 
-    canary->readInputPolar("canarpolar.dat"); // define input polar filename (can be changed)
-    canary->printInputPolar();
-    canary->printGlobalCoefs();
+    ad->canary->readInputPolar(""); // define input polar filename (can be changed)
+    ad->canary->printInputPolar();
+    ad->canary->printGlobalCoefs();
 
-    canary->linearModel();
-    canary->nonlinearModel();
+    ad->canary->linearModel();
+    ad->canary->nonlinearModel();
 
-    delete canary;
+//    delete canary;
+    delete ad;
 }

@@ -30,37 +30,36 @@ using namespace std;
 
 int main(int argc, char** argv) {
     AD *ad = new AD(argc, argv);
-    ADwake *wk = new ADwake(argc, argv, ad);
+//    ADwake *wk = new ADwake(argc, argv, ad);
 
     //wk->cmdInput(argc, argv);
 
     // input
-    wk->readInputParams();
-    wk->readInputPolar("polarbl.dat"); // default polar file for users*
-    wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
-    //wk->printXFoilValues();
+    ad->wk->readInputParams();
+    ad->wk->readInputPolar("polarbl.dat"); // default polar file for users*
+    ad->wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
 
     // solve lifting line
-    wk->setMesh();
-    wk->solveLiftingLine();
-    //wk->printDistributions(); // optional
+    ad->wk->setMesh();
+    ad->wk->solveLiftingLine();
+    //ad->wk->printDistributions(); // optional
 
-    //wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
-    wk->integrate_canard();
+    //ad->wk->readInputCanardGeom("geocanard.xzmses"); // default canard geometry
+    ad->wk->integrate_canard();
 
     // prints
-    //wk->printInputParams();
-    //wk->printResults();
-    //wk->printCanarWake();
-    //wk->printGeomSummary();
+    //ad->wk->printInputParams();
+    //ad->wk->printResults();
+    //ad->wk->printCanarWake();
+    //ad->wk->printGeomSummary();
 
     // output results to file
-    //wk->outputGammaDownwash("ADprandtline.ygw");
-    //wk->outputCanardWake("canarwake.xz");
+    //ad->wk->outputGammaDownwash("ADprandtline.ygw");
+    //ad->wk->outputCanardWake("canarwake.xz");
 
     //
-    wk->readInputWingGeom("wing.yxlexte");
+    ad->wk->readInputWingGeom("wing.yxlexte");
 
-    delete wk;
+//    delete wk;
     delete ad;
 }

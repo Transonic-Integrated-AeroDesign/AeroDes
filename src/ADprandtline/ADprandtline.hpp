@@ -15,10 +15,10 @@
 #include <math.h>
 
 #include "ADvariables.hpp"
+#include "ADmemory.hpp"
 
-class ADprandtline : virtual public ADvariables {
+class ADprandtline : virtual public ADvariables, virtual public ADmemory {
 public:
-    //ADvariables *vars;
     ADprandtline(int argc, char** argv, AD *);
     ~ADprandtline();
 
@@ -27,20 +27,13 @@ public:
     void readInputParams(std::string);
     void readInputPolar();
     void readInputPolar(std::string);
-    void readInputPolarMulti(std::string filename);
+    void readInputPolarMulti(std::string);
     void readInputDownwash();
 
     // specific
     void setAlpha(double);
     void setMesh();
     void solveLiftingLine();
-
-    // memory
-    int** create_2d_int_array(int n1, int n2, int **&array);
-    double** create_2d_double_array(int n1, int n2, double **&array);
-
-    void delete_2d_int_array(int **array);
-    void delete_2d_double_array(double **array);
 
     // prints
     void printInputParams();
@@ -50,7 +43,7 @@ public:
     void printResults();
 
 private:
-    int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
+    int lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
     int jx2,is,iwing,nsteps,ivis,iter,it,mj,jdx;
     int itx;
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;

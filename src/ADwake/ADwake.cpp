@@ -20,7 +20,7 @@
 
 using namespace std; // g++ ADwake.cpp -c
 
-ADwake::ADwake(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
+ADwake::ADwake(int argc, char** argv, AD *adshr) : ADvariables(adshr), ADmemory(adshr) {
     ixx=201;
     lxx=102;
     nxx=10;
@@ -80,7 +80,7 @@ ADwake::ADwake(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
     mxtrm  = (int *) malloc(sizeof(int)*nxx);
 
     // filenames
-    filenameInputData = "ADwake.data";
+    filenameInputData = "wake.data";
     inputBool = false;
 
     filenameInputPolar = "polarbl.dat";
@@ -94,13 +94,13 @@ ADwake::ADwake(int argc, char** argv, AD *adshr) : ADvariables(adshr) {
             inputBool=true;
             inputFlag=iarg+1;
             filenameInputData = std::string(argv[inputFlag]);
-            iarg+=2;
+            iarg+=1;
         }
         else if (!strcmp(argv[iarg],"--wk_polar")){
             polarBool=true;
             inputFlag=iarg+1;
             filenameInputPolar = argv[inputFlag];
-            iarg+=2;
+            iarg+=1;
         }
     }
 

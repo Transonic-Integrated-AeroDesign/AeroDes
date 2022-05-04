@@ -10,34 +10,41 @@
 class ADvariables{
 public:
     // absolutely need constructor
-    ADvariables(AD *p) : prandtlinead(p->prandtl),
-                         wakead(p->wk),
-                         canareqad(p->canary),
+    ADvariables(AD *p) : ad_ad(p),
+                         mem_ad(p->mem),
+                         prandtline_ad(p->prandtl),
+                         wake_ad(p->wk),
+                         canareq_ad(p->canary),
+                         alr(p->alr),
+                         ald(p->ald),
+                         cl_al(p->cl_al),
+                         cd_al(p->cd_al),
+                         cq_al(p->cq_al),
+                         jxx(p->jxx),
                          ec(p->ec) {
+
+        jxx = 201;
         kx_of_alpha = 0;
 //        dClmda0 = 0;    // main wing lift slope
         dClcda0 = 0;    // canard lift slope
         ec = 0;
-        jxx=102;
-        alr_of_alpha = (double *) malloc(sizeof(double)*jxx);
-        ald_of_alpha = (double *) malloc(sizeof(double)*jxx);
-        cl_of_alpha = (double *) malloc(sizeof(double)*jxx);
-        cd_of_alpha = (double *) malloc(sizeof(double)*jxx);
-        cq_of_alpha = (double *) malloc(sizeof(double)*jxx);
+//        mem_ad->create_1d_double_array(jxx, alr);
+//        mem_ad->create_1d_double_array(jxx, ald);
+//        mem_ad->create_1d_double_array(jxx, cl_al);
+//        mem_ad->create_1d_double_array(jxx, cd_al);
+//        mem_ad->create_1d_double_array(jxx, cq_al);
     };
+
     ~ADvariables() {
-        delete alr_of_alpha;
-        delete ald_of_alpha;
-        delete cl_of_alpha;
-        delete cd_of_alpha;
-        delete cq_of_alpha;
     };
 
-    ADprandtline *&prandtlinead;
-    ADwake *&wakead;
-    ADcanareq *&canareqad;
+    AD *&ad_ad;
+    ADmemory *&mem_ad;
+    ADprandtline *&prandtline_ad;
+    ADwake *&wake_ad;
+    ADcanareq *&canareq_ad;
 
-    int jxx;
+    int &jxx;
     int kx_of_alpha;
 
     // for canard equilibrium
@@ -47,11 +54,10 @@ public:
     double dClcda0;         // from: ADwake, canard lift slope
 
     // polar
-    double *alr_of_alpha;   // alpha in radians
-    double *ald_of_alpha;   // alpha in degree
-    double *cl_of_alpha;
-    double *cd_of_alpha;
-    double *cq_of_alpha;
+    double *&alr;   // alpha in radians
+    double *&ald;   // alpha in degree
+    double *&cl_al;
+    double *&cd_al;
+    double *&cq_al;
 };
-
 #endif

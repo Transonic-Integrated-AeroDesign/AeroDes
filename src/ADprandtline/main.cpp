@@ -12,7 +12,7 @@
 #include <math.h>   // pow
 #include <cstring>
 
-//#include "AD.hpp"
+#include "AD.hpp"
 #include "ADprandtline.hpp"
 
 /*
@@ -27,21 +27,19 @@ using namespace std;
 
 int main(int argc, char** argv) {
     AD *ad = new AD(argc, argv);
-    ADprandtline *prants = new ADprandtline(argc, argv, ad);
 
     // input
-    prants->readInputParams();
-    prants->readInputPolar();
-
-    // solve lifting line problem
-    prants->setMesh();
-    prants->solveLiftingLine();
+    ad->prandtl->readInputParams();
+    ad->prandtl->readInputPolar();
 
     // prints
     //prants->printInputParams();   // optional
     //prants->printInputPolar();    // optional
     //prants->printSetupSummary();  // optional
 
-    delete prants;
+    // solve lifting line problem
+    ad->prandtl->setMesh();
+    ad->prandtl->solveLiftingLine();
+
     delete ad;
 }

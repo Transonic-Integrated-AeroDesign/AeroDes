@@ -17,12 +17,10 @@
 #include <sstream>  // istream
 
 #include "ADvariables.hpp"
+#include "ADmemory.hpp"
 
-//class ADcanareq : protected ADvariables {
-class ADcanareq : virtual public ADvariables {
+class ADcanareq : virtual public ADvariables, virtual public ADmemory {
 public:
-    //ADvariables *vars;
-
     ADcanareq(int argc, char** argv, AD *);
     ~ADcanareq();
 
@@ -34,11 +32,6 @@ public:
 
     // sets
     void setCanardAngle(double);
-
-    // memory
-    double* create_1d_double_array(int n1, double *array);
-    double** create_2d_double_array(int n1, int n2, double **array);
-    void delete_2d_double_array(double **array);
 
     // subroutines
     double thrust(int, double);
@@ -89,7 +82,7 @@ public:
         double zeng,rav,ruh,ar,reyr,Cdr0,Cdreq,dna,lna,reyn,an;
         double Cdn0,Cdneq;
         double *vr; double *tr;
-        double *cx; double *cz; double *cq; double *inc;
+//        double *cx; double *cz; double *cq; double *inc;
         double det,usdet,b1,b2,b3;
         double **aa; double *bb;
         //std::string title, prop;
