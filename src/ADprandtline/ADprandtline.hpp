@@ -42,6 +42,9 @@ public:
     void printDistributions();
     void printResults();
 
+    // outputs
+    void outputYFz(std::string);
+
 private:
     int lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
     int jx2,is,iwing,nsteps,ivis,iter,it,mj,jdx;
@@ -74,6 +77,8 @@ private:
     std::string filenameInputData; bool inputBool; int inputFlag;
     std::string filenameInputPolar; bool polarBool; int polarFlag;
     std::string filenameInputDownwash;
+
+    std::string filenameOutputYFz; std::ofstream outfileYFz;
 };
 
 #endif

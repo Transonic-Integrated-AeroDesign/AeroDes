@@ -23,6 +23,7 @@
  *  run:
  *      ./test
  */
+
 int main(int argc, char** argv) {
     AD *aero = new AD(argc, argv);    // create new aero object
 
@@ -31,8 +32,8 @@ int main(int argc, char** argv) {
     aero->prandtl->readInputPolarMulti("wing_polarbl.dat"); // reads multiple polar within single file for main wing geometry (3 polars)
     aero->prandtl->setMesh();                                       // set wing discritization // initialize all arrays to 0
 
-    double angle=0, d_angle = 0.5;
-    for (int i = 0; i < 1; ++i) {
+    double angle=0, d_angle = 0.5, angle0=1;
+    for (int i = 0; i < 10; ++i) {
         angle = d_angle*i;
         aero->prandtl->setAlpha(angle);     // set alpha (deg) // this overrides the input file
         aero->prandtl->solveLiftingLine();  // get Cl(alpha), Cd(alpha), and Gamma, Downwash distributions()
@@ -49,20 +50,20 @@ int main(int argc, char** argv) {
     aero->wk->integrate_canard();
 
     // canar equillibrium
-    aero->canary->readInputParams("ADcanareq.data");
+    aero->canary->readInputParams("canareq.data");
     aero->canary->printInputParams();
+    aero->canary->printGlobalCoefs();
 
-//
-//    std::cout << std::fixed << std::setprecision(4);
-//    for(int i = 0; i < 1; i++) {
-//        angle = d_angle*i;
-//        aero->canary->setCanardAngle(angle);
-//        aero->canary->linearModel();
-//        aero->canary->nonlinearModel(); // solve for alpha, V, beta
-//        std::string filename = "filename." + std::to_string(angle) + ".dat"; // filename.1.dat, filename.2.dat, etc...
-//        std::cout << " filename: " << filename << std::endl;
-//        //aero->canary->outputResults(filename);
-//    }
+    std::cout << std::fixed << std::setprecision(4);
+    for(int i = 0; i < 10; i++) {
+        angle = d_angle*i + angle0;
+        aero->canary->setCanardAngle(angle);
+        aero->canary->linearModel();
+        aero->canary->nonlinearModel(); // solve for alpha, V, beta
+        std::string filename = "filename." + std::to_string(angle) + ".dat"; // filename.1.dat, filename.2.dat, etc...
+        std::cout << " filename: " << filename << std::endl;
+        aero->canary->outputResults2Dat(filename);
+    }
 
     delete aero;
     return 1;

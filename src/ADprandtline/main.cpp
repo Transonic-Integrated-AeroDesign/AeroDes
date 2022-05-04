@@ -41,5 +41,8 @@ int main(int argc, char** argv) {
     ad->prandtl->setMesh();
     ad->prandtl->solveLiftingLine();
 
+    // output
+    ad->prandtl->outputYFz("");
+
     delete ad;
 }

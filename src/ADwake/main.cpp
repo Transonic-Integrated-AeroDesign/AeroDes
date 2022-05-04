@@ -30,9 +30,6 @@ using namespace std;
 
 int main(int argc, char** argv) {
     AD *ad = new AD(argc, argv);
-//    ADwake *wk = new ADwake(argc, argv, ad);
-
-    //wk->cmdInput(argc, argv);
 
     // input
     ad->wk->readInputParams();
@@ -60,6 +57,5 @@ int main(int argc, char** argv) {
     //
     ad->wk->readInputWingGeom("wing.yxlexte");
 
-//    delete wk;
     delete ad;
 }

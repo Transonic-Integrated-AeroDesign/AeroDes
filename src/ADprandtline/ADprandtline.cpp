@@ -81,14 +81,15 @@ ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr
     create_2d_int_array(lxx, nxx, kxtrm);
     mxtrm  = (int *__restrict) malloc(sizeof(int)*nxx);
 
-    // filenames
+    // input filenames
     filenameInputData = "prandtline.data";
     inputBool = false;
-
     filenameInputPolar = "polarbl.dat";
     polarBool = false;
-
     filenameInputDownwash = "canarwash.ylwl";
+
+    // output filenames
+    filenameOutputYFz = "prandtline.loads"; // traditionally prandtline.yfz
 
     // parse commandline input
     for (int iarg = 0; iarg<argc ; ++iarg) {
@@ -697,12 +698,11 @@ void ADprandtline::solveLiftingLine() {
 
         // set shared AD variables
         if (DBG) cout << "share before k = " << kx_of_alpha << endl;
-        if (DBG) cout << "jxx = " << jxx << endl;
-//        alr[kx_of_alpha]=alpha;
-//        ald[kx_of_alpha]=alphad;
-//        cl_al[kx_of_alpha]=cl;
-//        cd_al[kx_of_alpha]=cd;
-//        cq_al[kx_of_alpha]=cmac;
+        alr[kx_of_alpha]=alpha;
+        ald[kx_of_alpha]=alphad;
+        cl_al[kx_of_alpha]=cl;
+        cd_al[kx_of_alpha]=cd;
+        cq_al[kx_of_alpha]=cmac;
         kx_of_alpha += 1;
         if (DBG) cout << "share after" << endl;
 
@@ -1553,4 +1553,37 @@ void ADprandtline::printResults() {
     cout << right << setw(32) << "          center of pressure x,cp = " << xcp << endl;
     cout << right << setw(32) << "   root bending moment coef. CM,x = " << -cmf[jx2+1] << endl;
     cout << right << setw(32) << "   root torsion moment coef. CM,y = " << -cmt[jx2+1] << endl;
+}
+
+void ADprandtline::outputYFz(std::string filename) {
+    if (DBG) cout << endl << "=========================================\n";
+    if (DBG) cout << " tsd::outputXiCp()" << endl;
+
+    if (filename.compare("")==0);
+    else filenameOutputYFz = filename;
+
+    outfileYFz.open(filenameOutputYFz);
+    if (!outfileYFz.is_open()) {
+        cout << "\nCannot Read " << filenameOutputYFz;
+        cout << "File error in: outputCp()" << endl;
+        abort();
+    }
+
+    // header
+    outfileYFz << left << setw(12) << fixed << "eta[j],"
+               << left << setw(12) << fixed << "y[j],"
+               << left << setw(12) << fixed << "fz[j],"
+               << left << setw(12) << fixed << "cl[j],"
+               << left << setw(12) << fixed << "j"
+               << endl;
+
+    for (int j = 0; j < jx; ++j) {
+        outfileYFz << left << setw(12) << fixed << eta[j] << ","
+                   << left << setw(12) << fixed << y[j] << ","
+                   << left << setw(12) << fixed << fz[j] << ","
+                   << left << setw(12) << fixed << l[j] << ","
+                   << left << setw(12) << fixed << j << endl;
+    }
+
+    outfileYFz.close();
 }
