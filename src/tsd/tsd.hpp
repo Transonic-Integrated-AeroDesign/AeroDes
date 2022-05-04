@@ -15,13 +15,15 @@
 #include <math.h>
 
 #include "config.hpp"
-#include "variables.hpp"
 
-class tsd : virtual public variables {
+#include "ADvariables.hpp"
+#include "ADmemory.hpp"
+
+class tsd : virtual public ADvariables, virtual public ADmemory {
 public:
-    variables *vars;
+    //ADvariables *vars;
 
-    tsd(int argc, char** argv, variables *);
+    tsd(int argc, char** argv, AD *);
     ~tsd();
 
     // input
@@ -55,12 +57,6 @@ public:
     void outputCpContour(std::string);
     void outputXiCp(std::string);
     void outputIter();
-
-    // memory
-    double **create_2d_double_array(int, int, double **&);
-    double ***create_3d_double_array(int, int, int, double ***&);
-    void delete_2d_double_array(double **);
-    void delete_3d_double_array(double ***);
 
 private:
     int ixx,kxx,ikxx,ithick,ile,klo,kup,kpt,kx,iprof,ite;

@@ -15,13 +15,11 @@
 #include <math.h>
 
 #include "config.hpp"
-#include "variables.hpp"
+#include "ADvariables.hpp"
 
-class smoothpolar : virtual public variables {
+class smoothpolar : virtual public ADvariables {
 public:
-    variables *vars;
-
-    smoothpolar(int argc, char** argv, variables *);
+    smoothpolar(int argc, char** argv, AD *);
     ~smoothpolar();
 
     // input

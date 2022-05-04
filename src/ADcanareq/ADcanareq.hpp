@@ -16,17 +16,13 @@
 #include <fstream>  // fopen, ifstream
 #include <sstream>  // istream
 
-//#include "prandtline.hpp"
-#include "wake.hpp"
-#include "variables.hpp"
+#include "ADvariables.hpp"
+#include "ADmemory.hpp"
 
-//class canareq : protected variables {
-class canareq : virtual public variables {
+class ADcanareq : virtual public ADvariables, virtual public ADmemory {
 public:
-    variables *vars;
-
-    canareq(int argc, char** argv, variables *);
-    ~canareq();
+    ADcanareq(int argc, char** argv, AD *);
+    ~ADcanareq();
 
     // file input
     void init();
@@ -36,11 +32,6 @@ public:
 
     // sets
     void setCanardAngle(double);
-
-    // memory
-    double* create_1d_double_array(int n1, double *array);
-    double** create_2d_double_array(int n1, int n2, double **array);
-    void delete_2d_double_array(double **array);
 
     // subroutines
     double thrust(int, double);
@@ -70,7 +61,7 @@ public:
         double pi,eps,degrad,radeg,us3,omega,epser,rho,amu,mass;
         double xcg,statmarg,amlb,mg,bm,cxm,cam,am,xac,tfd,dClmdtf;
         double dCmmdtf,dCdtf0,dCdtf1,dCdtf2,dm;
-        double em; // shared variable
+//        double em; // shared variable
         double tf,rf,hf,af;
         double Cdbrake,aref,lref,hpower,Pcent,Ueq,Ref;
         double T,dTdv,tr0,dtrdv,arm,prod,dum,dcz,dcxm,dcxp,incd;
@@ -81,7 +72,8 @@ public:
         double daleq,dUeq,reyeq,reym,Cdf0,Cdfeq,dbeteq,beteqd,theq,theqd;
         double ClCdeq,reseq,winglift,alphd,alph,Cl,Cm,Cd,Cl3,Cd2,ratio1;
         double ratio2,Cmmeq,Cmeq,Cmm0,dyn,hpokwatt,lf,reyf,weq;
-        double reseq0,bc,cxc,cac,ac,xacc,dc,ec,tcd,tc,awc,acw,xacm;
+        double reseq0,bc,cxc,cac,ac,xacc,dc,tcd,tc,awc,acw,xacm;
+//        double ec; // shared variable
         double arc,dCmacdac0,Cmacc00,Clc00,dCldac0,Cmac00,Cmc00,dCmdac0;
         double Clceq,canarlift,reyc,Cdic,Cdceq,Clc0,Cmacc0,Cmacm0,Cmacm;
         double Cmc0,dCldac,dCmacdac,dCmacdam,dCmdac,Cdc0,Cmacc;
@@ -90,7 +82,7 @@ public:
         double zeng,rav,ruh,ar,reyr,Cdr0,Cdreq,dna,lna,reyn,an;
         double Cdn0,Cdneq;
         double *vr; double *tr;
-        double *cx; double *cz; double *cq; double *inc;
+//        double *cx; double *cz; double *cq; double *inc;
         double det,usdet,b1,b2,b3;
         double **aa; double *bb;
         //std::string title, prop;
@@ -102,7 +94,7 @@ public:
         // slope
         // Cl (canard)
 
-        // input resulting polar from smoothpolar or prandtline
+        // input resulting polar from smoothpolar or ADprandtline
         double *alphares, *czres, *cxres, *cqres;
         int nsteps;
     

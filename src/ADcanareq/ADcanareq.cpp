@@ -10,18 +10,17 @@
 #include <cstring>
 
 #include "config.hpp"
-#include "canareq.hpp"
+#include "ADcanareq.hpp"
 
 #ifndef DBG
 #define DBG 0
 #endif
 
-using namespace std; // g++ canareq.cpp -c
+using namespace std; // g++ ADcanareq.cpp -c
 
-canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
+ADcanareq::ADcanareq(int argc, char** argv, AD *adshr) : ADvariables(adshr), ADmemory(adshr) {
     // storage
     int nrows=3; int ncols=3;
-    aa = (double **) malloc(sizeof(double *)*nrows);
     bb = (double *) malloc(sizeof(double)*ncols);
     create_2d_double_array(nrows, ncols, aa);
     
@@ -30,13 +29,8 @@ canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
     vr = (double *) malloc(sizeof(double)*ndatx);
     tr = (double *) malloc(sizeof(double)*ndatx);
     
-    cx = (double *) malloc(sizeof(double)*lxx);
-    cz = (double *) malloc(sizeof(double)*lxx);
-    cq = (double *) malloc(sizeof(double)*lxx);
-    inc = (double *) malloc(sizeof(double)*lxx);
-    
     filenameInputPolar = "canarpolar.dat";
-    filenamePolarPrandtline = "canarpolar.prandtline";
+    filenamePolarPrandtline = "canarpolar.ADprandtline";
     filenamePolarCdClCq = "canarpolar.cdclcq";
     filenameEqData = "canareq.data";
     filenameEqCdClCqm = "canareq.cdclcqm";
@@ -76,14 +70,14 @@ canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
         if (!strcmp(argv[iarg],"--ceq_in")){
             inputBool=true;
             inflag=iarg+1;
-            filenameEqData = std::string(argv[inflag]);
+            filenameEqData = argv[inflag];
             iarg+=1;
         }
         // commandline option: for override of canard equilibrium polar file
         if (!strcmp(argv[iarg],"--ceq_polar")) {
             tcdBool=true;
-            polarflag=iarg+1;
-            filenameInputPolar = std::string(argv[polarflag]);
+            inflag=iarg+1;
+            filenameInputPolar = argv[inflag];
             iarg+=1;
         }
         // commandline option: for override of tcd setting angle
@@ -96,7 +90,7 @@ canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
     }
 }
 
-canareq::~canareq() {
+ADcanareq::~ADcanareq() {
     delete_2d_double_array(aa);
     free(bb);
 
@@ -104,36 +98,10 @@ canareq::~canareq() {
     free(vr);
     free(tr);
 
-    free(cx);
-    free(cz);
-    free(cq);
-    if (inc!=NULL) free(inc);
     if (!file1) file1.close();
 }
 
-double *canareq::create_1d_double_array(int n2, double *array) {
-    // create a n2 x 1 matrix
-    array = (double *) malloc(n2*sizeof(double));
-    return array;
-}
-
-double **canareq::create_2d_double_array(int n1, int n2, double **array) {
-    // create a n1 x n2 matrix
-    int n=0;
-    double *data = (double *) malloc(n1*n2*sizeof(double));
-    for (int i=0; i<n1; i++) {
-        array[i] = &data[n];
-        n += n2;
-    }
-    return array;
-}
-
-void canareq::delete_2d_double_array(double **array) {
-    free(array[0]);
-    free(array);
-}
-
-double canareq::thrust(int ndat, double v){
+double ADcanareq::thrust(int ndat, double v){
     // return thrust slope dT/dv
     int im;
     double prod;
@@ -161,7 +129,7 @@ double canareq::thrust(int ndat, double v){
     return dTdv;
 }
 
-double canareq::mat3(double **a, double *b) {
+double ADcanareq::mat3(double **a, double *b) {
     double usdet, c1, c2, c3;
     usdet=1./(a[0][0]*(a[1][1]*a[2][2]-a[1][2]*a[2][1])
             -a[1][0]*(a[0][1]*a[2][2]-a[0][2]*a[2][1])
@@ -190,7 +158,7 @@ double canareq::mat3(double **a, double *b) {
     return usdet;
 }
 
-void canareq::linearModel() {
+void ADcanareq::linearModel() {
     //
     // linear model results
     //
@@ -222,14 +190,14 @@ void canareq::linearModel() {
     prod=aleq+0.5*pi;
 
     for (int j = 0; j < kx; ++j) {
-        prod=prod*(aleq-inc[j]);
+        prod=prod*(aleq-alr[j]);
         if(prod < -eps) break;
         prod=1.;
         m=j;
     }
     //m=8;
-    Cdeq=cx[m]+(aleq-inc[m])*(cx[m+1]-cx[m])
-            /(inc[m+1]-inc[m]);
+    Cdeq=cd_al[m]+(aleq-alr[m])*(cd_al[m+1]-cd_al[m])
+            /(alr[m+1]-alr[m]);
 
     //     wing induced drag estimation
     Cdmeq=Cdeq;
@@ -279,9 +247,9 @@ void canareq::linearModel() {
     cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl << endl;
 }
 
-void canareq::nonlinearModel() {
+void ADcanareq::nonlinearModel() {
     if (DBG) cout << endl << "=========================================" << endl;
-    if (DBG) cout << " canareq::nonlinearModel()" << endl;
+    if (DBG) cout << " ADcanareq::nonlinearModel()" << endl;
 
     // read canar setting angle tcd (deg)
     //tcd = 5;
@@ -342,15 +310,15 @@ void canareq::nonlinearModel() {
         prod=aleq+.5*pi;
         for (int j = 1; j < kx; ++j) {
             //do 7 k = 2, kx - 1
-            prod=prod*(aleq-inc[j]);
+            prod=prod*(aleq-alr[j]);
             if (prod <= eps) break;
             prod=1.;
             m=j;
         }
 
         // lift coefficients of main wing
-        dCldam=(cz[m+1]-cz[m]) / (inc[m+1]-inc[m]);
-        Clm0=cz[m]+dCldam*(-inc[m]);
+        dCldam=(cl_al[m+1]-cl_al[m]) / (alr[m+1]-alr[m]);
+        Clm0=cl_al[m]+dCldam*(-alr[m]);
 
         // add canar influence on Clm
         Clm0=Clm0+acw*dCldalind*Clceq / (pi*arc);
@@ -359,9 +327,9 @@ void canareq::nonlinearModel() {
         Clm0=Clm0+dClmdtf*tf;
 
         // moment coefficients of the main wing Cmacm and Cmmo
-        //dCmacdam=(cq[m+1]-cq[m]) / (inc[m+1]-inc[m]);
-        dCmacdam=(cq[m]-cq[m-1]) / (inc[m]-inc[m-1]);
-        Cmacm0=cq[m]+dCmacdam*(-inc[m]);
+        //dCmacdam=(cq[m+1]-cq[m]) / (alr[m+1]-alr[m]);
+        dCmacdam=(cq_al[m]-cq_al[m-1]) / (alr[m]-alr[m-1]);
+        Cmacm0=cq_al[m]+dCmacdam*(-alr[m]);
         dCmdam=dCmacdam-xacm*dCldam / cam;
         Cmm0=Cmac0-xacm*Clm0 / cam;
 
@@ -384,7 +352,7 @@ void canareq::nonlinearModel() {
         Cm0=(am*cam*Cmm0+ac*cac*Cmc0) / (aref * lref);
 
         // main wing drag
-        Cdmeq = cx[m] + (aleq - inc[m]) * (cx[m + 1] - cx[m]) / (inc[m + 1] - inc[m]);
+        Cdmeq = cd_al[m] + (aleq - alr[m]) * (cd_al[m + 1] - cd_al[m]) / (alr[m + 1] - alr[m]);
 
         // add drag of flap
         Cdmeq = Cdmeq + (dCdtf0 + dCdtf1 * aleq + dCdtf2 * pow(aleq,2)) * tf / 0.1744;
@@ -639,7 +607,7 @@ void canareq::nonlinearModel() {
         cout << "    nc = " << nc << endl << endl;
     }
     else {
-        if (aleq > inc[0]) {
+        if (aleq > alr[0]) {
             cout << "\033[1;42m equilibrium solution: " << tcd << " (deg) \033[0m" << endl;
             cout << right << setw(32) << " iter = " << iter << endl;
             cout << right << setw(32) << " error = " << reseq << endl << endl;
@@ -708,35 +676,49 @@ void canareq::nonlinearModel() {
     cout << right << setw(32) << " nsteps = " << nsteps << endl;
 }
 
-void canareq::init() {
+void ADcanareq::init() {
     //
-    // canareq::init()
+    // ADcanareq::init()
     //
 
-    // wake shared vars
-    if (vars->arceff) arceff=vars->arceff;
-    if (vars->ec) em=vars->ec;
-    if (vars->dClcda0) dClcda0=vars->dClcda0;
-    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
+    // ADwake shared vars
+//    if (vars->arceff) arceff=vars->arceff;
+//    if (vars->ec) em=vars->ec;
+//    if (vars->dClcda0) dClcda0=vars->dClcda0;
+////    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
+//
+//    // ADprandtline shared vars
+//    if (vars->kx_of_alpha) kx = vars->kx_of_alpha;
+//    for (int j = 0; j < kx; ++j) {
+//        inc[j] = vars->alr_of_alpha[j];
+//        cz[j] = vars->cl_of_alpha[j];
+//        cx[j] = vars->cd_of_alpha[j];
+//        cq[j] = vars->cq_of_alpha[j];
+//    }
 
-    // prandtline shared vars
-    if (vars->kx_of_alpha) kx = vars->kx_of_alpha;
-    for (int j = 0; j < kx; ++j) {
-        inc[j] = vars->alr_of_alpha[j];
-        cz[j] = vars->cl_of_alpha[j];
-        cx[j] = vars->cd_of_alpha[j];
-        cq[j] = vars->cq_of_alpha[j];
-    }
+    if (arceff) arceff=arceff;
+    if (ec) em=ec;
+    if (dClcda0) dClcda0=dClcda0;
+//    if (vars->dClmda0) dClmda0=vars->dClmda0; // where is this calculated??
+
+    // ADprandtline shared vars
+    if (kx_of_alpha) kx = kx_of_alpha;
+//    for (int j = 0; j < kx; ++j) {
+//        inc[j] = alr_of_alpha[j];
+//        cz[j] = cl_of_alpha[j];
+//        cx[j] = cd_of_alpha[j];
+//        cq[j] = cq_of_alpha[j];
+//    }
 
     // print check
     if (1) {
         cout << fixed << std::setprecision(4);
         cout << endl;
-        cout << " canareq::init()" << endl
+        cout << " ADcanareq::init()" << endl
              << " arceff = " << arceff << endl
              << " em = " << em << endl
              << " dClcda0 = " << dClcda0 << endl
-             << " dClmda0 = " << dClmda0 << endl
+//             << " dClmda0 = " << dClmda0 << endl
              << " kx = " << kx << endl << endl;
 
         cout << left << setw(10) << "alpha"
@@ -744,15 +726,15 @@ void canareq::init() {
              << left << setw(10) << "cx"
              << left << setw(10) << "cq" << endl;
         for (int i = 0; i < kx; ++i) {
-            cout << left << setw(10) << inc[i]
-                 << left << setw(10) << cz[i]
-                 << left << setw(10) << cx[i]
-                 << left << setw(38) << cq[i] << endl;
+            cout << left << setw(10) << ald[i]
+                 << left << setw(10) << cl_al[i]
+                 << left << setw(10) << cd_al[i]
+                 << left << setw(38) << cq_al[i] << endl;
         }
     }
 }
 
-void canareq::readInputParams() {
+void ADcanareq::readInputParams() {
     // open input file
     ifstream paramfile(filenameEqData);
     if (!paramfile.is_open()) {
@@ -763,10 +745,19 @@ void canareq::readInputParams() {
 
     std::string line;
     std::string a; double b; std::string c; double v; double t;
+    std::string afirst;
     for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) break;
+        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) {
+            afirst = a.at(0);
+            // check for comment line
+            if (afirst.compare("#") == 0) {
+                if (DBG) cout << "comment = " << afirst << endl;
+                continue;
+            }
+            break;
+        }
         
         // newton method parameters
         if(a.compare("ITX")==0) itx = b;
@@ -796,7 +787,7 @@ void canareq::readInputParams() {
         if(a.compare("dCdtf0")==0) dCdtf0 = b;
         if(a.compare("dCdtf1")==0) dCdtf1 = b;
         if(a.compare("dCdtf2")==0) dCdtf2 = b;
-        if(a.compare("dClmda0")==0) dClmda0 = b; // new
+//        if(a.compare("dClmda0")==0) dClmda0 = b; // new
         if(a.compare("dClcda0")==0) dClcda0 = b; // new
 
         // data for fuselage
@@ -861,6 +852,7 @@ void canareq::readInputParams() {
     }
 
     // airflow and weight calcs
+    arm=pow(bm,2) / am;
     amlb=2.205*mass;
     mg=mass*9.81;
     
@@ -902,10 +894,10 @@ void canareq::readInputParams() {
     paramfile.close();
 }
 
-void canareq::readInputParams(std::string filename) {
+void ADcanareq::readInputParams(std::string filename) {
     // open input file
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " prandtline::readInputParams()" << endl;
+    if (DBG) cout << " ADprandtline::readInputParams()" << endl;
 
     if (filename.compare("")==0);
     else filenameEqData = filename;
@@ -919,10 +911,19 @@ void canareq::readInputParams(std::string filename) {
 
     std::string line;
     std::string a; double b; std::string c; double v; double t;
+    std::string afirst;
     for (int i=0; i<lxx; i++, std::getline(paramfile, line) ) {
         if (line.empty()) continue;
         std::istringstream iss(line);
-        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) break;
+        if(!(iss >> a >> b >> c) && (a.compare("ENGPERF")!=0) ) {
+            afirst = a.at(0);
+            // check for comment line
+            if (afirst.compare("#") == 0) {
+                if (DBG) cout << "comment = " << afirst << endl;
+                continue;
+            }
+            break;
+        }
 
         // newton method parameters
         if(a.compare("ITX")==0) itx = b;
@@ -952,7 +953,7 @@ void canareq::readInputParams(std::string filename) {
         if(a.compare("dCdtf0")==0) dCdtf0 = b;
         if(a.compare("dCdtf1")==0) dCdtf1 = b;
         if(a.compare("dCdtf2")==0) dCdtf2 = b;
-        if(a.compare("dClmda0")==0) dClmda0 = b; // new
+//        if(a.compare("dClmda0")==0) dClmda0 = b; // new
         if(a.compare("dClcda0")==0) dClcda0 = b; // new
 
         // data for fuselage
@@ -1058,7 +1059,7 @@ void canareq::readInputParams(std::string filename) {
     paramfile.close();
 }
 
-void canareq::readInputPolar(std::string filename) {
+void ADcanareq::readInputPolar(std::string filename) {
     // read given input polar filename:
     //
     // input polars should be structured columnwise with a single breakpoint at the end.
@@ -1073,7 +1074,7 @@ void canareq::readInputPolar(std::string filename) {
     //
 
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " canareq::readInputPolar()" << endl;
+    if (DBG) cout << " ADcanareq::readInputPolar()" << endl;
 
     // polar data
     polarBool = true;
@@ -1084,7 +1085,7 @@ void canareq::readInputPolar(std::string filename) {
     polarfile.open(filenameInputPolar);
     if (!polarfile.is_open()) {
         cout << "\n\nCannot Read: \'" << filenameInputPolar
-             << "\' [file error in, canareq::readInputPolar()]" << endl;
+             << "\' [file error in, ADcanareq::readInputPolar()]" << endl;
         abort();
     }
 
@@ -1111,11 +1112,11 @@ void canareq::readInputPolar(std::string filename) {
         std::istringstream iss(line);
         //cout << "\nline: \'"<< line << "\'"<< endl;
         if(!(iss >> a >> b >> c >> d >> e)) break;  // break loop if end of file reached
-        inc[i] = a; // angle of attack
-        cz[i] = b;  // lift coefficient
-        cx[i] = c;  // drag coefficient
-        dum = d;    // dummy variable
-        cq[i] = e;  // twist coefficient
+        ald[i] = a;     // angle of attack (degrees)
+        cl_al[i] = b;   // lift coefficient
+        cd_al[i] = c;   // drag coefficient
+        dum = d;        // dummy variable
+        cq_al[i] = e;   // twist coefficient
 
         if (DBG) {
             cout << std::setprecision(6);
@@ -1129,10 +1130,10 @@ void canareq::readInputPolar(std::string filename) {
         }
 
         kxtrm[i]=0;
-        dcz=cz[i]-cz[km];
+        dcz=cl_al[i]-cl_al[km];
         prod=prod*dcz;
         if(prod < 0.0) {
-            if(DBG) cout << "\nkxtrm = " << km << " cz(kxtrm) = " << cz[km];
+            if(DBG) cout << "\nkxtrm = " << km << " cz(kxtrm) = " << cl_al[km];
             kxtrm[km]=km;
         }
         prod=dcz;
@@ -1149,33 +1150,33 @@ void canareq::readInputPolar(std::string filename) {
         km=k-1; // kminus
         if(km < 0) km=1;
         if((k>1) && (k<kx)) {
-            dcxm=((cx[k]-cx[km])*(cz[kp]-cz[k])*(cz[k]+cz[kp]-2.*cz[km])
-                    -(cx[kp]-cx[k])*pow(cz[k]-cz[km],2))
-                    /((cz[kp]-cz[k])*(cz[kp]-cz[km])*(cz[k]-cz[km]));
+            dcxm=((cd_al[k]-cd_al[km])*(cl_al[kp]-cl_al[k])*(cl_al[k]+cl_al[kp]-2.*cl_al[km])
+                    -(cd_al[kp]-cd_al[k])*pow(cl_al[k]-cl_al[km],2))
+                    /((cl_al[kp]-cl_al[k])*(cl_al[kp]-cl_al[km])*(cl_al[k]-cl_al[km]));
             
-            dcxp=((cx[k]-cx[kp])*(cz[km]-cz[k])*(cz[k]+cz[km]-2.*cz[kp])
-                    -(cx[km]-cx[k])*pow(cz[k]-cz[kp],2))
-                    /((cz[km]-cz[k])*(cz[km]-cz[kp])*(cz[k]-cz[kp]));
+            dcxp=((cd_al[k]-cd_al[kp])*(cl_al[km]-cl_al[k])*(cl_al[k]+cl_al[km]-2.*cl_al[kp])
+                    -(cd_al[km]-cd_al[k])*pow(cl_al[k]-cl_al[kp],2))
+                    /((cl_al[km]-cl_al[k])*(cl_al[km]-cl_al[kp])*(cl_al[k]-cl_al[kp]));
         }
         prod=dcxm*dcxp;
         if((prod< -eps) && (kxtrm[km]!=0 || kxtrm[kp]!=0)) cout << "bad data distribution: interpolate a new data\n";
         
         // send this to output CxCzCqInc (writing polar information read in from Xfoil)
         //write(13,*)cx(k),cz(k),cq(k),inc(k)
-        incd=inc[k];
-        inc[k]=degrad*inc[k];
+        incd=alr[k];
+        alr[k]=degrad*ald[k];
         //         prod=prod*(aleq-inc(k))
-        if((inc[km]*inc[k]<=0.0) && (k!=0)) {
+        if((alr[km]*alr[k]<=0.0) && (k!=0)) {
             k0=km;
             //*****zero incidence coefficients with assumption of small angles
             //     lift coefficients of main wing
-            dCldam0=(cz[k]-cz[km])/(inc[k]-inc[km]);
-            Clm00=cz[km]+dCldam0*(-inc[km]);
+            dCldam0=(cl_al[k]-cl_al[km])/(alr[k]-alr[km]);
+            Clm00=cl_al[km]+dCldam0*(-alr[km]);
             //     add flap influence on Clm
             Clm00=Clm00+dClmdtf*tf;
             //     moment coefficients of the main wing Cmacm and Cmmo
-            dCmacdam0=(cq[k]-cq[km])/(inc[k]-inc[km]);
-            Cmacm00=cq[km]+dCmacdam0*(-inc[km]);
+            dCmacdam0=(cq_al[k]-cq_al[km])/(alr[k]-alr[km]);
+            Cmacm00=cq_al[km]+dCmacdam0*(-alr[km]);
             dCmdam0=dCmacdam0-xacm*dCldam0/cam;
             Cmm00=Cmacm00-xacm*Clm00/cam;
             //     add flap influence on Cmm
@@ -1200,16 +1201,16 @@ void canareq::readInputPolar(std::string filename) {
             Cm0=(am*cam*Cmm00+ac*cac*Cmc00)/(aref*lref);
         }
         
-        if((k==0) && (inc[0]>=0.0)) {
+        if((k==0) && (alr[0]>=0.0)) {
             k0=1;
             //     lift coefficients of main wing
-            dCldam0=(cz[1]-cz[0])/(inc[1]-inc[0]);
-            Clm00=cz[0]+dCldam0*(-inc[0]);
+            dCldam0=(cl_al[1]-cl_al[0])/(alr[1]-alr[0]);
+            Clm00=cl_al[0]+dCldam0*(-alr[0]);
             //     add flap influence on Clm
             Clm00=Clm00+dClmdtf*tf;
             //     moment coefficients of the main wing Cmacm and Cmmo
-            dCmacdam0=(cq[1]-cq[0])/(inc[1]-inc[0]);
-            Cmacm00=cq[0]+dCmacdam0*(-inc[0]);
+            dCmacdam0=(cq_al[1]-cq_al[0])/(alr[1]-alr[0]);
+            Cmacm00=cq_al[0]+dCmacdam0*(-alr[0]);
             dCmdam0=dCmacdam0-xacm*dCldam0/cam;
             Cmm00=Cmacm00-xacm*Clm00/cam;
             //     add flap influence on Cmc
@@ -1239,27 +1240,31 @@ void canareq::readInputPolar(std::string filename) {
             cout << "update xac = " << xac << endl;
             cout << "update xacc = " << xacc << endl;
             cout << "update xacm = " << xacm << endl;
-            cout << "update dClmda0 = " << dClmda0 << endl;
+//            cout << "update dClmda0 = " << dClmda0 << endl;
             cout << "update dClcda0 = " << dClcda0 << endl;
             cout << "update am = " << am << endl;
             cout << "update ac = " << ac << endl;
         }
         //     aerodynamic center of airplane
-        xac=(am*dClmda0*xacm+ac*dClcda0*xacc) / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
+        // main wing contribution xac
+//        xac=(am*dClmda0*xacm+ac*dClcda0*xacc) / (am*dClmda0+ac*dClcda0); //lref*(dCmacda-dCmda)/dClda;
+
+        //
+        xac=(am*dCldam0*xacm+ac*dClcda0*xacc) / (am*dCldam0+ac*dClcda0);
     }
     // note: do not change kx after this point
     polarfile.close();
 }
 
-void canareq::setCanardAngle(double tcd) {
+void ADcanareq::setCanardAngle(double tcd) {
     tcd0=tcd;
     tcdBool=true;
 }
 
-void canareq::mainwingModel() {
+void ADcanareq::mainwingModel() {
     tfd=tf*radeg;
     // *****loop on incidence
-    nalmin = radeg * inc[0];
+    nalmin = radeg * alr[0];
     nalmax = nalmin + nal;
     for (int j = nalmin; j < nalmax; ++j) {
         //do 13 n = nalmin, nalmax
@@ -1272,7 +1277,7 @@ void canareq::mainwingModel() {
 
         for (int l = 1; l < (kx-1); ++l) {
             //do 11 k = 2, kx - 1
-            prod = prod * (alph - inc[l]);
+            prod = prod * (alph - alr[l]);
             if (prod <= eps) break; //goto 12
             prod = 1.;
             m = l;
@@ -1281,17 +1286,17 @@ void canareq::mainwingModel() {
         }
 
         // main wing lift
-        dCldam = (cz[m + 1] - cz[m]) / (inc[m + 1] - inc[m]);
-        Clm0 = cz[m] + dCldam * (-inc[m]);
+        dCldam = (cl_al[m + 1] - cl_al[m]) / (alr[m + 1] - alr[m]);
+        Clm0 = cl_al[m] + dCldam * (-alr[m]);
 
         // add flap influence on Cl
         Clm0 = Clm0 + dClmdtf * tf;
 
         // main wing moment coefficients
         Clmeq = Clm0 + dCldam * aleq;
-        dCmacda = (cq[m + 1] - cq[m]) / (inc[m + 1] - inc[m]);
+        dCmacda = (cq_al[m + 1] - cq_al[m]) / (alr[m + 1] - alr[m]);
         dCmdam = dCmacda - xac * dCldam / cam;
-        Cmac0 = cq[m] + dCmacda * (-inc[m]);
+        Cmac0 = cq_al[m] + dCmacda * (-alr[m]);
         Cmm0 = Cmac0 - xac * Clm0 / cam;
 
         // add flap influence on Cm
@@ -1304,12 +1309,12 @@ void canareq::mainwingModel() {
         if (kxtrm[m] != 0) m = m + 1;
         if (m < 2) m = 2;
         if (m > (kx - 1)) m = kx - 1;
-        dcxdcz = (cx[m] - cx[m - 1]) / (cz[m] - cz[m - 1]);
-        d2cxdcz2 = ((cx[m + 1] - cx[m]) * (cz[m] - cz[m - 1])
-                     -(cx[m] - cx[m - 1]) * (cz[m + 1] - cz[m]))
-                        /((cz[m + 1] - cz[m]) * (cz[m + 1] - cz[m - 1]) * (cz[m] - cz[m - 1]));
-        Cdm = cx[m - 1] + dcxdcz * (Clmeq - cz[m - 1])
-               +d2cxdcz2 * (Clmeq - cz[m - 1]) * (Clmeq - cz[m]);
+        dcxdcz = (cd_al[m] - cd_al[m - 1]) / (cl_al[m] - cl_al[m - 1]);
+        d2cxdcz2 = ((cd_al[m + 1] - cd_al[m]) * (cl_al[m] - cl_al[m - 1])
+                     -(cd_al[m] - cd_al[m - 1]) * (cl_al[m + 1] - cl_al[m]))
+                        /((cl_al[m + 1] - cl_al[m]) * (cl_al[m + 1] - cl_al[m - 1]) * (cl_al[m] - cl_al[m - 1]));
+        Cdm = cd_al[m - 1] + dcxdcz * (Clmeq - cl_al[m - 1])
+               +d2cxdcz2 * (Clmeq - cl_al[m - 1]) * (Clmeq - cl_al[m]);
         dClda = dCldam;
         Cl0 = Clm0;
         dCmda = dCmdam;
@@ -1333,10 +1338,10 @@ void canareq::mainwingModel() {
     Cmmeq=Cmeq;
 }
 
-void canareq::printInputParams() {
+void ADcanareq::printInputParams() {
     // print to screen
     if (DBG) cout << endl << "======================================" << endl;
-    if (DBG) cout << " canareq::printInputParams()" << endl ;
+    if (DBG) cout << " ADcanareq::printInputParams()" << endl ;
     cout << endl <<  "convergence parameters:" << endl;
     cout << right << setw(32) <<  "                        itx = " << itx << endl;
     cout << right << setw(32) <<  "                      omega = " << omega << endl;
@@ -1357,7 +1362,8 @@ void canareq::printInputParams() {
     cout << right << setw(32) << "               average chord = " << cam <<  " (m)" << endl;
     cout << right << setw(32) << "                   wing area = " << am <<  " (m**2)" << endl;
     cout << right << setw(32) << "  aerodynamic center of wing = " << xacm <<  " (m)" << endl;
-    cout << right << setw(32) << "     wing lift slope dClmda0 = " << dClmda0 << endl;
+//    cout << right << setw(32) << "     wing lift slope dClmda0 = " << dClmda0 << endl;
+    cout << right << setw(32) << "                 wing AR arm = " << arm << endl;
     cout << right << setw(32) << "    wing effective AR armeff = " << armeff << endl;
     cout << right << setw(32) << "     relative camber of wing = " << dm << endl;
     cout << right << setw(32) << "             wing efficiency = " << em << endl;
@@ -1430,9 +1436,9 @@ void canareq::printInputParams() {
     cout << right << setw(32) << " cmac = " << CmacB <<  endl << endl;
 }
 
-int canareq::printInputPolar() {
+int ADcanareq::printInputPolar() {
     cout << endl << "=============================================="<< endl;
-    cout << " canareq::printInputPolar()" << endl;
+    cout << " ADcanareq::printInputPolar()" << endl;
     cout << " (wing polar; profile data from Xfoil)\n";
     cout << left << setw(16) << "i ";
     cout << left << setw(16) << "Cx ";
@@ -1443,10 +1449,10 @@ int canareq::printInputPolar() {
     for(int i=0; i<kx; i++) {
         cout << std::setprecision(8);
         cout << left << setw(16) << i;
-        cout << left << setw(16) << cx[i];
-        cout << left << setw(16) << cz[i];
-        cout << left << setw(16) << cq[i];
-        cout << left << inc[i] << endl;
+        cout << left << setw(16) << cd_al[i];
+        cout << left << setw(16) << cl_al[i];
+        cout << left << setw(16) << cq_al[i];
+        cout << left << ald[i] << endl;
     }
 
     if (DBG) {
@@ -1454,16 +1460,16 @@ int canareq::printInputPolar() {
         for (int i = 0; i < kx; i++) {
             cout << std::setprecision(8);
             cout << left << setw(16) << i;
-            cout << left << setw(16) << cx[i];
-            cout << left << setw(16) << cz[i];
-            cout << left << setw(16) << cq[i];
-            cout << left << inc[i] << endl;
+            cout << left << setw(16) << cd_al[i];
+            cout << left << setw(16) << cl_al[i];
+            cout << left << setw(16) << cq_al[i];
+            cout << left << ald[i] << endl;
         }
     }
     return 1;
 }
 
-void canareq::printGlobalCoefs() {
+void ADcanareq::printGlobalCoefs() {
     //cout << endl << "extrema pointer:" << endl;
     //for (int j = 0; j < kx; ++j) {
     //    cout << "kxtrm(" << j << ") = " << kxtrm[j] << endl;
@@ -1472,7 +1478,7 @@ void canareq::printGlobalCoefs() {
     // global coefficients
     cout << std::setprecision(8);
     cout << endl << "=============================================="<< endl;
-    cout << " canareq::printGlobalCoefs()" << endl;
+    cout << " ADcanareq::printGlobalCoefs()" << endl;
     cout << " (zero incidence aerodynamic coefficients)" << endl;
     cout << " k0 = " << k0<< endl << endl;
     cout << " lift:" << endl;
@@ -1491,7 +1497,7 @@ void canareq::printGlobalCoefs() {
     cout << "           xac (m) = " << left << setw(15) << xac << left << setw(15) << "  xcg (m) = " << xcg << endl;
 }
 
-int canareq::outputPolarPrandtline() {
+int ADcanareq::outputPolarPrandtline() {
     ofstream file;
 
     // open new file
@@ -1504,16 +1510,16 @@ int canareq::outputPolarPrandtline() {
     // write results to file
     for (k=0; k<kx; k++) {
         file << std::setprecision(8);
-        file << left << setw(16) << cx[k];
-        file << left << setw(16) << cz[k];
-        file << left << setw(16) << cq[k];
-        file << left << inc[k];
+        file << left << setw(16) << cd_al[k];
+        file << left << setw(16) << cl_al[k];
+        file << left << setw(16) << cq_al[k];
+        file << left << ald[k];
     }
     file.close();
     return 1;
 }
 
-int canareq::outputPolarCdClCq() {
+int ADcanareq::outputPolarCdClCq() {
     ofstream file;
 
     // open new file
@@ -1526,10 +1532,10 @@ int canareq::outputPolarCdClCq() {
     // write results to file
     for (k=0; k<kx; k++) {
         file << std::setprecision(8);
-        file << left << setw(16) << cx[k];
-        file << left << setw(16) << cz[k];
-        file << left << setw(16) << cq[k];
-        file << left << inc[k];
+        file << left << setw(16) << cd_al[k];
+        file << left << setw(16) << cl_al[k];
+        file << left << setw(16) << cq_al[k];
+        file << left << ald[k];
     }
     file.close();
     //file << endl << title << endl;
@@ -1537,7 +1543,7 @@ int canareq::outputPolarCdClCq() {
     return 1;
 }
 
-int canareq::outputEqList(){
+int ADcanareq::outputEqList(){
     // formerly known as write(24,...)
     ofstream file;
 
@@ -1572,7 +1578,7 @@ int canareq::outputEqList(){
     return 1;
 }
 
-void canareq::outputResults2Dat(std::string filename) {
+void ADcanareq::outputResults2Dat(std::string filename) {
     if(!file1index) file1.open(filename);
     file1 << fixed << std::setprecision(8);
     file1 << left << setw(12) << tcd;

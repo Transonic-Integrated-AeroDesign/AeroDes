@@ -7,32 +7,38 @@
 #include <fstream>  // fopen, ifstream
 #include <string>
 #include <stdio.h>  // strcpy
-#include "aerodes.hpp"
+
+#include "AD.hpp"
+#include "ADcanareq.hpp"
 
 /*
- *  compile:
+ *  compile (on mac os x):
  *      g++ -o test -laerolib main.cpp
+ *  
+ *  compile (on linux):
+ *	g++ -o test main.cpp -laerolib
  *
  *  run:
  *      ./test
  */
+
 int main(int argc, char** argv) {
-    aerodes *aero = new aerodes(argc, argv);    // create new aero object
+    AD *aerodes = new AD(argc, argv);
 
     double angle=0, d_angle=0.5, angle0=1;
     // canar equillibrium
-    aero->canary->readInputParams("canareq.data");
-    aero->canary->readInputPolar("canarpolar.dat");
+    aerodes->canary->readInputParams("canareq.data");
+    aerodes->canary->readInputPolar("canarpolar.dat");
 
     std::string filename = "results.dat";
     for(int i = 0; i < 5; i++) {
         angle = d_angle*i + angle0; // do not set alpha equal to 0
-        aero->canary->setCanardAngle(angle);
-        aero->canary->linearModel();
-        aero->canary->nonlinearModel();
-        aero->canary->outputResults2Dat(filename);
+        aerodes->canary->setCanardAngle(angle);
+        aerodes->canary->linearModel();
+        aerodes->canary->nonlinearModel();
+        aerodes->canary->outputResults2Dat(filename);
     }
 
-    delete aero;
+    delete aerodes;
     return 1;
 }

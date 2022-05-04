@@ -12,6 +12,7 @@
 #include <math.h>   // pow
 #include <cstring>
 
+#include "AD.hpp"
 #include "tsd.hpp"
 
 /*
@@ -22,8 +23,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    variables *vars = new variables();
-    tsd *sonic = new tsd(argc, argv, vars);
+    AD *ad = new AD(argc, argv);
+    tsd *sonic = new tsd(argc, argv, ad);
 
     // input
     sonic->readInputParams("tsd.data");
@@ -48,6 +49,6 @@ int main(int argc, char** argv) {
     sonic->printGlobalResults();
 
     delete sonic;
-    delete vars;
+    delete ad;
 }
 

@@ -37,20 +37,20 @@ You may run this example using two methods. Using the executables or with the Ae
 ### Using PrandtLine Exectuable
 By default the executable automatically reads in a parameter file named, *prandtline.data*, and a polar file named, *polarbl.dat*:
 ```
-prandtl
+ADprandtline
 ```
 
 specify the input **parameter** file to whatever file you want:
 ```
-prandtl --prandtl_in prandtline.data
+ADprandtline --prandtl_in prandtline.data
 ```
 
 specify the input **polar** file to whatever file you want:
 ```
-prandtl --prandtl_polar polarbl.dat
+ADprandtline --prandtl_polar polarbl.dat
 ```
 
 you can even use these flags simultaneously:
 ```
-prandtl --prandtl_in prandtline.data --prandtl_polar polarbl.dat
+ADprandtline --prandtl_in prandtline.data --prandtl_polar polarbl.dat
 ```

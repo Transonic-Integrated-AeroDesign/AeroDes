@@ -14,33 +14,26 @@
 #include <string>
 #include <math.h>
 
-#include "variables.hpp"
+#include "ADvariables.hpp"
+#include "ADmemory.hpp"
 
-class prandtline : virtual public variables {
+class ADprandtline : virtual public ADvariables, virtual public ADmemory {
 public:
-    variables *vars;
-    prandtline(int argc, char** argv, variables *);
-    ~prandtline();
+    ADprandtline(int argc, char** argv, AD *);
+    ~ADprandtline();
 
     // inputs
     void readInputParams();
     void readInputParams(std::string);
     void readInputPolar();
     void readInputPolar(std::string);
-    void readInputPolarMulti(std::string filename);
+    void readInputPolarMulti(std::string);
     void readInputDownwash();
 
     // specific
     void setAlpha(double);
     void setMesh();
     void solveLiftingLine();
-
-    // memory
-    int** create_2d_int_array(int n1, int n2, int **&array);
-    double** create_2d_double_array(int n1, int n2, double **&array);
-
-    void delete_2d_int_array(int **array);
-    void delete_2d_double_array(double **array);
 
     // prints
     void printInputParams();
@@ -49,8 +42,11 @@ public:
     void printDistributions();
     void printResults();
 
+    // outputs
+    void outputYFz(std::string);
+
 private:
-    int jxx,lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
+    int lxx,nxx,nx,kfirst,ks,kdum,ice,jx;
     int jx2,is,iwing,nsteps,ivis,iter,it,mj,jdx;
     int itx;
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
@@ -59,7 +55,8 @@ private:
     double alphain,alphafi,alstep, alphad; // alphad;
     double vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
     double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2,clf;
-    double rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
+    double rey,cdi,cdv,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
+//    double em;    // shared variable
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
     double base, expn, realpart, imagpart, denom;
     double *c, *g, *dg, *y, *eta;
@@ -81,6 +78,8 @@ private:
     std::string filenameInputData; bool inputBool; int inputFlag;
     std::string filenameInputPolar; bool polarBool; int polarFlag;
     std::string filenameInputDownwash;
+
+    std::string filenameOutputYFz; std::ofstream outfileYFz;
 };
 
 #endif

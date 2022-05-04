@@ -33,5 +33,5 @@ IVIS    1           	# do you want to introduce viscous effects? Y/N=1/0
 IPOLAR  1           	# do you want to use polar data? Y/N=1/0
 
 ALPHAIN     1           # initial angle
-ALPHAFI     2           # final angle
+ALPHAFI     5           # final angle
 ALPHASTEP   1           # increment in angle (zwake output + val = above wing at half span) plot taillessgo.xyz canarwake.xz

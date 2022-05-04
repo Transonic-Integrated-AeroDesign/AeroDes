@@ -1,0 +1,69 @@
+ITX         1001            # itx maximum number of iterations
+OMEGA       1.2		        # omega relaxation factor for Newton's Method
+EPSER       0.0000001	    # epser convergence tolerance
+
+RHO         1.225		    # rho density of air (kg/m**3)
+AMU         0.0000181	    # amu dynamic viscosity (N.s/m**2)
+MASS        65000.0	        # mass of airplane and cargo (kg)
+XCG         27.1		    # xcg location of center of gravity from the nose tip (m)
+STATMARG    -0.10		    # statmarg static margin (ref cam) (if <0, not used to place xcg)
+
+BM          36.0		    # bm main wing span (m)
+CXM         39.0		    # cxm root chord of main wing (m)
+CAM         22.3		    # cam aerodynamic chord (m)
+AM          351.0		    # am wing area (m**2)
+XACM        33.7		    # xacm location of aerodynamic center of main wing (m)
+dClmda0     3.792		    # dClmda0 wing lift slope
+ARMEFF      4.345		    # armeff wing effective aspect ratio
+DM          0.01	        # dm relative camber of main wing
+EM          0.76	        # em efficiency coefficient of main wing
+ACW         -1.7		    # acw influence of canard on wing
+dCldAlfaInd 0.0		        # dCldalind influence of canard on wing lift
+TFD         0.0		        # tfd flat deflection (deg) flap?
+dClmdtf     1.044		    # dClmdtf empennage sensitivity on lift
+dCmmdtf     -0.4708		    # dCmmdtf empennage sensitivity on pitching moment
+dCdtf0      -0.009807	    # dCdtf0 flap influence on Cd independent of alfa
+dCdtf1      -0.1142     	# dCdtf1 flap influence on Cd linear in alfa
+dCdtf2      0.0836		    # dCdtf2 flap influence on Cd quadratic in alfa
+LF          39.0		    # lf length of fuselage (m)
+RF          2.0		        # rf radius of fuselage (m)
+BC          18.0		    # bc canar span (m)
+CXC         3.2		        # cxc root chord of canard (m)
+CAC         2.5		        # cac mean aerodynamic chord of canard (m)
+AC         25.5	    	    # ac canard planform area (m**2)(for 2 canards)
+XACC        6.27	        # xacc location of aerodynamic center of canard (m)
+dClcda0     4.79            # dClcda0 canard lift slope
+ARCEFF      6.1		        # arceff canard effective aspect ratio
+DC          0.0		        # dc relative camber of canard
+# EC          0.96	        # ec efficiency coefficient of canard (gathered implicitly from wake)
+AWC         -0.3		    # awc influence of wing on canard
+CdBRAKE     0.0		        # Cdbrake airbrake drag coefficient
+RAV         3.0		        # rav rudder average chord (m)
+RUH         4.0		        # ruh rudder height (m)
+ZENG        -1.0		    # zeng z-coordinate of engine (m)
+DNA         1.75		    # dna diameter of nacelle (m)
+LNA         4.0		        # lna length of nacelle (m)
+HPOWER      7200.0		    # hpower (hp)
+PCENT       100.0		    # Pcent percent of engine power available
+NDAT        10		        # ndat number of propeller data
+ENGPERF
+    Leap10CFMTurboreactor
+    vr(i) (m/s)      tr(i) (N)
+    1.00000000       246840.844
+    2.00000000       246387.266
+    5.00000000       245026.516
+    10.0000000       242758.969
+    20.0000000       238226.719
+    50.0000000       224683.766
+    100.000000       202531.281
+    200.000000       161783.672
+    233.000000       149909.734
+    400.000000       103994.477
+ENDPERF
+
+ALEQ        0.01425		    # aleq equilibrium incidence (rd)
+UEQ         233.0		    # Ueq equilibrium velocity (m/s)
+BETAQ       0.0		        # beteq equilibrium descent angle (rd)
+CLEQ        0.397		    # Cleq equilibrium lift coefficient
+CDEQ        0.01338		    # Cdeq equilibrium drag coefficient
+CMAC        0.04411		    # Cmac equilibrium moment at aerodynamic center
