@@ -106,7 +106,7 @@ public:
         double *alphares, *czres, *cxres, *cqres;
         int nsteps;
     
-        std::string filenameInputPolar; bool polarBool; std::ifstream polarfile; // input 2d xfoil solution
+        std::string filenameInputPolar; bool polarBool; std::ifstream polarfile; int polarflag; // input 2d xfoil solution
         std::string filenamePolarPrandtline;
         std::string filenamePolarCdClCq;
         std::string filenameEqData; bool inputBool; int inflag; // input parameters

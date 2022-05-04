@@ -71,27 +71,27 @@ canareq::canareq(int argc, char** argv, variables *varshr) : vars(varshr) {
     tcdBool = false;
 
     // commandline inputs
-    for (int iarg = 0; iarg<argc ; ++iarg) {
+    for (int iarg = 0; iarg<argc ; iarg++) {
         // commandline option: for input file
         if (!strcmp(argv[iarg],"--ceq_in")){
             inputBool=true;
             inflag=iarg+1;
-            filenameEqData = argv[inflag];
-            iarg+=2;
+            filenameEqData = std::string(argv[inflag]);
+            iarg+=1;
         }
         // commandline option: for override of canard equilibrium polar file
         if (!strcmp(argv[iarg],"--ceq_polar")) {
             tcdBool=true;
-            inflag=iarg+1;
-            filenameInputPolar = argv[inflag];
-            iarg+=2;
+            polarflag=iarg+1;
+            filenameInputPolar = std::string(argv[polarflag]);
+            iarg+=1;
         }
         // commandline option: for override of tcd setting angle
         if (!strcmp(argv[iarg],"--ceq_tcd")) {
             tcdBool=true;
             tcdflag=iarg+1;
             tcd0 = (double) atof(argv[tcdflag]);
-            iarg+=2;
+            iarg+=1;
         }
     }
 }
@@ -908,7 +908,7 @@ void canareq::readInputParams(std::string filename) {
     if (DBG) cout << " prandtline::readInputParams()" << endl;
 
     if (filename.compare("")==0);
-    else filenameInputPolar = filename;
+    else filenameEqData = filename;
 
     ifstream paramfile(filenameEqData);
     if (!paramfile.is_open()) {
