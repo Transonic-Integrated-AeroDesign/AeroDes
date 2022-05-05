@@ -54,7 +54,8 @@ private:
     double camdum,dtet,tetj,yj,etaj,etajm,am,cam,arm;
     double alphain,alphafi,alstep, alphad; // alphad;
     double vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
-    double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2,clf;
+    double reg,res0,alogres,cl,cm0,cmac,cd0,sum0,sum1,sum2,clf;
+//    double xac;
     double rey,cdi,cdv,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
 //    double em;    // shared variable
     double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;

@@ -21,6 +21,7 @@ public:
                          cd_al(p->cd_al),
                          cq_al(p->cq_al),
                          jxx(p->jxx),
+                         xac(p->xac),
                          ec(p->ec),
                          em(p->em),
                          dClcda0(p->dClcda0),
@@ -52,6 +53,7 @@ public:
 
     // for canard equilibrium
 //    double dClmda0;       // from: ADwake, main wing slope
+    double &xac;            // from: ADprandtline, aerodynamic center
     double &em;             // from: ADprandtline, main wing efficiency
     double &ec;             // from: ADwake, oswald efficiency
     double &arceff, armeff;  // from: ADwake, corrected aspect ratio

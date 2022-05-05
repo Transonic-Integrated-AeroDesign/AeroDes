@@ -1442,14 +1442,14 @@ void ADprandtline::printInputParams() {
 
 void ADprandtline::printSetupSummary() {
     if (DBG) cout << endl << "=========================================" << endl;
-    cout << " printSetupSummary()" << endl << endl;
-    cout << "numerical data:" << endl << endl;
+    if (DBG) cout << " printSetupSummary()" << endl << endl;
+    cout << "\033[1;42m numerical data: \033[0m" << endl << endl;
     cout << right << setw(32) << " number of points jx = " << left << setw(10) << jx << endl;
     cout << right << setw(32) << " max number of iterations itx = " << left << setw(10) << itx << endl;
     cout << right << setw(32) << "                        omega = " << left << setw(10) << omega << endl;
     cout << right << setw(32) << "   viscosity coefficient avis = " << left << setw(10) << avis << endl << endl;
 
-    cout << right << setw(32) << "main wing data:" << endl << endl;
+    cout << "\033[1;42m main wing data: \033[0m" << endl << endl;
     cout << right << setw(32) << "                  wing span B = " << left << setw(10) << B << " (m)" << endl;
     cout << right << setw(32) << "   maximum chord/fuselage Cx0 = " << left << setw(10) << Cx0 << " (m)" << endl;
     cout << right << setw(32) << "      a. c. sweep angle Lambd = " << left << setw(10) << Lambd << "(deg)" << endl;
@@ -1460,13 +1460,13 @@ void ADprandtline::printSetupSummary() {
     cout << right << setw(32) << "             wing shape 0/1/2 = " << left << setw(10) << iwing << endl;
     cout << right << setw(32) << "    downwash of canard acwash = " << left << setw(10) << acwash << endl << endl;
 
-    cout << "air data:" << endl << endl;
+    cout << "\033[1;42m air data: \033[0m" << endl << endl;
     cout << right << setw(32) << "              air density Rho = " << left << setw(10) << Rho << " (kg/m**3)" << endl;
     cout << right << setw(32) << "           wind velocity Vinf = " << left << setw(10) << Vinf << " (m/s)" << endl;
     cout << right << setw(32) << "        dynamic viscosity Amu = " << left << setw(10) << scientific << Amu << " (kg/(m*s))" << endl;
     cout << right << setw(32) << "        reference Reynolds Re = " << left << setw(10) << Re << endl << endl;
 
-    cout << "calculated data:" << endl << endl;
+    cout << "\033[1;42m calculated data: \033[0m" << endl << endl;
     cout << right << setw(32) << "   maximum chord/fuselage cxm = " << left << setw(10) << cxm << " (ref. B/2)" << endl;
     cout << right << setw(32) << "   wing+fuse planform area am = " << left << setw(10) << am << " (ref. B**2/4)" << endl;
     cout << right << setw(32) << "   wing+fuse aspect ratio arm = " << left << setw(10) << arm << endl;

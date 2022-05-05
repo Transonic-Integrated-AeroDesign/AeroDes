@@ -245,6 +245,11 @@ void ADcanareq::linearModel() {
     cout << " given best design parameters:" << endl;
     cout << "aleq = " << left << setw(10) << aleqB << " Ueq  = " << left << setw(10) << UeqB << " beteq = " << left << setw(10) <<  beteqB << endl;
     cout << "Cleq = " << left << setw(10) << CleqB << " Cdeq = " << left << setw(10) << CdeqB << " CM,ac = " << left << setw(10) << CmacB << endl << endl;
+
+    if (isnan(bb[0]) || isnan(bb[1]) || isnan(bb[2])) {
+        cout << endl << "\033[1;41m Linear Solver: NaN error \033[0m" << endl;
+        abort();
+    }
 }
 
 void ADcanareq::nonlinearModel() {
@@ -498,7 +503,7 @@ void ADcanareq::nonlinearModel() {
 
         // check for premature NaNs
         if (isnan(reseq)) {
-            cout << endl << "\033[1;41m NaN error: \033[0m" << endl;
+            cout << endl << "\033[1;41m Non-Linear Solver: NaN error \033[0m" << endl;
             //cout << "reyeq = " << reyeq << " rho = " << rho << " ueq = " << Ueq << " cam = " << cam << " amu = " << amu  << " dUeq = " << dUeq << endl;
             //cout << "am = " << am << " Cdmeq = " << Cdmeq << " af = " << af << " Cdfeq = " << left << setw(10) << Cdfeq << " ac = " << ac << " Cdceq = " << left << setw(10) << Cdceq << " ar = " << ar << " Cdreq = " << left << setw(10) << Cdreq << " an = " << an  << " Cdneq = " << left << setw(10) << Cdneq << " aref = " << aref << endl;
             cout << "reseq0 = " << reseq0 << " reseq = " << reseq << " iteration = " << i << endl;

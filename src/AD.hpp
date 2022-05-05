@@ -24,6 +24,7 @@ public:
     ~AD();
 
     int jxx;
+    double xac;
     double em;
     double ec; // wake
     double dClcda0; // wake
