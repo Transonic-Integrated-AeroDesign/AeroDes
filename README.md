@@ -33,7 +33,7 @@ cd build
 ```
 cmake ../.
 make
-make install
+sudo make install
 ```
 
 ```make``` compiles the code. ```make install``` installs the executables to your system.
@@ -67,10 +67,10 @@ Here are the executables for various design tasks. Each will of course require t
 respective examples directory. 
 
 ```
-canareq
-cfmactu
-prandtl
-wake
+ADcanareq
+ADprandtline
+ADwake
+ADcfmactu
 ```
 
 See the examples/ directory for more details in running each example with these
