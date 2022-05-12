@@ -1,8 +1,6 @@
-# Workflow Overview
+# Transfer of information
 
-### Transfer of information
-
-Internally this is how AeroDes shares information between core-classes.
+Internally this is how AeroDes modules share information between core-classes.
 
 ```mermaid
 classDiagram
