@@ -2,6 +2,8 @@
 
 Internally this is how AeroDes modules share information between core-classes.
 
+The arrows indicate the transfer of information and normalization for certain variables.
+
 ```mermaid
 classDiagram
   direction TB
@@ -44,7 +46,7 @@ classDiagram
   }
   class ADcanareq{
     //
-    // canard properties
+    // input canard variables
     //
     + dClcda0 : double : "canard lift slope"
     + arceff : double : "canard effective aspect ratio"
@@ -54,7 +56,7 @@ classDiagram
     + cac : double : [m] "mean aerodynamic chord"
     + ac : double : [m&sup2] "planform area for 2 canards"
     //
-    // main-wing properties
+    // input main-wing variables
     //
     + em : double : "oswald efficiency"
     + arm : double : "wing+fuse aspect ratio"
