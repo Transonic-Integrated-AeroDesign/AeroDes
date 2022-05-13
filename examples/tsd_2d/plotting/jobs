@@ -1,17 +1,23 @@
-#gnuplot -p plotcontour.gp
-
+# UNCOMMENT FOR Cp vs X
 #gnuplot -p plotcp.gp
 #display cp.png
 
-gnuplot -p plotiter.gp
-display iter.png
+# UNCOMMENT FOR CONVERGENCE VS ITERATION
+#gnuplot -p plotiter.gp
+#display iter.png
 
-gnuplot -p plotcontourlatex.gp
-latex contour.tex
-dvips -o contour.ps contour.dvi
-ps2pdf contour.ps contour.pdf
-convert -density 300 contour.pdf contour.png
+# UNCOMMENT FOR FANCY CONTOUR PLOT
+#gnuplot -p plotcontourlatex.gp
+#latex contour.tex
+#dvips -o contour.ps contour.dvi
+#ps2pdf contour.ps contour.pdf
+#convert -density 300 contour.pdf contourtex.png
+#display contourtex.png
 
+# UNCOMMENT FOR COUNT PLOT
 #gnuplot -p plotcontour.gp
 #display contour.png
 
+# UNCOMMENT FOR COUNT PLOT WITH MESH
+#gnuplot -p plotcontour_w_grid.gp
+#display contourgrid.png
