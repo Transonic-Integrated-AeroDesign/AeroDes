@@ -73,7 +73,7 @@ classDiagram
   
   ADvariables "1" --o "2" ADprandtline
   ADvariables "1" --o "2" ADcanarline
-  ADcanarline --o "3" ADcanareq : dClcda0 &#8594 dClcda0, \n arceff &#8594 arceff, \n eceff &#8594 ec, \n Bc0 &#8594 Bc, \n xac &times (Bc0/2) &#8594 xacc, \n cac &times (Bc0/2) &#8594 cac, \n 2 &times ac(Bc0&sup2/4) &#8594 ac
+  ADcanarline ..o "3" ADcanareq : ADcanarline &#8594 ADcanareq,\n dClcda0 &#8594 dClcda0, \n arceff &#8594 arceff, \n eceff &#8594 ec, \n Bc0 &#8594 Bc, \n xac &times (Bc0/2) &#8594 xacc, \n cac &times (Bc0/2) &#8594 cac, \n 2 &times ac(Bc0&sup2/4) &#8594 ac
   ADvariables --o "3" ADcanareq
-  ADprandtline --o "3" ADcanareq : em &#8594 em, \n arm &#8594 armeff, \n B &#8594 B, \n cxm &times (B/2) &#8594 cxm, \n am &times (B/4), \n cam &times (B/2) &#8594 cam, \n rf &times (B/2) &#8594 rf, \n cx0 &#8594 lf, \n inc[i] &#8594 alr[i], \n ald[i] &times degrad, \n cl_al[i], \n cd_al[i], \n cq_al[i], \n
+  ADprandtline --o "3" ADcanareq : ADprandtline &#8594 ADcanareq, \n em &#8594 em, \n arm &#8594 armeff, \n B &#8594 B, \n cxm &times (B/2) &#8594 cxm, \n am &times (B&sup2/4), \n cam &times (B/2) &#8594 cam, \n rf &times (B/2) &#8594 rf, \n cx0 &#8594 lf
 ```
