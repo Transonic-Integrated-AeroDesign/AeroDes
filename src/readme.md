@@ -9,32 +9,32 @@ classDiagram
     // 
     // [var-name] : [var-type] : [var-units]
     //  
-    + rho : double : [kg/m&sup3]
-    + vinf : double : [m/s]
-    + amu : double : [kg/[ms]]
+    rho : double : [kg/m&sup3]
+    vinf : double : [m/s]
+    amu : double : [kg/[ms]]
     \n
     //
     // input canard variables
     //
-    + dClcda0 : double : "canard lift slope"
-    + arceff : double : "canard effective aspect ratio"
-    + ec : double : "canard efficiency"
-    + Bc : double : [m] "canard span"
-    + xacc : double : [m] "aerodynamic center of canard"
-    + cac : double : [m] "mean aerodynamic chord"
-    + ac : double : [m&sup2] "planform area for 2 canards"
+    dClcda0 : double : "canard lift slope"
+    arceff : double : "canard effective aspect ratio"
+    ec : double : "canard efficiency"
+    Bc : double : [m] "canard span"
+    xacc : double : [m] "aerodynamic center of canard"
+    cac : double : [m] "mean aerodynamic chord"
+    ac : double : [m&sup2] "planform area for 2 canards"
     \n
     //
     // input main-wing variables
     //
-    + em : double : "main-wing oswald efficiency"
-    + arm : double : "wing+fuse aspect ratio"
-    + B : double : [m] "wing span"
-    + cxm : double : [m] "maximum chord/fuselage"
-    + cam : double : [m] "average aerodynamic chord"
-    + am : double : [m&sup2] "wing+fuselage planform area"
-    + rf : double : [m] "fuselage radius"
-    + lf : double : [m] "length of fuselage"
+    em : double : "main-wing oswald efficiency"
+    arm : double : "wing+fuse aspect ratio"
+    B : double : [m] "wing span"
+    cxm : double : [m] "maximum chord/fuselage"
+    cam : double : [m] "average aerodynamic chord"
+    am : double : [m&sup2] "wing+fuselage planform area"
+    rf : double : [m] "fuselage radius"
+    lf : double : [m] "length of fuselage"
   }
 ```
 
@@ -49,41 +49,41 @@ classDiagram
     // 
     // [var-name] : [var-type] : [var-units]
     //
-    + rho : double : [kg/m&sup3]
-    + vinf : double : [m/s]
-    + amu : double : [kg/[ms]]
+    rho : double : [kg/m&sup3]
+    vinf : double : [m/s]
+    amu : double : [kg/[ms]]
     \n
     // ... see full list above
   }
   class ADcanarline{
-    + dClcda0 : double
-    + arceff : double
-    + eceff : double
-    + Bc0 : double
-    + xacc : double
-    + cac : double
-    + ac : double
+    dClcda0 : double
+    arceff : double
+    eceff : double
+    Bc0 : double
+    xacc : double
+    cac : double
+    ac : double
     
     solveLiftingLine() void
   }
   class ADprandtline{
-    + em : double
-    + arm : double
-    + B : double
-    + cxm : double
-    + cam : double
-    + am : double
-    + rf : double
-    + cx0 : double
+    em : double
+    arm : double
+    B : double
+    cxm : double
+    cam : double
+    am : double
+    rf : double
+    cx0 : double
     \n
     //
     // polar
     //
-    + alr[i] &#40aka inc[i]&#41 : double
-    + ald[i] &#40aka inc[i] &times degrad&#41 : double
-    + cl_al[i] &#40aka cl[i]&#41 : double
-    + cd_al[i] &#40aka cd[i]&#41 : double
-    + cq_al[i] &#40aka cmac[i]&#41 : double
+    alr[i] &#40aka inc[i]&#41 : double
+    ald[i] &#40aka inc[i] &times degrad&#41 : double
+    cl_al[i] &#40aka cl[i]&#41 : double
+    cd_al[i] &#40aka cd[i]&#41 : double
+    cq_al[i] &#40aka cmac[i]&#41 : double
     
     solveLiftingLine() void
   }
@@ -91,25 +91,25 @@ classDiagram
     //
     // input canard variables
     //
-    + dClcda0 : double
-    + arceff : double
-    + ec : double
-    + Bc : double
-    + xacc : double
-    + cac : double
-    + ac : double
+    dClcda0 : double
+    arceff : double
+    ec : double
+    Bc : double
+    xacc : double
+    cac : double
+    ac : double
     \n
     //
     // input main-wing variables
     //
-    + em : double
-    + arm : double
-    + B : double
-    + cxm : double
-    + cam : double
-    + am : double
-    + rf : double
-    + lf : double
+    em : double
+    arm : double
+    B : double
+    cxm : double
+    cam : double
+    am : double
+    rf : double
+    lf : double
     
     linearModel() void
     nonlinearModel() void
