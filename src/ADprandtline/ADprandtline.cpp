@@ -1533,6 +1533,7 @@ void ADprandtline::printResults() {
     if (DBG) cout << endl << "=========================================\n";
     if (DBG) cout << " ADprandtline::printResults()" << endl;
 
+    cout << fixed << std::setprecision(2);
     cout << endl << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
 
     cout << fixed << std::setprecision(4);
@@ -1542,6 +1543,7 @@ void ADprandtline::printResults() {
     cout << right << setw(32) << "              oswald efficiency e = " << em << endl;
     cout << right << setw(32) << "         viscous contribution CDv = " << cdv << endl << endl;
 
+    cout << fixed << std::setprecision(2);
     cout << "\033[1;42m global results: " << alphad << " (deg) \033[0m" << endl;
 
     cout << right << setw(32) << "              drag coefficient CD = " << cd << endl;

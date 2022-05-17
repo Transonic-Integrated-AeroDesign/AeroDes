@@ -8,13 +8,17 @@ classDiagram
   class ADvariables {
     // 
     // [var-name] : [var-type] : [var-units]
-    //  
+    // 
+    \n
+    //
+    // physical variables
+    // 
     rho : double : [kg/m&sup3]
     vinf : double : [m/s]
     amu : double : [kg/[ms]]
     \n
     //
-    // input canard variables
+    // canard variables
     //
     dClcda0 : double : "canard lift slope"
     arceff : double : "canard effective aspect ratio"
@@ -25,7 +29,7 @@ classDiagram
     ac : double : [m&sup2] "planform area for 2 canards"
     \n
     //
-    // input main-wing variables
+    // main-wing variables
     //
     em : double : "main-wing oswald efficiency"
     arm : double : "wing+fuse aspect ratio"
@@ -35,6 +39,15 @@ classDiagram
     am : double : [m&sup2] "wing+fuselage planform area"
     rf : double : [m] "fuselage radius"
     lf : double : [m] "length of fuselage"
+    \n
+    //
+    // main-wing polar
+    //
+    alr[i] : double  : "alpha in radians"
+    ald[i] : double : "alpha in degrees"
+    cl_al[i] : double : "lift vs alpha"
+    cd_al[i] : double : "drag vs alpha"
+    cq_al[i] : double : "twist moment vs alpha"
   }
 ```
 
@@ -119,5 +132,5 @@ classDiagram
   ADvariables "1" --o "2" ADcanarline
   ADcanarline ..o "3" ADcanareq : // \n // ADcanarline &#8594 ADcanareq \n //\n dClcda0 &#8594 dClcda0, \n arceff &#8594 arceff, \n eceff &#8594 ec, \n Bc0 &#8594 Bc, \n xac &times (Bc0/2) &#8594 xacc, \n cac &times (Bc0/2) &#8594 cac, \n 2 &times ac(Bc0&sup2/4) &#8594 ac
   ADvariables --o "3" ADcanareq
-  ADprandtline --o "3" ADcanareq : // \n // ADprandtline &#8594 ADcanareq \n // \n em &#8594 em, \n arm &#8594 armeff, \n B &#8594 B, \n cxm &times (B/2) &#8594 cxm, \n am &times (B&sup2/4) &#8594 am, \n cam &times (B/2) &#8594 cam, \n rf &times (B/2) &#8594 rf, \n cx0 &#8594 lf
+  ADprandtline ..o "3" ADcanareq : // \n // ADprandtline &#8594 ADcanareq \n // \n em &#8594 em \n arm &#8594 armeff \n B &#8594 B \n cxm &times (B/2) &#8594 cxm \n am &times (B&sup2/4) &#8594 am \n cam &times (B/2) &#8594 cam \n rf &times (B/2) &#8594 rf \n cx0 &#8594 lf
 ```
