@@ -1,0 +1,5 @@
+33	49	=ile,ite from tsd.f
+0.025		=dm camber of flywing camber line (>0)
+-0.01		=dmplus camber of reverse parabolic cmber line (<0)
+
+
