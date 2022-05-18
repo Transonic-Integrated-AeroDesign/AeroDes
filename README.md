@@ -211,11 +211,32 @@ canard setting angle ```tcd``` and aircraft angle ```theqd```. It is intended th
 
 ### TSD Workflow
 
+For acquiring the airbrake value via predicting the wake drag (Cdw) users are expected to 
+utilize the ```tsd``` module (code). A diagram of the relationship between interpolating 
+mesh points between a given profile from Xfoil and the transonic solver is shown below.
+
 ```mermaid
 flowchart TD
     id1(Xfoil) -.->|"geoprofortsd.xzu"| id2(geoprofortsd.f)
     id2(geoprofortsd.f) -.->|"geoprofortsd.xde"| id3("tsd.f")
 ```
+
+First users can create a 2d foil (in Xfoil or any online resource there is); 
+the profile should be named ***geoprofortsd.xzu*** contain the following set of columns shown below.
+
+```geoprofortsd.xzu```
+```
+x[i]   zu[i]
+==   ===
+x1    z1
+x2    z2
+...    ...
+```
+
+Second ensure ***geoprofortsd.xzu*** is in the same directory as ```geoprofortsd.f```. 
+This code effectively smooths the profile and outputs it into the appropriate format for tsd.f.
+
+
 
 ## <a name="Citation"></a> Citation
 
