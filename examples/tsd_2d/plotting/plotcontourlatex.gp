@@ -2,7 +2,8 @@ wpx = 4.5
 hpx = 2.5
 
 # PNG
-set terminal epslatex size wpx, hpx standalone color colortext 10 header "\\newcommand{\\ft}[0]{\\huge}"
+#set terminal epslatex size wpx, hpx standalone color colortext 10 header "\\newcommand{\\ft}[0]{\\huge}"
+set terminal epslatex size wpx, hpx standalone
 set out 'contour.tex'
 
 set multiplot
