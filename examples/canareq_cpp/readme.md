@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 
     double angle=0, d_angle=0.5, angle0=1;
     // canar equillibrium
-    aero->canary->readInputParams("ADcanareq.data");
+    aero->canary->readInputParams("canareq.data");
     aero->canary->readInputPolar("canarpolar.dat");
 
     std::string filename = "results.dat";
@@ -34,7 +34,11 @@ int main(int argc, char** argv) {
 
 In order to compile this code, so that we may run the resulting executable called ```test```, use this command.
 
+On Mac OS X
 ```g++ -o test -laerolib main.cpp```
+
+On Linux
+```g++ -o test main.cpp -laerolib```
 
 Now we may run the executable like so,
 
