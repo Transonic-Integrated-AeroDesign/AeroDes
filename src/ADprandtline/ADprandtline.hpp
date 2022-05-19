@@ -30,8 +30,11 @@ public:
     void readInputPolarMulti(std::string);
     void readInputDownwash();
 
-    // specific
+    // sets
     void setAlpha(double);
+    void setReNormalization();
+
+    // solver
     void setMesh();
     void solveLiftingLine();
 

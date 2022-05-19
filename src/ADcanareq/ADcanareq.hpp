@@ -31,7 +31,7 @@ public:
     void readInputPolar(std::string); // read main wing polar
 
     // sets
-    void setNormalization();
+    void setReNormalization();
     void setCanardAngle(double);
     void setPower();
 

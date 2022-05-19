@@ -37,8 +37,13 @@ public:
     void outputCanardWake(std::string);
     void outputWing(std::string);
 
-    // specific
+    // sets
+    void setReNormalization();
+
+    // meshing
     void setMesh();
+
+    // solver
     void solveLiftingLine();
     void integrate_canard();
     void integrate_wing();

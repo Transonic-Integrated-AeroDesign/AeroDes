@@ -170,6 +170,12 @@ void ADprandtline::setAlpha(double al) {
     alphain=al;
 }
 
+void ADprandtline::setReNormalization() {
+    //
+    // set normalizations back into SI units
+    //
+}
+
 void ADprandtline::setMesh() {
     //
     // set mesh, geometry, and flow along wing-span
