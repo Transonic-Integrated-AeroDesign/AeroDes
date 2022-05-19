@@ -18,7 +18,7 @@
 #define DBG 0
 #endif
 
-using namespace std; // g++ ADprandtline.cpp -c
+using namespace std;
 /*
  * -20 to 25 at incriments of 1 (depending on the geometry)
  * run again through smooth polar!

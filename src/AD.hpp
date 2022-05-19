@@ -20,10 +20,12 @@ public:
     class ADprandtline* prandtl;
     class ADcanareq* canary;
     class ADwake* wk;
+    class ADoutput* out;
     AD(int argc, char** argv);
     ~AD();
 
     int jxx;
+    int kx_of_alpha;
     double xac;
     double em;
     double ec; // wake

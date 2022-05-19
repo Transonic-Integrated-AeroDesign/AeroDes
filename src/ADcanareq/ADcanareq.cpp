@@ -30,21 +30,10 @@ ADcanareq::ADcanareq(int argc, char** argv, AD *adshr) : ADvariables(adshr), ADm
     tr = (double *) malloc(sizeof(double)*ndatx);
     
     filenameInputPolar = "canarpolar.dat";
-    filenamePolarPrandtline = "canarpolar.ADprandtline";
-    filenamePolarCdClCq = "canarpolar.cdclcq";
-    filenameEqData = "canareq.data";
-    filenameEqCdClCqm = "canareq.cdclcqm";
-    filenameEqItres = "canareq.itres";
-    filenameEqCdClCq = "canareq.cdclcq";
-    filenameEqCdMcln = "canareq.cdmcln";
-    filenameEqCmCg = "canareq.cmcg";
-    filenameEqxtabCl = "canareq.xtabvcl";
-    filenameEqCdClCqMeq = "canareq.cdclcqmeq";
-    filenameEqCdClCqCmCgEq = "canareq.cdclcqcmcgeq";
-    filenameEqList = "canareq.list";
-    filenameEqStab = "canareq.stab";
-    filenameEqDataOpt = "canareq.optimized";
-    
+    filenameInputData = "canareq.data";
+    filenameEqDAT = "canareq.dat";
+    filenameEqJSON = "canareq.json";
+
     // constants
     pi=2.*asin(1.);
     eps=1.e-6;
@@ -70,7 +59,7 @@ ADcanareq::ADcanareq(int argc, char** argv, AD *adshr) : ADvariables(adshr), ADm
         if (!strcmp(argv[iarg],"--ceq_in")){
             inputBool=true;
             inflag=iarg+1;
-            filenameEqData = argv[inflag];
+            filenameInputData = argv[inflag];
             iarg+=1;
         }
         // commandline option: for override of canard equilibrium polar file
@@ -97,8 +86,6 @@ ADcanareq::~ADcanareq() {
     free(kxtrm);
     free(vr);
     free(tr);
-
-    if (!file1) file1.close();
 }
 
 double ADcanareq::thrust(int ndat, double v){
@@ -741,9 +728,9 @@ void ADcanareq::init() {
 
 void ADcanareq::readInputParams() {
     // open input file
-    ifstream paramfile(filenameEqData);
+    ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
-        cout << "\n\tCannot Read " << filenameEqData;
+        cout << "\n\tCannot Read " << filenameInputData;
         cout << " File - Error in: readInputParams()" << endl;
         abort();
     }
@@ -905,11 +892,11 @@ void ADcanareq::readInputParams(std::string filename) {
     if (DBG) cout << " ADprandtline::readInputParams()" << endl;
 
     if (filename.compare("")==0);
-    else filenameEqData = filename;
+    else filenameInputData = filename;
 
-    ifstream paramfile(filenameEqData);
+    ifstream paramfile(filenameInputData);
     if (!paramfile.is_open()) {
-        cout << "\n\tCannot Read " << filenameEqData;
+        cout << "\n\tCannot Read " << filenameInputData;
         cout << " File - Error in: readInputParams()" << endl;
         abort();
     }
@@ -1441,7 +1428,7 @@ void ADcanareq::printInputParams() {
     cout << right << setw(32) << " cmac = " << CmacB <<  endl << endl;
 }
 
-int ADcanareq::printInputPolar() {
+void ADcanareq::printInputPolar() {
     cout << endl << "=============================================="<< endl;
     cout << " ADcanareq::printInputPolar()" << endl;
     cout << " (wing polar; profile data from Xfoil)\n";
@@ -1471,7 +1458,6 @@ int ADcanareq::printInputPolar() {
             cout << left << ald[i] << endl;
         }
     }
-    return 1;
 }
 
 void ADcanareq::printGlobalCoefs() {
@@ -1502,94 +1488,121 @@ void ADcanareq::printGlobalCoefs() {
     cout << "           xac (m) = " << left << setw(15) << xac << left << setw(15) << "  xcg (m) = " << xcg << endl;
 }
 
-int ADcanareq::outputPolarPrandtline() {
-    ofstream file;
+//void ADcanareq::outputEquilibrium2Dat(std::string filename) {
+//    if (filename.compare("")==0);
+//    else filenameEqDAT = filename;
+//
+//    if(!file1index) file1.open(filename);
+//    file1 << fixed << std::setprecision(8);
+//    file1 << left << setw(12) << tcd;
+//    file1 << left << setw(12) << tr0;
+//    file1 << left << setw(12) << Cdneq;
+//    file1 << left << setw(12) << Cdfeq;
+//    file1 << Cdceq << endl;
+//    file1index++;
+//}
 
-    // open new file
-    file.open(filenamePolarPrandtline, std::fstream::out);
-    if (!file.is_open()) {
-        printf("unable to write outputPolarPrandtline()\n");
-        return 0;
-    }
-
-    // write results to file
-    for (k=0; k<kx; k++) {
-        file << std::setprecision(8);
-        file << left << setw(16) << cd_al[k];
-        file << left << setw(16) << cl_al[k];
-        file << left << setw(16) << cq_al[k];
-        file << left << ald[k];
-    }
-    file.close();
-    return 1;
-}
-
-int ADcanareq::outputPolarCdClCq() {
-    ofstream file;
-
-    // open new file
-    file.open(filenamePolarCdClCq, std::fstream::out);
-    if (!file.is_open()) {
-        printf("unable to write outputPolarPrandtline()\n");
-        return 0;
-    }
-
-    // write results to file
-    for (k=0; k<kx; k++) {
-        file << std::setprecision(8);
-        file << left << setw(16) << cd_al[k];
-        file << left << setw(16) << cl_al[k];
-        file << left << setw(16) << cq_al[k];
-        file << left << ald[k];
-    }
-    file.close();
-    //file << endl << title << endl;
-    //file << "=============wing polar (profile data from Xfoil):";
-    return 1;
-}
-
-int ADcanareq::outputEqList(){
+void ADcanareq::outputEquilibrium2JSON(std::string filename){
+    //
     // formerly known as write(24,...)
+    //
+    if (filename.compare("")==0);
+    else filenameEqJSON = filename;
+
     ofstream file;
 
     // open new file
-    file.open(filenameEqList, std::fstream::out);
+    file.open(filenameEqJSON, std::fstream::out);
     if (!file.is_open()) {
         printf("unable to write outputEqList()\n");
-        return 0;
+        return;
     }
     file << std::setprecision(8);
-    file << "==============================================" << endl;
-    file << "zero incidence aerodynamic coefficients at k0=" << k0 << endl;
-    file << "==============lift:" << endl;
-    file << " wing:     dCldam0 = " << left << setw(10) << dCldam0 << "   Clm00 = " << Clm00 << endl;
-    file << "canar:     dCldac0 = " << left << setw(10) << dCldac0 << "   Clc00 = " << Clc00 << endl;
-    file << "total:       dClda = " << left << setw(10) << dClda   << "     Cl0 = " << Cl0 << endl;
-    file << "=====moment at xac:" << endl;
-    file << " wing:   dCmacdam0 = " << left << setw(10) << dCmacdam0 << " Cmacm00 = " << Cmacm00 << endl;
-    file << "canar:   dCmacdac0 = " << left << setw(10) << dCmacdac0 << " Cmacc00 = " << Cmacc00 << endl;
-    file << "total:     dCmacda = " << left << setw(10) << dCmacda << "   Cmac0 = " << Cmac0 << endl;
-    file << "=====moment at xcg:" << endl;
-    file << " wing:     dCmdam0 = " << left << setw(10) << dCmdam0 << "   Cmm00 = " << Cmm00 << endl;
-    file << "canar:     dCmdac0 = " << left << setw(10) << dCmdac0 << "   Cmc00 = " << Cmc00 << endl;
-    file << "total:       dCmda = " << left << setw(10) << dCmda << "     Cm0 = " << Cm0 << endl;
-    file << "==estimate aerodynamic center location:" << endl;
-    file << "               xac = " << left << setw(10) << xac << " (m)  xcg = " << xcg << " (m)" << endl;
+//    file << "==============================================" << endl;
+//    file << "zero incidence aerodynamic coefficients at k0=" << k0 << endl;
+//    file << "==============lift:" << endl;
+//    file << " wing:     dCldam0 = " << left << setw(10) << dCldam0 << "   Clm00 = " << Clm00 << endl;
+//    file << "canar:     dCldac0 = " << left << setw(10) << dCldac0 << "   Clc00 = " << Clc00 << endl;
+//    file << "total:       dClda = " << left << setw(10) << dClda   << "     Cl0 = " << Cl0 << endl;
+//    file << "=====moment at xac:" << endl;
+//    file << " wing:   dCmacdam0 = " << left << setw(10) << dCmacdam0 << " Cmacm00 = " << Cmacm00 << endl;
+//    file << "canar:   dCmacdac0 = " << left << setw(10) << dCmacdac0 << " Cmacc00 = " << Cmacc00 << endl;
+//    file << "total:     dCmacda = " << left << setw(10) << dCmacda << "   Cmac0 = " << Cmac0 << endl;
+//    file << "=====moment at xcg:" << endl;
+//    file << " wing:     dCmdam0 = " << left << setw(10) << dCmdam0 << "   Cmm00 = " << Cmm00 << endl;
+//    file << "canar:     dCmdac0 = " << left << setw(10) << dCmdac0 << "   Cmc00 = " << Cmc00 << endl;
+//    file << "total:       dCmda = " << left << setw(10) << dCmda << "     Cm0 = " << Cm0 << endl;
+//    file << "==estimate aerodynamic center location:" << endl;
+//    file << "               xac = " << left << setw(10) << xac << " (m)  xcg = " << xcg << " (m)" << endl;
+//
+//    file << "\n==============================================" << endl;
+//    file << " aleq = " << aleq << " Ueq = " << Ueq << "beteq=" << beteq << endl;
+//    file << " Cleq = " << Cleq << " Cdeq = " << Cdeq << " Cteq = " << Cteq << " CM,ac=" << Cmac << endl;
 
-    file << "\n==============================================" << endl;
-    file << " aleq = " << aleq << " Ueq = " << Ueq << "beteq=" << beteq << endl;
-    file << " Cleq = " << Cleq << " Cdeq = " << Cdeq << " Cteq = " << Cteq << " CM,ac=" << Cmac << endl;
+    file << "{" << endl;
+    // zero incidence aerodynamic coefficients at k0"
+    file << "\t \"k0\" : \"" << k0 << "\"," << endl;
 
-    return 1;
-}
+    // lift
+    file << "\t \"Lift\" : {" << endl;
+    file << "\t\t \"Wing\" : {" << endl;
+    file << "\t\t\t \"dCldam0\" : \"" << left << setw(10) << dCldam0 << "\"," << endl;
+    file << "\t\t\t \"Clm00\" : \"" << left << setw(10) << Clm00 << "\"" << endl;
+    file << "\t\t }," << endl;
 
-void ADcanareq::outputResults2Dat(std::string filename) {
-    if(!file1index) file1.open(filename);
-    file1 << fixed << std::setprecision(8);
-    file1 << left << setw(12) << tcd;
-    file1 << left << setw(12) << tr0;
-    file1 << left << setw(12) << Cdneq;
-    file1 << left << setw(12) << Cdfeq;
-    file1 << Cdceq << endl;
-    file1index++;
+    file << "\t\t \"Canar\" : {" << endl;
+    file << "\t\t\t \"dCldac0\" : \"" << left << setw(10) << dCldac0 << "\"," << endl;
+    file << "\t\t\t \"Clc00\" : \"" << left << setw(10) << Clc00 << "\"" << endl;
+    file << "\t\t }," << endl;
+
+    file << "\t\t \"Total\" : {" << endl;
+    file << "\t\t\t \"dClda\" : \"" << left << setw(10) << dClda  << "\"," << endl;
+    file << "\t\t\t \"Cl0\" : \"" << left << setw(10) << Cl0 << "\"" << endl;
+    file << "\t\t }" << endl;
+    file << "\t}," << endl;
+
+    // moment at xac
+    file << "\t \"M_xac\" : {" << endl;
+    file << "\t\t \"Wing\" : {" << endl;
+    file << "\t\t\t \"dCmacdam0\" : \"" << left << setw(10) << dCmacdam0 << "\"," << endl;
+    file << "\t\t\t \"Cmacm00\" : \"" << left << setw(10) << Cmacm00 << "\"" << endl;
+    file << "\t\t }," << endl;
+    file << "\t\t \"Canar\" : {" << endl;
+    file << "\t\t\t \"dCmacdac0\" : \"" << left << setw(10) << dCmacdac0 << "\"," << endl;
+    file << "\t\t\t \"Cmacc00\" : \"" << left << setw(10) << Cmacc00 << "\"" << endl;
+    file << "\t\t }," << endl;
+    file << "\t\t \"Total\" : {" << endl;
+    file << "\t\t\t \"dCmacda\" : \"" << left << setw(10) << dCmacda << "\"," << endl;
+    file << "\t\t\t \"Cmac0\" : \""  << left << setw(10) << Cmac0 << "\"" << endl;
+    file << "\t\t }" << endl;
+    file << "\t}," << endl;
+
+    // moment at xcg
+    file << "\t \"M_xcg\" : {" << endl;
+    file << "\t\t \"Wing\" : { " << endl;
+    file << "\t\t\t \"dCmdam0\" : \"" << left << setw(10) << dCmdam0 << "\"," << endl;
+    file << "\t\t\t \"Cmm00\" : \"" << left << setw(10) << Cmm00 << "\"" << endl;
+    file << "\t\t }," << endl;
+    file << "\t\t \"Canar\" : {" << endl;
+    file << "\t\t\t \"dCmdac0\" : \"" << left << setw(10) << dCmdac0 << "\"," << endl;
+    file << "\t\t\t \"Cmc00\" : \"" << Cmc00 << "\"" << endl;
+    file << "\t\t }," << endl;
+    file << "\t\t \"Total\" : {" << endl;
+    file << "\t\t\t \"dCmda\" : \"" << left << setw(10) << dCmda << "\"," << endl;
+    file << "\t\t\t \"Cm0\" : \"" << left << setw(10) << Cm0 << "\"" << endl;
+    file << "\t\t }" << endl;
+    file << "\t}," << endl;
+    // estimate aerodynamic center location
+    file << "\t \"xac\" : \"" << left << setw(10) << xac << "\"," << endl;
+    file << "\t \"xcg\" : \"" << left << setw(10) << xcg << "\"," << endl;
+    file << "\t \"linearModel\" : {" << endl;
+    file << "\t\t \"aleq\" : \"" << aleq << "\"," << endl;
+    file << "\t\t \"Ueq\" : \"" << Ueq << "\"," << endl;
+    file << "\t\t \"beteq\" : \"" << beteq << "\"," << endl;
+    file << "\t\t \"Cleq\" : \"" << Cleq << "\"," << endl;
+    file << "\t\t \"Cdeq\" : \"" << Cdeq << "\"," << endl;
+    file << "\t\t \"Cteq\" : \"" << Cteq << "\"," << endl;
+    file << "\t\t \"CM_ac\" : \"" << Cmac << "\"" << endl;
+    file << "\t}" << endl;
+    file << "}" << endl;
 }

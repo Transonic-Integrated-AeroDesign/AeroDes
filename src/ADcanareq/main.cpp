@@ -34,18 +34,19 @@ using namespace std;
 
 int main(int argc, char** argv) {
     AD *ad = new AD(argc, argv);
-//    ADcanareq *canary = new ADcanareq(argc, argv, ad);
 
     ad->canary->readInputParams();
     ad->canary->printInputParams();
 
-    ad->canary->readInputPolar(""); // define input polar filename (can be changed)
+    // define input polar filename (this can be changed)
+    ad->canary->readInputPolar("");
     ad->canary->printInputPolar();
     ad->canary->printGlobalCoefs();
 
     ad->canary->linearModel();
     ad->canary->nonlinearModel();
 
-//    delete canary;
+    ad->canary->outputEquilibrium2JSON("");
+
     delete ad;
 }

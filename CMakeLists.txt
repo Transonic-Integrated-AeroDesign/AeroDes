@@ -31,6 +31,7 @@ include_directories(src/ADcanareq)
 
 # executables
 add_executable(ADcfmactu
+        src/ADoutput.cpp
         src/ADvariables.hpp
         src/ADmemory.hpp
         src/propulsion/cfmactu.cpp
@@ -46,6 +47,7 @@ add_executable(ADcfmactu
         src/ADprandtline/ADprandtline.hpp)
 
 add_executable(ADprandtline
+        src/ADoutput.cpp
         src/ADprandtline/main.cpp
         src/ADprandtline/ADprandtline.cpp
         src/ADprandtline/ADprandtline.hpp
@@ -59,6 +61,7 @@ add_executable(ADprandtline
         src/ADcanareq/ADcanareq.hpp)
 
 add_executable(ADwake
+        src/ADoutput.cpp
         src/ADvariables.hpp
         src/ADmemory.hpp
         src/ADwake/main.cpp
@@ -74,6 +77,7 @@ add_executable(ADwake
 add_executable(ADcanary
         src/AD.cpp
         src/AD.hpp
+        src/ADoutput.cpp
         src/ADprandtline/ADprandtline.cpp
         src/ADvariables.hpp
         src/ADmemory.hpp
@@ -94,6 +98,7 @@ add_executable(ADcanary
 add_executable(ADtsd
         src/AD.cpp
         src/AD.hpp
+        src/ADoutput.cpp
         src/ADvariables.hpp
         src/ADmemory.hpp
         src/ADprandtline/ADprandtline.cpp

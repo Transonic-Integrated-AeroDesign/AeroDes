@@ -30,13 +30,13 @@ int main(int argc, char** argv) {
     aerodes->canary->readInputParams("canareq.data");
     aerodes->canary->readInputPolar("canarpolar.dat");
 
-    std::string filename = "results.dat";
+    std::string filename = "results.json";
     for(int i = 0; i < 5; i++) {
         angle = d_angle*i + angle0; // do not set alpha equal to 0
         aerodes->canary->setCanardAngle(angle);
         aerodes->canary->linearModel();
         aerodes->canary->nonlinearModel();
-        aerodes->canary->outputResults2Dat(filename);
+        aerodes->canary->outputEquilibrium2JSON(filename);
     }
 
     delete aerodes;
