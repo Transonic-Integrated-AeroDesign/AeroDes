@@ -735,6 +735,7 @@ void ADcanareq::readInputParams() {
         abort();
     }
 
+    xacm = xac; // remove this soon (rename xac => xacm) -Cp 5/19
     std::string line;
     std::string a; double b; std::string c; double v; double t;
     std::string afirst;
@@ -799,10 +800,10 @@ void ADcanareq::readInputParams() {
             arceff = b;
             arc = arceff;
         }
-        if(a.compare("ARMEFF")==0) {
-            armeff=b;
-            arm=armeff;
-        }
+//        if(a.compare("ARMEFF")==0) {
+//            armeff=b;
+//            arm=armeff;
+//        }
         //if(a.compare("TCD")==0) tcd = b;
         
         // airbrake data
@@ -901,6 +902,7 @@ void ADcanareq::readInputParams(std::string filename) {
         abort();
     }
 
+    xacm = xac; // remove this soon (rename xac => xacm) -Cp 5/19
     std::string line;
     std::string a; double b; std::string c; double v; double t;
     std::string afirst;
@@ -965,10 +967,10 @@ void ADcanareq::readInputParams(std::string filename) {
             arceff = b;
             arc = arceff;
         }
-        if(a.compare("ARMEFF")==0) {
-            armeff=b;
-            arm=armeff;
-        }
+//        if(a.compare("ARMEFF")==0) {
+//            armeff=b;
+//            arm=armeff;
+//        }
         //if(a.compare("TCD")==0) tcd = b;
 
         // airbrake data
@@ -1134,6 +1136,7 @@ void ADcanareq::readInputPolar(std::string filename) {
     
     //kx=k-1; // off by 1 -Cp 3/4/22
     kx = km+1; // +1 to include zero'th point -Cp 3/4/22
+    kx_of_alpha = kx;
 
     // zero incidence coefficients with assumption of small angles
     for(k=0; k<kx; k++) {
@@ -1356,7 +1359,7 @@ void ADcanareq::printInputParams() {
     cout << right << setw(32) << "  aerodynamic center of wing = " << xacm <<  " (m)" << endl;
 //    cout << right << setw(32) << "     wing lift slope dClmda0 = " << dClmda0 << endl;
     cout << right << setw(32) << "                 wing AR arm = " << arm << endl;
-    cout << right << setw(32) << "    wing effective AR armeff = " << armeff << endl;
+//    cout << right << setw(32) << "    wing effective AR armeff = " << armeff << endl;
     cout << right << setw(32) << "     relative camber of wing = " << dm << endl;
     cout << right << setw(32) << "             wing efficiency = " << em << endl;
     cout << right << setw(32) << " influence fo canard on wing = " << acw << endl;
@@ -1438,7 +1441,7 @@ void ADcanareq::printInputPolar() {
     cout << left << setw(16) << "Cq ";
     cout << left << "incidence " << endl;
 
-    for(int i=0; i<kx; i++) {
+    for(int i=0; i<kx_of_alpha; i++) {
         cout << std::setprecision(8);
         cout << left << setw(16) << i;
         cout << left << setw(16) << cd_al[i];

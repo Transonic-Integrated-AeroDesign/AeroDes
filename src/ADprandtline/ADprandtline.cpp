@@ -170,10 +170,16 @@ void ADprandtline::setAlpha(double al) {
     alphain=al;
 }
 
-void ADprandtline::setReNormalization() {
+void ADprandtline::setDeNormalization() {
     //
     // set normalizations back into SI units
     //
+    xac = xac*B / 2.; // (m)
+    cxm = cxm*B / 2.; // (m)
+    am = am*B*B / 2.; // (m**2)
+    cam = cam*B / 2.; // (m)
+    rf = rf*B / 2.;   // (m)
+    lf = Cx0;         // (m)
 }
 
 void ADprandtline::setMesh() {
@@ -791,6 +797,7 @@ void ADprandtline::readInputParams() {
         }
     }
 
+    // normalizations
     cxm=2.0*Cx0/B;
     lamb=degrad*Lambd;
     rstr=2.0*Rstr0/B;
@@ -1540,7 +1547,8 @@ void ADprandtline::printResults() {
     if (DBG) cout << " ADprandtline::printResults()" << endl;
 
     cout << fixed << std::setprecision(2);
-    cout << endl << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
+    cout << endl << endl << "=========================================" << endl;
+    cout << "\033[1;42m ADprandtline results: " << alphad << " (deg) \033[0m" << endl;
 
     cout << fixed << std::setprecision(4);
     //cout << right << setw(32) << "                            alpha = " << alphad << endl;

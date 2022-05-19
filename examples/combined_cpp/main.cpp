@@ -38,6 +38,8 @@ int main(int argc, char** argv) {
         aero->prandtl->setAlpha(angle);     // set alpha (deg) // this overrides the input file
         aero->prandtl->solveLiftingLine();  // get Cl(alpha), Cd(alpha), and Gamma, Downwash distributions()
     }
+    // Normalize to SI units
+    aero->prandtl->setDeNormalization();
 
     // canard ADwake process
     aero->wk->readInputParams("wake.data");
@@ -52,18 +54,19 @@ int main(int argc, char** argv) {
     // canar equillibrium
     aero->canary->readInputParams("canareq.data");
     aero->canary->printInputParams();
-    aero->canary->printGlobalCoefs();
-
-    std::cout << std::fixed << std::setprecision(4);
-    for(int i = 0; i < 10; i++) {
-        angle = d_angle*i + angle0;
-        aero->canary->setCanardAngle(angle);
-        aero->canary->linearModel();
-        aero->canary->nonlinearModel(); // solve for alpha, V, beta
-        std::string filename = "filename." + std::to_string(angle) + ".dat"; // filename.1.dat, filename.2.dat, etc...
-        std::cout << " filename: " << filename << std::endl;
-        aero->canary->outputResults2Dat(filename);
-    }
+    aero->canary->printInputPolar();
+//    aero->canary->printGlobalCoefs();
+//
+//    std::cout << std::fixed << std::setprecision(4);
+//    for(int i = 0; i < 10; i++) {
+//        angle = d_angle*i + angle0;
+//        aero->canary->setCanardAngle(angle);
+//        aero->canary->linearModel();
+//        aero->canary->nonlinearModel(); // solve for alpha, V, beta
+//        std::string filename = "filename." + std::to_string(angle) + ".dat"; // filename.1.dat, filename.2.dat, etc...
+//        std::cout << " filename: " << filename << std::endl;
+//        aero->canary->outputEquilibrium2JSON(filename);
+//    }
 
     delete aero;
     return 1;

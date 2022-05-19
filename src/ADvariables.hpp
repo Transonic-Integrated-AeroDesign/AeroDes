@@ -16,6 +16,14 @@ public:
                          wake_ad(p->wk),
                          canareq_ad(p->canary),
                          output_ad(p->out),
+                         xac(p->xac),
+                         arm(p->arm),
+                         em(p->em),
+                         cxm(p->cxm),
+                         cam(p->cam),
+                         am(p->am),
+                         rf(p->rf),
+                         lf(p->lf),
                          alr(p->alr),
                          ald(p->ald),
                          cl_al(p->cl_al),
@@ -23,9 +31,7 @@ public:
                          cq_al(p->cq_al),
                          jxx(p->jxx),
                          kx_of_alpha(p->kx_of_alpha),
-                         xac(p->xac),
                          ec(p->ec),
-                         em(p->em),
                          dClcda0(p->dClcda0),
                          arceff(p->arceff) {
 
@@ -53,9 +59,15 @@ public:
     double &arceff;         // from: ADwake, corrected aspect ratio
     double &dClcda0;        // from: ADwake, canard lift slope
 
+    // mainwing variables
     double &xac;            // from: ADprandtline, aerodynamic center
     double &em;             // from: ADprandtline, main wing efficiency
-    double armeff;
+    double &arm;
+    double &cxm;
+    double &cam;
+    double &am;
+    double &rf;
+    double &lf;
 
     // maingwing polar vectors
     double *&alr;   // alpha in radians

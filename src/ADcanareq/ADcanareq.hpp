@@ -58,12 +58,16 @@ private:
     //parameter(lxx=101,ndatx=21)
     int *kxtrm;
     double pi,eps,degrad,radeg,us3,omega,epser,rho,amu,mass;
-    double xcg,statmarg,amlb,mg,bm,cxm,cam,am,xac,tfd,dClmdtf;
+    double xcg,statmarg,amlb,mg,bm;
+    //double cxm,cam,am,xac; // shared variables
+    double tfd,dClmdtf;
     double dCmmdtf,dCdtf0,dCdtf1,dCdtf2,dm;
 //        double em; // shared variable
     double tf,rf,hf,af;
     double Cdbrake,aref,lref,hpower,Pcent,Ueq,Ref;
-    double T,dTdv,tr0,dtrdv,arm,prod,dum,dcz,dcxm,dcxp,incd;
+    double T,dTdv,tr0,dtrdv;
+    //double arm; // shared variable
+    double prod,dum,dcz,dcxm,dcxp,incd;
     double dCldam0,Clm00,dCmacdam0,dCmdam0,Cmacm00,Cmm00,Cdm,dClda;
     double dCmda,aleq,aleqd,Cleq,dynaref,Cdeq,Cteq,Cweq,Clm0;
     double beteq,Clmeq,Cmac0,Cmcg,dCldam,dCmacda,dCmdam;
