@@ -10,6 +10,7 @@
       real alphafi,alstep,vis,cxj,czj,qj,dgx,sum,wj,atj,attj
       real reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0
       real rey,cdi,cdv,em,cd,dum,acwash,xcp,Cx0,Rstr0,rstr
+      real dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9
       real Rf0,rf,phij,phi0,dwkj,Lambd,lamb,clf
       real c(jxx),g(jxx),dg(jxx),y(jxx),eta(jxx)
       real w(jxx),t(jxx),dem(jxx)
@@ -69,6 +70,7 @@ c*****polar data
       endif
       do 4 n=1,nx     
       write(6,*)'******n= ',n
+!     headers
       read(13,1000)title
       write(6,1000)title
       read(13,1000)title
@@ -102,7 +104,10 @@ c*****polar data
       kfirst=0
       do 1 k=1,lxx
          kdum=k
+!        uncomment for Xfoil Polar
          read(13,*,end=2)inc(k,n),cz(k,n),cx(k,n),dum,cq(k,n)
+!        uncomment for MSES polar
+!        read(13,*,end=2)inc(k,n),cz(k,n),cx(k,n),cq(k,n),dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9
          if(inc(k,n).gt.89.)then
             read(13,*)rbreak(n)
             write(6,*)' n=',n,' rbreak(n)=',rbreak(n)
