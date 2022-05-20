@@ -14,7 +14,7 @@ CAM         22.3		    # cam aerodynamic chord (m)
 AM          351.0		    # am wing area (m**2)
 XACM        33.7		    # xacm location of aerodynamic center of main wing (m)
 dClmda0     3.792		    # dClmda0 wing lift slope
-ARMEFF      4.345		    # armeff wing effective aspect ratio
+# ARMEFF      4.345		    # armeff wing effective aspect ratio
 DM          0.01	        # dm relative camber of main wing
 EM          0.76	        # em efficiency coefficient of main wing
 ACW         -1.7		    # acw influence of canard on wing

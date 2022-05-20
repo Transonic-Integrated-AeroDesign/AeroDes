@@ -55,6 +55,7 @@ public:
     int &kx_of_alpha;       // from: ADprandtline, number of incidence angles
 
     // for canard equilibrium
+    double bm;
     double &ec;             // from: ADwake, oswald efficiency
     double &arceff;         // from: ADwake, corrected aspect ratio
     double &dClcda0;        // from: ADwake, canard lift slope

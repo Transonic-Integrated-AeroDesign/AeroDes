@@ -58,7 +58,8 @@ private:
     //parameter(lxx=101,ndatx=21)
     int *kxtrm;
     double pi,eps,degrad,radeg,us3,omega,epser,rho,amu,mass;
-    double xcg,statmarg,amlb,mg,bm;
+    double xcg,statmarg,amlb,mg;
+//    double bm; // shared variable
     //double cxm,cam,am,xac; // shared variables
     double tfd,dClmdtf;
     double dCmmdtf,dCdtf0,dCdtf1,dCdtf2,dm;

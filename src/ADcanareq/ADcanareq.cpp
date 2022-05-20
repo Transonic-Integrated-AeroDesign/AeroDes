@@ -1012,6 +1012,7 @@ void ADcanareq::readInputParams(std::string filename) {
     }
 
     // airflow and weight calcs
+    arm=pow(bm,2) / am;
     amlb=2.205*mass;
     mg=mass*9.81;
 
@@ -1344,10 +1345,10 @@ void ADcanareq::printInputParams() {
 
     cout << "air parameters:" << endl;
     cout << right << setw(32) << "                     density = " << rho <<  " (kg/m**3)" << endl;
-    cout << right << setw(32) << "               dynamic visc. = " << amu <<  " (m**2/s)" << endl << endl;
+    cout << right << setw(32) << "               dynamic visc. = " << scientific << amu <<  " (m**2/s)" << endl << endl;
 
     cout << "gravity data:" << endl;
-    cout << right << setw(32) << "                        mass = " << mass <<  " (kg) =  " << amlb <<  " (lb)" << endl;
+    cout << right << setw(32) << "                        mass = " << fixed << mass <<  " (kg) =  " << amlb <<  " (lb)" << endl;
     cout << right << setw(32) << "              location of CG = " << xcg <<  " (m)" << endl;
     cout << right << setw(32) << "               static margin = " << statmarg <<  " (if <0, not used to place xcg)" << endl << endl;
 
