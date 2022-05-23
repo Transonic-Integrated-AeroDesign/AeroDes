@@ -211,9 +211,30 @@ canard setting angle ```tcd``` and aircraft angle ```theqd```. It is intended th
 
 ### TSD Workflow
 
-For acquiring the airbrake value via predicting the wake drag (Cdw) users are expected to 
-utilize the ```tsd``` module (code). A diagram of the relationship between interpolating 
-mesh points between a given profile from Xfoil and the transonic solver is shown below.
+For acquiring the wave drag (Cdw) users are expected to utilize the ```tsd``` module/code. This
+process is highlighted in four steps; 
+(1) generate a rudimentary 2D mesh, 
+(2) linearly interpolate the 2D mesh,
+and (3) finally run the tsd.f or ADtsd (executable). 
+
+**Note:** We can use the air-brake (in canard-equilibrium) to implement the Cdw drag in addition to 
+all other drag acting on the canard and main-wing.
+
+Be aware that the interpolated mesh should be in the same directory as the **tsd** executable once it is compiled. See the 
+directory structure below.
+
+```
+tsd/
+├── geoprofortsd.data
+├── geoprofortsd.f
+├── geoprofortsd.xde
+├── geoprofortsd.xzu
+├── tsd.data
+└── tsd.f
+```
+
+Here is a diagram of how these files are related. The overall process flow ranging from generating the linearly 
+interpolated mesh points (given by Xfoil or online) and the transonic solver is shown below.
 
 ```mermaid
 flowchart TD
@@ -221,8 +242,8 @@ flowchart TD
     id2(geoprofortsd.f) -.->|"geoprofortsd.xde"| id3("tsd.f")
 ```
 
-First users can create a 2d foil (in Xfoil or any online resource there is); 
-the profile should be named ***geoprofortsd.xzu*** contain the following set of columns shown below.
+Sequentially, the first step is to generate a rudimentary geometry file, called ***geoprofortsd.xzu***.
+This 2D foil (in Xfoil or any online resource there is) should be formatted with columns shown below.
 
 ```geoprofortsd.xzu```
 ```
@@ -236,7 +257,7 @@ x2    z2
 Second ensure ***geoprofortsd.xzu*** is in the same directory as ```geoprofortsd.f```. 
 This code effectively smooths the profile and outputs it into the appropriate format for tsd.f.
 
-
+***more steps to come...***
 
 ## <a name="Citation"></a> Citation
 
