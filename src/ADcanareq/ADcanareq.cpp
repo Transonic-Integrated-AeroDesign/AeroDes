@@ -1510,7 +1510,9 @@ void ADcanareq::outputEquilibrium2JSON(std::string filename){
     //
     // formerly known as write(24,...)
     //
-    if (filename.compare("")==0);
+    if (filename.compare("")==0) {
+        filenameEqJSON = "results_tcd_" + std::to_string(tcd0) + ".dat";
+    }
     else filenameEqJSON = filename;
 
     ofstream file;

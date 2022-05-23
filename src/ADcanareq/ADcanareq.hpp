@@ -55,7 +55,6 @@ private:
     int n1, n2;
     int lxx,ndatx,ndat,nal,itx,i,km,k,kp,k0,m,it, kx;
     int inewton,imarg,itfd,nalmin,nalmax,n,incidence;
-    //parameter(lxx=101,ndatx=21)
     int *kxtrm;
     double pi,eps,degrad,radeg,us3,omega,epser,rho,amu,mass;
     double xcg,statmarg,amlb,mg;
@@ -86,10 +85,8 @@ private:
     double zeng,rav,ruh,ar,reyr,Cdr0,Cdreq,dna,lna,reyn,an;
     double Cdn0,Cdneq;
     double *vr; double *tr;
-//        double *cx; double *cz; double *cq; double *inc;
     double det,usdet,b1,b2,b3;
     double **aa; double *bb;
-    //std::string title, prop;
     char title[38],prop[20]; // these are not large enough there will be issues w/ strings
     char nc[5],yw[5];
 
