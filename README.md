@@ -212,7 +212,8 @@ canard setting angle ```tcd``` and aircraft angle ```theqd```. It is intended th
 ### TSD Workflow
 
 For acquiring the wave drag (Cdw) users are expected to utilize the ```tsd``` module/code. This
-process is highlighted in four steps; 
+process is highlighted in four main steps; 
+(0) generate the number of discrete points,
 (1) generate a rudimentary 2D mesh, 
 (2) linearly interpolate the 2D mesh,
 and (3) finally run the tsd.f or ADtsd (executable). 
@@ -238,14 +239,22 @@ interpolated mesh points (given by Xfoil or online) and the transonic solver is 
 
 ```mermaid
 flowchart TD
+    id6("tsd.f") -->|"'ile', 'ite'"| id2(geoprofortsd.f)
     id1(Xfoil) -.->|"geoprofortsd.xzu"| id2(geoprofortsd.f)
+    id5[/geoprofortsd.data/] --> id2(geoprofortsd.f)
     id2(geoprofortsd.f) -.->|"geoprofortsd.xde"| id3("tsd.f")
+    id4[/tsd.data/] --> id3("tsd.f")
 ```
 
-Sequentially, the first step is to generate a rudimentary geometry file, called ***geoprofortsd.xzu***.
+Sequentially, the zero'th step is to gather the number of discrete points in the mesh system. These
+will be defined in the variables ```ile``` and ```ite``` printed to screen when you run the ```tsd.f``` executable.
+The number of discrete points are of course dictated by ```dx0```, ```dy0```, ```dz0``` variables set in the tsd data file. 
+Gathering the number of discrete points is a matter of reading the text output and looking for the values
+corresponding to ```ile``` and ```ite```.
+
+Now the first step is to generate a rudimentary geometry file, called ***geoprofortsd.xzu***.
 This 2D foil (in Xfoil or any online resource there is) should be formatted with columns shown below.
 
-```geoprofortsd.xzu```
 ```
 x[i]   zu[i]
 ==   ===
@@ -254,10 +263,11 @@ x2    z2
 ...    ...
 ```
 
-Second ensure ***geoprofortsd.xzu*** is in the same directory as ```geoprofortsd.f```. 
-This code effectively smooths the profile and outputs it into the appropriate format for tsd.f.
+Second ensure ***geoprofortsd.xzu*** is in the same directory as ```geoprofortsd.f```. This is also
+demonstrated in the tree directory printed previously (above). The purpose of running this code is to effectively 
+smooth the profile and output a new profile into the appropriate format for ```tsd.f```, called ```geoprofortsd.xde```.
 
-***more steps to come...***
+Finally you may run ```tsd.f``` to solve for transonic flow around a symmetrical, thin airfoil.
 
 ## <a name="Citation"></a> Citation
 
