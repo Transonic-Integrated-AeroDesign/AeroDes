@@ -2,16 +2,16 @@
 1.0	=omega
 1.0	=omgeo relaxation factor
 1.0	=omak relaxation factor
-1.5	=Cld design lift coefficient
+0.5	=Cld design lift coefficient
 80	=m1(%) position of trailing edge of profile 1
-2	=k1 thickness distribution (sc/q-j/selig/s-s/1/2/3/4)
+3	=k1 thickness distribution (sc/q-j/selig/s-s/1/2/3/4)
 10	=n1(%) relative thickness of profile 1
 80	=m2(%) position of leading edge of profile 2
-2	=k2 thickness distribution (sc/q-j/selig/s-s/1/2/3/4)
+3	=k2 thickness distribution (sc/q-j/selig/s-s/1/2/3/4)
 10	=n2(%) relative thickness of profile 2
-0.00001	=tethick 1/2 trailing edge thickness
+0.0	=tethick 1/2 trailing edge thickness
 0.07	=gap(%)=zte1-zle2 jump in z between profiles
-0.12	=dm flywing camber
+0.025	=dm flywing camber
 -0.01	=dmplus parabolic camber
-2	=nopt second element/both elements optimization 1/2
-5.7325	=alphad (deg) incidence of element 1
+1	=nopt second element/both elements optimization 1/2
+3.0	=alphad (deg) incidence of element 1
