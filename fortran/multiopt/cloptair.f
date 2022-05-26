@@ -20,6 +20,7 @@
       doubleprecision veu(ix),xxu(ix),vgradu(ix),thetau(ix),cfru(ix)
       doubleprecision veo(ix),xxo(ix),vgrado(ix),thetao(ix),cfro(ix)
       doubleprecision ama(ixx,ixx),rhs(ixx)
+      doubleprecision XINL,XOUT,YBOT,YTOP
       integer ipvt(ixx)
       character*17 thick(4)
 c*****constants
@@ -91,6 +92,7 @@ cccccccccccccccccccccccccccccccccc
       open(unit=28,file='cloptxz2.dat',form='formatted')
       open(unit=29,file='cloptxg1.dat',form='formatted')
       open(unit=30,file='cloptxg2.dat',form='formatted')
+      open(unit=31,file='blade.profile',form='formatted')
 c*****variables
       write(6,*)
       write(6,*)'*dimensionless variables:'
@@ -179,6 +181,11 @@ c*****flywingplus profile
       read(15,*)nopt
       read(15,*)alphad
       alpha=pi*alphad/180.
+c*****boundary domain
+      read(15,*)XINL
+      read(15,*)XOUT
+      read(15,*)YBOT
+      read(15,*)YTOP
 c*****output on listing
       write(6,*)
       write(6,*)'***************'
@@ -229,10 +236,10 @@ c*****output on listing
 c*****initialization
       write(6,*)' '
       write(6,*)'  i ','    x1(i) ','    f1(i) ','   fp1(i) '
-     &     ,'    e1(i) ','   ep1(i) ','    x2(i) ','    f2(i) '
+     &     ,'    e1(i) ','   ep1(i) ','    x2(i) ','    f2(i) '
      &     ,'   fp2(i) ','    e2(i) ','   ep2(i)'
       write(26,*)'  i ','    x1(i) ','    f1(i) ','   fp1(i) '
-     &     ,'    e1(i) ','   ep1(i) ','    x2(i) ','    f2(i) '
+     &     ,'    e1(i) ','   ep1(i) ','    x2(i) ','    f2(i) '
      &     ,'   fp2(i) ','    e2(i) ','   ep2(i)'
       write(26,*)' '
       write(26,*)'  i ','    x1(i) ','    f1(i) ','    e1(i) '
@@ -796,6 +803,8 @@ c*****output for nxyplot
          write(24,*)x1(i),f1e
  16   continue
 c     add thickness to camber line and small te thickness
+!     write(27,*)'x ','z'
+!     write(28,*)'x','z'
       do 17 i=1,ix
          ic=ix+1-i
          fu1(ic)=f1(ic)+e1(ic)+tethick*x1(ic)/xte1
@@ -813,6 +822,33 @@ c     add thickness to camber line and small te thickness
          write(29,*)x1(i),g1(i)
          write(30,*)x2(i),g2(i)
  18   continue
+c
+c      write mses profile
+c
+      write(31,*)'profile.name'
+      write(31,*)XINL,' ',XOUT,' ',YBOT,' ',YTOP
+      do 19 i=1,ix
+         ic=ix+1-i
+         fu1(ic)=f1(ic)+e1(ic)+tethick*x1(ic)/xte1
+         write(31,*)x1(ic),fu1(ic)
+  19   continue
+      do 20 i=2,ix
+         fo1(i)=f1(i)-e1(i)-tethick*x1(i)/xte1
+         write(31,*)x1(i),fo1(i)
+  20   continue
+      write(31,*)'999.0 999.0'
+      do 21 i=1,ix
+         ic=ix+1-i
+         fu2(ic)=f2(ic)+e2(ic)+tethick*(x2(ic)-xle2)/(1.0-xle2)
+         write(31,*)x2(ic),fu2(ic)
+  21   continue
+      do 22 i=2,ix
+         fo2(i)=f2(i)-e2(i)-tethick*(x2(i)-xle2)/(1.0-xle2)
+         write(31,*)x2(i),fo2(i)
+  22   continue
+c
+c
+c
       write(6,*)' '
       write(6,*)'ak=',ak,' cl1=',cl1,' cl2=',cl2,' clt=',clt
       write(26,*)' '
@@ -837,6 +873,7 @@ c*****output files
       write(6,*)'cloptair.out      :listing'
       write(6,*)'cloptxz1.dat      :coordinates of elem 1 for mses'
       write(6,*)'cloptxz2.dat      :coordinates of elem 2 for mses'
+      write(6,*)'blade.profile     :coordinates for mses'
       write(6,*)'cloptxg1.dat      :circulation of elem 1'
       write(6,*)'cloptxg2.dat      :circulation of elem 2'
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
