@@ -55,7 +55,8 @@ c*****initialization
       doubleprecision axii1, axii2, eim1, eim2, axiim1, axiim2
       doubleprecision teti, xi1, xi2
       integer i, iter, nopt
-      doubleprecision dm, dmplus, fim1, alphad, alpha, dum
+      doubleprecision dm, dmplus, fim1, alphad, alpha, dum, alpheffd
+     &	,alpheff
 c*****iteration loop
       integer itd, it, idx
       doubleprecision dgx, sum, sum1, sum2
@@ -181,6 +182,8 @@ c*****flywingplus profile
       read(15,*)nopt
       read(15,*)alphad
       alpha=pi*alphad/180.
+      alpheff=gap+xte1*alpha
+      alpheffd=180.*alpheff/pi
 c*****boundary domain
       read(15,*)XINL
       read(15,*)XOUT
@@ -209,7 +212,13 @@ c*****output on listing
       write(6,*)'reversed parab camber dmplus=',dmplus
       write(6,*)'opt1 element/2 elements nopt=',nopt
       write(6,*)'  incidence of elem 1 alphad=',alphad
-     &     ,' (deg) alpha=',alpha,' (rd)'
+     &     ,' (deg)   alpha=',alpha,' (rd)'
+      write(6,*)'effective incidence alpheffd=',alpheffd
+     &     ,' (deg) alpheff=',alpheff,' (rd)'
+      write(6,*)'inlet boundary location XINL=',XINL
+      write(6,*)'        outlet location XOUT=',XOUT
+      write(6,*)'        bottom location YBOT=',YBOT
+      write(6,*)'  top boundary location YTOP=',YTOP
       write(26,*)
       write(26,*)'***************'
       write(26,*)'iteration parameters:'
@@ -232,7 +241,13 @@ c*****output on listing
       write(26,*)'reversed parab camber dmplus=',dmplus
       write(26,*)'opt1 element/2 elements nopt=',nopt
       write(26,*)'  incidence of elem 1 alphad=',alphad
-     &     ,' (deg) alpha=',alpha,' (rd)'
+     &     ,' (deg)   alpha=',alpha,' (rd)'
+      write(26,*)'effective incidence alpheffd=',alpheffd
+     &     ,' (deg) alpheff=',alpheff,' (rd)'
+      write(26,*)'inlet boundary location XINL=',XINL
+      write(26,*)'        outlet location XOUT=',XOUT
+      write(26,*)'        bottom location YBOT=',YBOT
+      write(26,*)'  top boundary location YTOP=',YTOP
 c*****initialization
       write(6,*)' '
       write(6,*)'  i ','    x1(i) ','    f1(i) ','   fp1(i) '
@@ -251,7 +266,7 @@ c     if element 1 fixed
       if(nopt.eq.1)then
          fim1=gap+dm*axii1*(7.-8.*axii1/xte1)*(1.-axii1/xte1)
      &        +dmplus*axii1*(1.-axii1/xte1)
-         fim1=fim1+(1.-axii1/xte1)*alpha
+         fim1=fim1+xte1*(1.-axii1/xte1)*alpha
       endif
       eim1=-fact1*em1*(1.+dcos(.5*dtet))**ex1*dsin(.5*dtet)
       eim2=-fact2*em2*(1.+dcos(.5*dtet))**ex2*dsin(.5*dtet)
@@ -275,13 +290,13 @@ c     if element 1 fixed
          if(nopt.eq.1)then
             f1(i)=gap+dm*axii1*(7.-8.*axii1/xte1)*(1.-axii1/xte1)/3.
      &           +dmplus*axii1*(1.-axii1/xte1)
-            f1(i)=f1(i)+(1.-axii1/xte1)*alpha
+            f1(i)=f1(i)+xte1*(1.-axii1/xte1)*alpha
             azi1(i)=f1(i)
             fp1(i)=(f1(i)-fim1)/(axii1-axiim1)
             fim1=f1(i)
             f1(i)=gap+dm*xi1*(7.-8.*xi1/xte1)*(1.-xi1/xte1)/3.
      &           +dmplus*xi1*(1.-xi1/xte1)
-            f1(i)=f1(i)+(1.-xi1/xte1)*alpha
+            f1(i)=f1(i)+xte1*(1.-xi1/xte1)*alpha
          endif
          e1(i)=fact1*em1*(1.+dcos(teti+.5*dtet))**ex1*dsin(teti+.5*dtet)
          e2(i)=fact2*em2*(1.+dcos(teti+.5*dtet))**ex2*dsin(teti+.5*dtet)
@@ -876,6 +891,7 @@ c*****output files
       write(6,*)'blade.profile     :coordinates for mses'
       write(6,*)'cloptxg1.dat      :circulation of elem 1'
       write(6,*)'cloptxg2.dat      :circulation of elem 2'
+      write(6,*)'blade.profile     :profile geometry for Mses'
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       stop
 	end
