@@ -241,6 +241,7 @@ interpolated mesh points (given by Xfoil or online) and the transonic solver is 
 flowchart TD
     id6("tsd.f") -->|"'ile', 'ite'"| id2(geoprofortsd.f)
     id1(Xfoil) -.->|"geoprofortsd.xzu"| id2(geoprofortsd.f)
+    id2(geoprofortsd.f) --> id7[/geoprofortsd.xzmses/]
     id5[/geoprofortsd.data/] --> id2(geoprofortsd.f)
     id2(geoprofortsd.f) -.->|"geoprofortsd.xde"| id3("tsd.f")
     id4[/tsd.data/] --> id3("tsd.f")
@@ -252,7 +253,8 @@ The number of discrete points are of course dictated by ```dx0```, ```dy0```, ``
 Gathering the number of discrete points is a matter of reading the text output and looking for the values
 corresponding to ```ile``` and ```ite```.
 
-Now the first step is to generate a rudimentary geometry file, called ***geoprofortsd.xzu***.
+Now the first step is to generate a rudimentary geometry file, called ***geoprofortsd.xzu***. This file
+essentially contains the x-coordinates and upper thickness of your profile.
 This 2D foil (in Xfoil or any online resource there is) should be formatted with columns shown below.
 
 ```
@@ -266,6 +268,9 @@ x2    z2
 Second ensure ***geoprofortsd.xzu*** is in the same directory as ```geoprofortsd.f```. This is also
 demonstrated in the tree directory printed previously (above). The purpose of running this code is to effectively 
 smooth the profile and output a new profile into the appropriate format for ```tsd.f```, called ```geoprofortsd.xde```.
+
+Third it should be noted that the full and complete profile for plotting is output to a file called
+```geoprofortsd.xzmses``` for post processing and analysis.
 
 Finally you may run ```tsd.f``` to solve for transonic flow around a symmetrical, thin airfoil.
 
