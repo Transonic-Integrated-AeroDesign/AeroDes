@@ -14,6 +14,8 @@
 #include <string>
 #include <math.h>
 
+#include "ADinput.hpp"
+
 class AD {
 public:
     class ADmemory *mem;
@@ -21,6 +23,9 @@ public:
     class ADcanareq* canary;
     class ADwake* wk;
     class ADoutput* out;
+
+//    template <typename T> AD(int argc, char** argv, T *&);
+    AD(int argc, char** argv, ADinput &);
     AD(int argc, char** argv);
     ~AD();
 

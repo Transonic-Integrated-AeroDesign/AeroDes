@@ -20,6 +20,7 @@
 class ADprandtline : virtual public ADvariables, virtual public ADmemory {
 public:
     ADprandtline(int argc, char** argv, AD *);
+    ADprandtline(int argc, char** argv, AD *, ADinput &);
     ~ADprandtline();
 
     // inputs

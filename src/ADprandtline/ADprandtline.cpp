@@ -114,6 +114,95 @@ ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr
     shared=true;
 }
 
+ADprandtline::ADprandtline(int argc, char** argv, AD *adshr, ADinput &in) : ADvariables(adshr), ADmemory(adshr) {
+    lxx = in.JX;  // n discrete wing-span points
+    std::cout << " lxx = " << lxx << endl;
+    nxx = 10;   // n polars
+    nx = 1;     // start from 1 (0 = fuselage)
+
+    // initialize arrays
+    c   = (double *) malloc(sizeof(double)*jxx);
+    g   = (double *) malloc(sizeof(double)*jxx);
+    dg  = (double *) malloc(sizeof(double)*jxx);
+    y   = (double *) malloc(sizeof(double)*jxx);
+    eta = (double *) malloc(sizeof(double)*jxx);
+
+    w   = (double *) malloc(sizeof(double)*jxx);
+    t   = (double *) malloc(sizeof(double)*jxx);
+    dem = (double *) malloc(sizeof(double)*jxx);
+
+
+    a0  = (double *) malloc(sizeof(double)*jxx);
+    a1  = (double *) malloc(sizeof(double)*jxx);
+    b0  = (double *) malloc(sizeof(double)*jxx);
+    b1  = (double *) malloc(sizeof(double)*jxx);
+    c0  = (double *) malloc(sizeof(double)*jxx);
+    c1  = (double *) malloc(sizeof(double)*jxx);
+
+    l   = (double *) malloc(sizeof(double)*jxx);
+    d   = (double *) malloc(sizeof(double)*jxx);
+    q   = (double *) malloc(sizeof(double)*jxx);
+    at  = (double *) malloc(sizeof(double)*jxx);
+
+    create_2d_double_array(nxx, lxx, cx);
+    create_2d_double_array(nxx, lxx, cz);
+    create_2d_double_array(nxx, lxx, cq);
+    create_2d_double_array(nxx, lxx, inc);
+
+    cmf  = (double *) malloc(sizeof(double)*jxx);
+    cmt  = (double *) malloc(sizeof(double)*jxx);
+    fz   = (double *) malloc(sizeof(double)*jxx);
+
+    xle  = (double *) malloc(sizeof(double)*jxx);
+    xte  = (double *) malloc(sizeof(double)*jxx);
+    wcanar  = (double *) malloc(sizeof(double)*jxx);
+    xacm  = (double *) malloc(sizeof(double)*jxx);
+    xiac  = (double *) malloc(sizeof(double)*jxx);
+
+    nbreak = (double *) malloc(sizeof(double)*nxx);
+    lbreak  = (double *) malloc(sizeof(double)*nxx);
+    rbreak  = (double *) malloc(sizeof(double)*nxx);
+
+    m  = (int *) malloc(sizeof(int)*jxx);
+    polar  = (int *) malloc(sizeof(int)*jxx);
+
+    kx  = (int *) malloc(sizeof(int)*nxx);
+    create_2d_int_array(lxx, nxx, kxtrm);
+    mxtrm  = (int *__restrict) malloc(sizeof(int)*nxx);
+
+    // input filenames
+    filenameInputData = "prandtline.data";
+    inputBool = false;
+    filenameInputPolar = "polarbl.dat";
+    polarBool = false;
+    filenameInputDownwash = "canarwash.ylwl";
+
+    // output filenames
+    filenameOutputYFz = "prandtline.loads"; // traditionally prandtline.yfz
+
+    // parse commandline input
+    for (int iarg = 0; iarg<argc ; ++iarg) {
+        if (!strcmp(argv[iarg],"--prandtl_in")){
+            inputBool=true;
+            inputFlag=iarg+1;
+            filenameInputData = std::string(argv[inputFlag]);
+            iarg+=1;
+        }
+        else if (!strcmp(argv[iarg],"--prandtl_polar")){
+            polarBool=true;
+            inputFlag=iarg+1;
+            filenameInputPolar = argv[inputFlag];
+            iarg+=1;
+        }
+    }
+
+    // constants
+    eps=1.e-7;
+    pi=2.*asin(1.);
+    degrad=pi/180.;
+    shared=true;
+}
+
 ADprandtline::~ADprandtline() {
     free(c);
     free(g);

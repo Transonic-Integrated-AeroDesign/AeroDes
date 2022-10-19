@@ -43,11 +43,28 @@ AD::AD(int argc, char** argv) : mem(NULL), prandtl(NULL), wk(NULL), canary(NULL)
     mem->create_1d_double_array(jxx, cq_al);
 }
 
+AD::AD(int argc, char** argv, ADinput &in) : mem(NULL), prandtl(NULL), wk(NULL), canary(NULL) {
+    mem = new ADmemory(this);
+    prandtl = new ADprandtline(argc, argv, this, in);
+    wk = new ADwake(argc, argv, this);
+    canary = new ADcanareq(argc, argv, this);
+    out = new ADoutput(argc, argv, this);
+
+    std::cout << " JX = " << in.JX << endl;
+
+    mem->create_1d_double_array(jxx, alr);
+    mem->create_1d_double_array(jxx, ald);
+    mem->create_1d_double_array(jxx, cl_al);
+    mem->create_1d_double_array(jxx, cd_al);
+    mem->create_1d_double_array(jxx, cq_al);
+}
+
 AD::~AD() {
     delete mem;
     delete prandtl;
     delete wk;
     delete canary; // memory issues
+    delete out;
 
     if (alr!=NULL) mem->delete_1d_double_array(alr);
     if (ald!=NULL) mem->delete_1d_double_array(ald);
