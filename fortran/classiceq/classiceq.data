@@ -1,0 +1,64 @@
+201		=itx maximum number of iterations
+0.8		=omega relaxation factor for Newton's Method
+0.0000001	=epser convergence tolerance
+0.3637		=rho density of air (kg/m**3)
+0.0000145	=amu dynamic viscosity (N.s/m**2)
+65000.0		=mass of airplane and cargo (kg)
+27.1		=xcg location of center of gravity from the nose tip (m)
+0.05		=statmarg static margin (ref cam) (if <0, not used to place xcg)
+36.0		=bm main wing span (m)
+39.0		=cxm root chord of main wing or fuselage length (m)
+22.3		=cam aerodynamic chord (m)
+351.0		=am wing area (m**2)
+14.44		=xacm location of aerodynamic center of main wing (m)
+0.01	        =dm relative camber of main wing
+0.73		=em efficiency coefficient of main wing
+-0.3		=acw influence of tail on wing
+2.0		=tfd flap deflection (deg)
+1.044		=dClmdtf wing lift sensitivity to flap deflection
+-0.4708		=dCmmdtf wing moment sensitivity of flap deflection
+-0.09807		=dCdtf0 flap influence on wing CD independent of alfa
+-0.1142		=dCdtf1 flap influence on wing CD linear in alfa
+0.08360		=dCdtf2 flap influence on wing CD quadratic in alfa
+39.0		=lf length of fuselage (m)
+2.0		=rf radius of fuselage (m)
+10.0		=bt tail span (m)
+4.0		=cxt root chord of tail (m)
+3.5		=cat mean aerodynamic chord of tail (m)
+30.0		=at tail planform area (m**2)
+37.0		=xact location of aerodynamic center of tail (m)
+0.0		=ttd setting angle of tail (deg)
+100.0		=flapcent percent of tail flap
+4.7318		=dCltda0 tail lift slope
+5.895		=arteff tail effective aspect ratio
+0.964		=eteff effective efficiency coefficient of tail
+0.0		=dt relative camber of tail
+-1.7		=awt influence of wing on tail
+0.0		=Cdbrake airbrake drag coefficient
+4.22		=rav rudder average chord (m)
+7.83		=ruh rudder height (m)
+-1.0		=zeng z-coordinate pf engine (m)
+1.75		=dna diameter of nacelle (m)
+4.0		=lna length of nacelle (m)
+7200.0		=hpower (hp)
+18.0		=Pcent percent of engine power available
+10		=ndat number of propeller data
+Leap10 CFM Turboreactor
+   vr(i) (m/s)      tr(i) (N)
+   1.00000000       246840.844
+   2.00000000       246387.266
+   5.00000000       245026.516
+   10.0000000       242758.969
+   20.0000000       238226.719
+   50.0000000       224683.766
+   100.000000       202531.281
+   200.000000       161783.672
+   233.000000       149909.734
+   400.000000       103994.477
+0.0132		=aleq equilibrium incidence (rd)
+233.0		=Ueq equilibrium velocity (m/s)
+0.0		=beteq equilibrium descent angle (rd)
+0.17		=Cleq equilibrium lift coefficient
+0.0421		=Cdeq equilibrium drag coefficient
+-0.00022	=Cmac equilibrium moment at aerodynamic center
+

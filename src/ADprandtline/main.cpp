@@ -35,10 +35,12 @@ int main(int argc, char** argv) {
     // prints
     //prants->printInputParams();   // optional
     //prants->printInputPolar();    // optional
-    //prants->printSetupSummary();  // optional
+
+    // discretize the mesh
+    ad->prandtl->setMesh();
+    ad->prandtl->printSetupSummary();  // optional
 
     // solve lifting line problem
-    ad->prandtl->setMesh();
     ad->prandtl->solveLiftingLine();
 
     // output

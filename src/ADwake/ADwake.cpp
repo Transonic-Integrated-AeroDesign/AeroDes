@@ -1619,7 +1619,7 @@ void ADwake::printResults() {
 
     // essential formula
     if (DBG) cout << endl << "=========================================\n";
-    if (DBG) cout << " ADwake::printResults()" << endl << endl
+    if (DBG) cout << " ADcanarline::printResults()" << endl << endl
                   << "                      Y=0.5*Bc0*y" << endl
                   << "                      C=0.5*Bc0*c" << endl
                   << "                      A=0.25*Bc0**2*ac" << endl
@@ -1635,7 +1635,8 @@ void ADwake::printResults() {
                   << "                     Mt=0.5*RHO*U**2*A*Cac*cmt" << endl << endl;
 
     cout << fixed << std::setprecision(4);
-    cout << endl << "\033[1;42m canar-ADwake results: " << alphad << " (deg) \033[0m" << endl;
+    cout << endl << "=========================================" << endl;
+    cout << "\033[1;42m ADcanarline results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "iter = " << iter << " dgx = " << dgx << " jdx = " << jdx << endl;
     cout << right << setw(38) << " inviscid contribution, CDi = " << cdi << endl;
     cout << right << setw(38) << " oswald efficiency e = " << ec << endl;
@@ -1643,7 +1644,7 @@ void ADwake::printResults() {
     cout << right << setw(38) << " arceff = " << arceff << endl;
     cout << right << setw(38) << " dClcda0 = " << dClcda0 << endl << endl;
 
-    cout<< "\033[1;42m canar-ADwake global results: " << alphad << " (deg) \033[0m" << endl;
+    cout<< "\033[1;42m ADcanarline global results: " << alphad << " (deg) \033[0m" << endl;
     cout << right << setw(38) << "CD = " << cd << endl;
     cout << right << setw(38) << " lift coefficient CL = " << cl << endl;
     cout << right << setw(38) << " pitching moment coefficient CM,0 = " << cm0 << endl;

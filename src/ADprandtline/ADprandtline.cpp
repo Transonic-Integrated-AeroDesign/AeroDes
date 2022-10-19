@@ -18,7 +18,7 @@
 #define DBG 0
 #endif
 
-using namespace std; // g++ ADprandtline.cpp -c
+using namespace std;
 /*
  * -20 to 25 at incriments of 1 (depending on the geometry)
  * run again through smooth polar!
@@ -168,6 +168,18 @@ void ADprandtline::setAlpha(double al) {
     // set singular alpha (degrees)
     alstep=0;
     alphain=al;
+}
+
+void ADprandtline::setDeNormalization() {
+    //
+    // set normalizations back into SI units
+    //
+    xac = xac*B / 2.; // (m)
+    cxm = cxm*B / 2.; // (m)
+    am = am*B*B / 2.; // (m**2)
+    cam = cam*B / 2.; // (m)
+    rf = rf*B / 2.;   // (m)
+    lf = Cx0;         // (m)
 }
 
 void ADprandtline::setMesh() {
@@ -785,6 +797,7 @@ void ADprandtline::readInputParams() {
         }
     }
 
+    // normalizations
     cxm=2.0*Cx0/B;
     lamb=degrad*Lambd;
     rstr=2.0*Rstr0/B;
@@ -1442,14 +1455,14 @@ void ADprandtline::printInputParams() {
 
 void ADprandtline::printSetupSummary() {
     if (DBG) cout << endl << "=========================================" << endl;
-    cout << " printSetupSummary()" << endl << endl;
-    cout << "numerical data:" << endl << endl;
+    if (DBG) cout << " printSetupSummary()" << endl << endl;
+    cout << "\033[1;42m numerical data: \033[0m" << endl << endl;
     cout << right << setw(32) << " number of points jx = " << left << setw(10) << jx << endl;
     cout << right << setw(32) << " max number of iterations itx = " << left << setw(10) << itx << endl;
     cout << right << setw(32) << "                        omega = " << left << setw(10) << omega << endl;
     cout << right << setw(32) << "   viscosity coefficient avis = " << left << setw(10) << avis << endl << endl;
 
-    cout << right << setw(32) << "main wing data:" << endl << endl;
+    cout << "\033[1;42m main wing data: \033[0m" << endl << endl;
     cout << right << setw(32) << "                  wing span B = " << left << setw(10) << B << " (m)" << endl;
     cout << right << setw(32) << "   maximum chord/fuselage Cx0 = " << left << setw(10) << Cx0 << " (m)" << endl;
     cout << right << setw(32) << "      a. c. sweep angle Lambd = " << left << setw(10) << Lambd << "(deg)" << endl;
@@ -1460,13 +1473,13 @@ void ADprandtline::printSetupSummary() {
     cout << right << setw(32) << "             wing shape 0/1/2 = " << left << setw(10) << iwing << endl;
     cout << right << setw(32) << "    downwash of canard acwash = " << left << setw(10) << acwash << endl << endl;
 
-    cout << "air data:" << endl << endl;
+    cout << "\033[1;42m air data: \033[0m" << endl << endl;
     cout << right << setw(32) << "              air density Rho = " << left << setw(10) << Rho << " (kg/m**3)" << endl;
     cout << right << setw(32) << "           wind velocity Vinf = " << left << setw(10) << Vinf << " (m/s)" << endl;
     cout << right << setw(32) << "        dynamic viscosity Amu = " << left << setw(10) << scientific << Amu << " (kg/(m*s))" << endl;
     cout << right << setw(32) << "        reference Reynolds Re = " << left << setw(10) << Re << endl << endl;
 
-    cout << "calculated data:" << endl << endl;
+    cout << "\033[1;42m calculated data: \033[0m" << endl << endl;
     cout << right << setw(32) << "   maximum chord/fuselage cxm = " << left << setw(10) << cxm << " (ref. B/2)" << endl;
     cout << right << setw(32) << "   wing+fuse planform area am = " << left << setw(10) << am << " (ref. B**2/4)" << endl;
     cout << right << setw(32) << "   wing+fuse aspect ratio arm = " << left << setw(10) << arm << endl;
@@ -1533,7 +1546,9 @@ void ADprandtline::printResults() {
     if (DBG) cout << endl << "=========================================\n";
     if (DBG) cout << " ADprandtline::printResults()" << endl;
 
-    cout << endl << endl << "\033[1;42m results: " << alphad << " (deg) \033[0m" << endl;
+    cout << fixed << std::setprecision(2);
+    cout << endl << endl << "=========================================" << endl;
+    cout << "\033[1;42m ADprandtline results: " << alphad << " (deg) \033[0m" << endl;
 
     cout << fixed << std::setprecision(4);
     //cout << right << setw(32) << "                            alpha = " << alphad << endl;
@@ -1542,6 +1557,7 @@ void ADprandtline::printResults() {
     cout << right << setw(32) << "              oswald efficiency e = " << em << endl;
     cout << right << setw(32) << "         viscous contribution CDv = " << cdv << endl << endl;
 
+    cout << fixed << std::setprecision(2);
     cout << "\033[1;42m global results: " << alphad << " (deg) \033[0m" << endl;
 
     cout << right << setw(32) << "              drag coefficient CD = " << cd << endl;

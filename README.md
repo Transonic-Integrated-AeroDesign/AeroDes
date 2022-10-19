@@ -7,8 +7,9 @@ The point of contact for questions should be directed to Carlos Pereyra.
 Follow the sections below for compiling and using this package.
 
 * [Build](#Build)
-* [How to Use](#Usage)
-* [References](#References)
+* [Executables](#Usage)
+* [Documentation](#Documentation)
+* [References & Citation](#Citation)
 ## <a name="Build"></a> Build Instructions
 
 Below are the steps required to compile this project.
@@ -33,7 +34,7 @@ cd build
 ```
 cmake ../.
 make
-make install
+sudo make install
 ```
 
 ```make``` compiles the code. ```make install``` installs the executables to your system.
@@ -57,24 +58,27 @@ In order to compile the executables and the shared libraries, you will need the 
 * cmake
 * g++
 
-## <a name="Usage"></a> How to Use
+## <a name="Usage"></a> Executables to Use
 
-There are two methods of using this code in your design process. You may either use the direct executables in linear fashion where you run each program separately. Or you may import the shared library resource. Lets go through both so you know how to use either of these resources.
+Listed below are the executables for various design tasks. If you have properly installed AeroDes with Cmake then
+these executables should be available.
 
-### Executables
-
-Here are the executables for various design tasks. Each will of course require their own input parameters found in their 
-respective examples directory. 
+There are two methods of using this code in your design process.
+You may either use the direct executables in linear fashion where you run each program separately.
+Or you may import the shared library resource. Lets go through both so you know how to use either of these resources.
 
 ```
-canareq
-cfmactu
-prandtl
-wake
+ADcanareq
+ADprandtline
+ADwake
+ADcfmactu
+ADtsd
 ```
 
-See the examples/ directory for more details in running each example with these
-executables.
+Each exectuable will of course require their own input parameters found in their respective examples directory.
+
+See the ```AeroDes/examples/``` directory for more details of running each module. Please actually read the
+```readme.md``` files for how to use the examples for each of these executables.
 
 ### Shared Library
 
@@ -97,7 +101,7 @@ int main(int argc, char** argv) {
 Inside the main function create the AeroDes object for calling canard wake program ('wk').
 ```asm
 int main(int argc, char** argv) {
-    aerodes *aero = new aerodes(argc, argv); // create aero design object
+    AD *aero = new AD(argc, argv);    // create new aero object
     
     // aero->some_sub_object->function()
     
@@ -128,7 +132,7 @@ main.cpp
 #include "aerodes.hpp"
 
 int main(int argc, char** argv) {
-    aerodes *aero = new aerodes(argc, argv);
+    AD *aero = new AD(argc, argv);    // create new aero object
 
     // canard ADwake
     aero->wk->readInputPolar("polarbl.dat");
@@ -144,15 +148,145 @@ int main(int argc, char** argv) {
 
 Finally once the file above is complete; compile the sample C++ program like so.
 
-```g++ -o test -laerolib main.cpp```
+```g++ -o test main.cpp -laerolib```
 
 You absolutely must have the ```-laerolib``` flag in the compile line in order for your computer to find the ```aerodes.hpp``` library.
 
-## Contributors
+## <a name="Documentation"></a> Documentation 
+
+
+This package is a compliment to XFoil [2] and can be used to design canard configured aircraft from start to finish.
+Typical work flows (seen below) obtain global aircraft CL, CD, CQ drag coefficients from the transformation of 2D polars to 3D polars along the wing span.
+The deployment of ```ADprandtline``` and ```ADcanarline``` modules perform these transformations for the main wing and canard wing in parallel.
+
+See Normal Workflow and Advanced Workflow for design process.
+
+### Normal Workflow
+
+When running the ```ADcanarline``` executable or ```canarline.f``` code, users must include the [0,...,1] (deg) sweep of the canard angle of attack in order to properly
+calculate ```dClda0, arceff, eceff```. However in practice users may run tcd angles [0,1,2,...,etc.] (deg).
+
+```mermaid
+  flowchart TD;
+      subgraph main-wing
+        id10("geoprof.f") --->|"(i.e. Naca2017)"| id1(XFoil) -.->|"polarbl.dat \n (2d polar)"| id3(ADprandtline)
+      end
+      
+      subgraph canard-wing
+        id11("geoprof.f") --->|"(i.e. OneraD)"| id2(XFoil) -.->|"polarbl.dat \n (2d polar)"| id4(ADcanarline)
+      end
+      
+      id5(ADcanareq)
+      id4 -->|"dClcda0, arceff, eceff"| id5 
+      id3 -->|"prandtline.clcdceq \n (3d polar)"| id5
+```
+
+### Advanced Workflow
+
+Shown in cyan blue is the feedback from the canard equilibrium code ```canareq.f``` or the executable ```ADcanareq``` which obtains the optimal
+canard setting angle ```tcd``` and aircraft angle ```theqd```. It is intended that users will input these optimal settings into ```canarline.data```, the input script for ```canarline.f```.
+
+```mermaid
+  flowchart TD;
+      subgraph main-wing
+        id11("geoprof.f") --> id1(XFoil) -.->|"polarbl.dat \n (2d polar)"| id3(ADprandtline)
+      end
+      
+      subgraph canard-wing
+        id10("geoprof.f") --> id2(XFoil) -.->|"polarbl.dat \n (2d polar)"| id4(ADcanarline)
+      end
+      
+      id5(ADcanareq)
+      id4 --->|"dClcda0, arceff, eceff"| id5 
+      id3 --->|"prandtline.clcdceq \n (3d polar)"| id5
+
+      id4 --> |"canarwash.ylwl"| id3
+      id5 -.->|"tcd,theqd"| id4
+      
+      linkStyle 5 stroke-width:2px,fill:none,stroke:red;
+      linkStyle 4 stroke-width:2px,fill:none,stroke:red;
+      linkStyle 6 stroke-width:2px,fill:none,stroke:cyan;
+      linkStyle 7 stroke-width:2px,fill:none,stroke:cyan;
+```
+
+### TSD Workflow
+
+For acquiring the wave drag (Cdw) users are expected to utilize the ```tsd``` module/code. This
+process is highlighted in four main steps; 
+(0) generate the number of discrete points,
+(1) generate a rudimentary 2D mesh, 
+(2) linearly interpolate the 2D mesh,
+and (3) finally run the tsd.f or ADtsd (executable). 
+
+**Note:** We can use the air-brake (in canard-equilibrium) to implement the Cdw drag in addition to 
+all other drag acting on the canard and main-wing.
+
+Be aware that the interpolated mesh should be in the same directory as the **tsd** executable once it is compiled. See the 
+directory structure below.
+
+```
+tsd/
+├── geoprofortsd.data
+├── geoprofortsd.f
+├── geoprofortsd.xde
+├── geoprofortsd.xzu
+├── tsd.data
+└── tsd.f
+```
+
+Here is a diagram of how these files are related. The overall process flow ranging from generating the linearly 
+interpolated mesh points (given by Xfoil or online) and the transonic solver is shown below.
+
+```mermaid
+flowchart TD
+    id6("tsd.f") -->|"'ile', 'ite'"| id2(geoprofortsd.f)
+    id1(Xfoil) -.->|"geoprofortsd.xzu"| id2(geoprofortsd.f)
+    id2(geoprofortsd.f) --> id7[/geoprofortsd.xzmses/]
+    id5[/geoprofortsd.data/] --> id2(geoprofortsd.f)
+    id2(geoprofortsd.f) -.->|"geoprofortsd.xde"| id3("tsd.f")
+    id4[/tsd.data/] --> id3("tsd.f")
+```
+
+Sequentially, the zero'th step is to gather the number of discrete points in the mesh system. These
+will be defined in the variables ```ile``` and ```ite``` printed to screen when you run the ```tsd.f``` executable.
+The number of discrete points are of course dictated by ```dx0```, ```dy0```, ```dz0``` variables set in the tsd data file. 
+Gathering the number of discrete points is a matter of reading the text output and looking for the values
+corresponding to ```ile``` and ```ite```.
+
+Now the first step is to generate a rudimentary geometry file, called ***geoprofortsd.xzu***. This file
+essentially contains the x-coordinates and upper thickness of your profile.
+This 2D foil (in Xfoil or any online resource there is) should be formatted with columns shown below.
+
+```
+x[i]   zu[i]
+==   ===
+x1    z1
+x2    z2
+...    ...
+```
+
+Second ensure ***geoprofortsd.xzu*** is in the same directory as ```geoprofortsd.f```. This is also
+demonstrated in the tree directory printed previously (above). The purpose of running this code is to effectively 
+smooth the profile and output a new profile into the appropriate format for ```tsd.f```, called ```geoprofortsd.xde```.
+
+Third it should be noted that the full and complete profile for plotting is output to a file called
+```geoprofortsd.xzmses``` for post processing and analysis.
+
+Finally you may run ```tsd.f``` to solve for transonic flow around a symmetrical, thin airfoil.
+
+## <a name="Citation"></a> Citation
+
+Coming soon...
+
+### Contributors
 * Jean-Jacques Chattot, University of California, Davis, Professor
-* Carlos Pereyra, University of California, Davis, Grad. Student (czpereyra@ucdavis.edu)
+* Carlos Pereyra, University of California, Davis, Grad. Student (czpereyra at ucdavis.edu)
 
-## <a name="References"></a> References
+### References
 
-[1] J.J. Chattot and M.M. Hafez. 2015. Theoretical and Applied Aerodynamics: And Related Numerical Methods.
-Springer Netherlands, Dordrecht
+[1] J. J. Chattot. and M.M. Hafez. Theoretical and Applied Aerodynamics and Related Numerical Methods. Springer Nether-
+lands, Dordrecht, 1st ed. 2015.
+
+[2] Mark Drela. Xfoil: An analysis and design system for low reynolds number airfoils. In Thomas J.
+Mueller, editor, Low Reynolds Number Aerodynamics, pages 1–12, Berlin, Heidelberg, 1989. Springer
+Berlin Heidelberg.

@@ -30,8 +30,11 @@ public:
     void readInputPolarMulti(std::string);
     void readInputDownwash();
 
-    // specific
+    // sets
     void setAlpha(double);
+    void setDeNormalization();
+
+    // solver
     void setMesh();
     void solveLiftingLine();
 
@@ -50,14 +53,21 @@ private:
     int jx2,is,iwing,nsteps,ivis,iter,it,mj,jdx;
     int itx;
     double eps,pi,degrad,prod,dcz,dcxm,dcxp,incd,si,omega,avis;
-    double B,cxm,dm,tmd,Rho,Vinf,Amu,tm,alpha,Re,amdum;
-    double camdum,dtet,tetj,yj,etaj,etajm,am,cam,arm;
+    double B;
+    //double cxm; // shared
+    double dm,tmd,Rho,Vinf,Amu,tm,alpha,Re,amdum;
+    double camdum,dtet,tetj,yj,etaj,etajm;
+    //double am,cam // shared
+//    double arm;   // shared
     double alphain,alphafi,alstep, alphad; // alphad;
     double vis,cxj,czj,qj,dgx,sum,wj,atj,attj;
-    double reg,res0,alogres,cl,cm0,xac,cmac,cd0,sum0,sum1,sum2,clf;
+    double reg,res0,alogres,cl,cm0,cmac,cd0,sum0,sum1,sum2,clf;
+//    double xac; // shared variable
     double rey,cdi,cdv,cd,dum,acwash,xcp,Cx0,Rstr0,rstr;
 //    double em;    // shared variable
-    double Rf0,rf,phij,phi0,dwkj,Lambd,lamb;
+    double Rf0;
+    //double rf; // shared
+    double phij,phi0,dwkj,Lambd,lamb;
     double base, expn, realpart, imagpart, denom;
     double *c, *g, *dg, *y, *eta;
     double *w, *t, *dem;

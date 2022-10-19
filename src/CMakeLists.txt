@@ -8,6 +8,8 @@ endif()
 add_library(aerolib SHARED
         AD.cpp
         AD.hpp
+        ADoutput.cpp
+        ADoutput.hpp
         ADvariables.hpp
         ADmemory.hpp
         propulsion/cfmactu.cpp
@@ -22,7 +24,7 @@ set_target_properties(aerolib PROPERTIES SOVERSION 1)
 set_target_properties(aerolib PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION 1
-        PUBLIC_HEADER "AD.hpp;ADmemory.hpp;ADvariables.hpp;ADprandtline/ADprandtline.hpp;ADcanareq/ADcanareq.hpp;ADwake/ADwake.hpp;ADwake/config.hpp")
+        PUBLIC_HEADER "AD.hpp;ADoutput.hpp;ADmemory.hpp;ADvariables.hpp;ADprandtline/ADprandtline.hpp;ADcanareq/ADcanareq.hpp;ADwake/ADwake.hpp;ADwake/config.hpp")
 
 # configure a header file to pass the version number only
 target_include_directories(aerolib PRIVATE .)

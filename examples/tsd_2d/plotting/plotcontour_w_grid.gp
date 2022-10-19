@@ -3,7 +3,7 @@ hpx = 640
 
 # PNG
 set terminal png size wpx, hpx
-set out 'contour.png'
+set out 'contourgrid.png'
 
 set style line 1 lc 'black'
 set multiplot
@@ -26,11 +26,11 @@ set bmargin screen 0.01
 #set xrange [-0.1:0.1]
 set xrange [-1:2]
 set yrange [-1:2]
-#set palette gray
-#set palette magma
-load 'inferno.pal'
+#load 'inferno.pal'
+load 'jet.pal'
 
-splot '../tsd.cpcon' u 1:2:3
+splot '../tsd.cpcon' u 1:2:3 ,\
+      '../tsd.cpcon' u 1:2:3 w lines lc 'black'
 
 set xrange [-1:2]
 set yrange [-1:2]

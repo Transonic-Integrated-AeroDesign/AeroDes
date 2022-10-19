@@ -18,6 +18,7 @@
 #include "ADprandtline.hpp"
 #include "ADcanareq.hpp"
 #include "ADwake.hpp"
+#include "ADoutput.hpp"
 
 #ifndef DBG
 #define DBG 0
@@ -33,6 +34,7 @@ AD::AD(int argc, char** argv) : mem(NULL), prandtl(NULL), wk(NULL), canary(NULL)
     prandtl = new ADprandtline(argc, argv, this);
     wk = new ADwake(argc, argv, this);
     canary = new ADcanareq(argc, argv, this);
+    out = new ADoutput(argc, argv, this);
 
     mem->create_1d_double_array(jxx, alr);
     mem->create_1d_double_array(jxx, ald);

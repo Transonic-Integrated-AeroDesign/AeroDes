@@ -1,0 +1,30 @@
+101		<502=jx number of points on the dihedral curve
+0.10		=at height of winglet
+0.0		=bt wing dihedral
+1		=n curve exponent
+-0.05		=al Lagrange multiplier
+1.8		=omegades relaxation factor
+0.5		=omegana relaxation factor
+20.0		=avis artificial viscosity
+1.0		=cltar target cl
+0.8		=cloptw cl of finess max for winglet (Clw/Cdw max)
+10000.0		0.05		=4*EIx/(Weight*B**2) dimensionless mod.elas.*surf. inert.
+0.2		=cxm root chord (ref. B/2)
+0.82518		=am wing area coefficient=(wing area/(B**2/4)) (to be updated)
+0.086		=dm main wing profile relative camber (used when no polar)
+-1.131332		=alphad incidence (deg) (for analysis only)
+0.3659		=cxw winglet root chord (to be updated0
+0.22156		=aw winglet area coefficient=(winglet area/(At*Cw)) (to be updated)
+0.0		=dw winglet profile relative camber
+0.0		=yawd (for analysis only)
+0.0		=deltald left winglet deflection (deg) (for analysis only)
+0.0		=deltard right winglet deflection (deg) (for analysis only)
+18.0		=Lref half span (m)
+100.0		=Vref velocity (m/s)
+1.225		=Rho air density (kg/m**3)
+0.000018	=Amu air dynamic viscosity (kg/(m*s))
+
+
+
+
+
