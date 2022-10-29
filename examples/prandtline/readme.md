@@ -15,6 +15,8 @@ found in the ```individual_polars/``` directory.
 #### Polar File Format
 
 The required format for the input polar file is demonstrated like so.
+Typically the number of header lines are 12. The fortran code only expects this many, however
+the cpp code can recognize and screen all headerline out automatically.
 
 ```
     [alpha]  [cz]   [cx]    [dummyval]      [cq]
