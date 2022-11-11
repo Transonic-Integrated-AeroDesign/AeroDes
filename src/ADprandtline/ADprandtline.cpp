@@ -9,10 +9,10 @@
 #include <sstream>  // istream
 #include <math.h>   // copysign
 #include <cstring>
-
 #include "config.hpp"
 
 #include "ADprandtline.hpp"
+#include "ADerror.hpp"
 
 #ifndef DBG
 #define DBG 0
@@ -115,10 +115,23 @@ ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr
 }
 
 ADprandtline::ADprandtline(int argc, char** argv, AD *adshr, ADinput &in) : ADvariables(adshr), ADmemory(adshr) {
-    lxx = in.JX;  // n discrete wing-span points
-    std::cout << " lxx = " << lxx << endl;
-    nxx = 10;   // n polars
-    nx = 1;     // start from 1 (0 = fuselage)
+//    lxx = in.JX;    // n discrete wing-span points
+//    nxx = 10;       // n polars
+//    nx = 1;         // start from 1 (0 = fuselage)
+//    std::cout << " lxx = " << lxx << endl;
+
+    try {
+        lxx = in.JX;    // n discrete wing-span points
+        nxx = 10;       // n polars
+        nx = 1;         // start from 1 (0 = fuselage)
+        std::cout << " lxx = " << lxx << endl;
+    } catch (ADerror *err) {
+        err->ADcatch(err);
+    }
+    catch (const std::exception& e) {
+        std::cout << " a standard exception was caught, with message '"
+                  << e.what() << "'\n";
+    }
 
     // initialize arrays
     c   = (double *) malloc(sizeof(double)*jxx);

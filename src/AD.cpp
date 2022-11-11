@@ -50,8 +50,6 @@ AD::AD(int argc, char** argv, ADinput &in) : mem(NULL), prandtl(NULL), wk(NULL),
     canary = new ADcanareq(argc, argv, this);
     out = new ADoutput(argc, argv, this);
 
-    std::cout << " JX = " << in.JX << endl;
-
     mem->create_1d_double_array(jxx, alr);
     mem->create_1d_double_array(jxx, ald);
     mem->create_1d_double_array(jxx, cl_al);

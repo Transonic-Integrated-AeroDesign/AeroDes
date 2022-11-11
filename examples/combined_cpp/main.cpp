@@ -8,11 +8,7 @@
 #include <string>
 #include <stdio.h>
 
-#include "AD.hpp"           // essential class header
-#include "ADprandtline.hpp" // essential class header
-#include "ADwake.hpp"       // essential class header
-#include "ADcanareq.hpp"    // essential class header
-#include "ADinput.hpp"      // essential class header
+#include "AD.hpp"   // static aerodes library
 
 /*
  *  compile(on mac os x):
@@ -20,7 +16,7 @@
  *      g++ -o test -laerolib test.cpp -w
  *
  *  compile(on linux):
- *      g++ -o test main.cpp -laerolib
+ *      g++ -static -L/usr/local/lib -I/usr/local/lib main.cpp -ladlib -lad_pran -lad_wake -lad_canary
  *
  *  leak checking (on mac os x):
  *      leaks -atExit -- ./test

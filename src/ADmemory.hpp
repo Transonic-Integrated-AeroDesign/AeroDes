@@ -8,9 +8,9 @@
 #include <cstdlib>
 #include "ADvariables.hpp"
 
-//#ifndef DBG
-//#define DBG 0
-//#endif
+#ifndef DBG
+#define DBG 0
+#endif
 
 class ADmemory : virtual public ADvariables {
 public:

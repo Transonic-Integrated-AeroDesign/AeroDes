@@ -1,41 +1,43 @@
-#[[
-if(USE_PRANDTLINE)
-    add_subdirectory(ADprandtline)
-    list(APPEND EXTRA_LIBS ADprandtline)
-endif()
-]]
+# ADD LIBRARY: vlib
+add_library(vlib ADvariables.hpp)
+set_target_properties(vlib PROPERTIES LINKER_LANGUAGE CXX)
 
-add_library(aerolib SHARED
-        AD.cpp
-        AD.hpp
-        ADinput.hpp
-        ADoutput.cpp
-        ADoutput.hpp
-        ADvariables.hpp
-        ADmemory.hpp
-        propulsion/cfmactu.cpp
-        ADprandtline/ADprandtline.cpp
-        ADcanareq/ADcanareq.cpp
-        ADwake/ADwake.cpp)
+# ADD LIBRARY: inlib
+add_library(inlib ADinput.hpp)
+set_target_properties(inlib PROPERTIES LINKER_LANGUAGE CXX)
 
-# assign target info after adding library
-set_target_properties(aerolib PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(aerolib PROPERTIES SOVERSION 1)
+# ADD LIBRARY: memlib
+add_library(memlib ADmemory.hpp)
+set_target_properties(memlib PROPERTIES LINKER_LANGUAGE CXX)
 
-set_target_properties(aerolib PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION 1
-        PUBLIC_HEADER "AD.hpp;ADinput.hpp;ADoutput.hpp;ADmemory.hpp;ADvariables.hpp;ADprandtline/ADprandtline.hpp;ADcanareq/ADcanareq.hpp;ADwake/ADwake.hpp;ADwake/config.hpp")
+# ADD LIBRARY: errlib
+add_library(errlib ADerror.hpp)
+set_target_properties(errlib PROPERTIES LINKER_LANGUAGE CXX)
 
-# configure a header file to pass the version number only
-target_include_directories(aerolib PRIVATE .)
+# ADD LIBRARY: ad_pran, ad_wake, ad_canary
+add_subdirectory(ADprandtline)
+add_subdirectory(ADwake)
+add_subdirectory(ADcanareq)
 
-include_directories("${CMAKE_SOURCE_DIR}/src"
-        "${CMAKE_SOURCE_DIR}/src/ADprandtline"
-        "${CMAKE_SOURCE_DIR}/src/ADcanareq"
-        "${CMAKE_SOURCE_DIR}/src/ADwake")
+# CREATED AERODES SHARED LIBRARY
+add_library(adlib STATIC AD.cpp;ADoutput.cpp)
+target_sources(adlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/AD.hpp") # HEADER FILES
+target_include_directories(adlib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-#install(TARGETS aerolib DESTINATION bin
-install(TARGETS aerolib
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+target_link_libraries(adlib vlib inlib memlib errlib ad_pran ad_wake ad_canary)
+
+install(TARGETS adlib
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(TARGETS ad_pran
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(TARGETS ad_wake
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(TARGETS ad_canary
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
