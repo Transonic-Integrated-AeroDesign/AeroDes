@@ -9,6 +9,7 @@
 #include <sstream>  // istream
 #include <math.h>   // copysign
 #include <cstring>
+#include <assert.h>
 #include "config.hpp"
 
 #include "ADprandtline.hpp"
@@ -115,12 +116,8 @@ ADprandtline::ADprandtline(int argc, char** argv, AD *adshr) : ADvariables(adshr
 }
 
 ADprandtline::ADprandtline(int argc, char** argv, AD *adshr, ADinput &in) : ADvariables(adshr), ADmemory(adshr) {
-//    lxx = in.JX;    // n discrete wing-span points
-//    nxx = 10;       // n polars
-//    nx = 1;         // start from 1 (0 = fuselage)
-//    std::cout << " lxx = " << lxx << endl;
-
     try {
+        assert(in.JX!=NULL);
         lxx = in.JX;    // n discrete wing-span points
         nxx = 10;       // n polars
         nx = 1;         // start from 1 (0 = fuselage)

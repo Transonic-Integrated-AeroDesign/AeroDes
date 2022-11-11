@@ -16,7 +16,10 @@ public:
     int line;
 
     void ADcatch(ADerror *err) {
-        std::cout << "ERROR:" << err->message << "\n in file " << err->file << " at line \n" << err->line;
+        // VERBOSE
+//        std::cout << "ERROR:" << err->message << "\n in file " << err->file << " at line \n" << err->line;
+        // SHORTER
+        std::cout << "ERROR: \n in file " << err->file << " at line \n" << err->line;
         exit(1);
     }
 };

@@ -18,6 +18,10 @@
  *  compile(on linux):
  *      g++ -static -L/usr/local/lib -I/usr/local/lib main.cpp -ladlib -lad_pran -lad_wake -lad_canary
  *
+ * or (short version)
+ *
+ *      g++ -o test main.cpp -ladlib -lad_pran -lad_wake -lad_canary
+ *
  *  leak checking (on mac os x):
  *      leaks -atExit -- ./test
  *
@@ -28,6 +32,7 @@
 struct input : ADinput {
     input() {
         JX = 121;         // jx number of points along wing span (<202)
+//        NP = 2;           // number of polars
         ITX = 1000;       // itx maximum number of iterations
         OMEGA = 0.2;      // omega relaxation factor
         AVIS = 0.0;       // avis viscosity coefficient
@@ -55,7 +60,6 @@ struct input : ADinput {
 };
 
 int main(int argc, char** argv) {
-
     input *in = new input;
     AD *aero = new AD(argc, argv, in[0]);    // create new aero object
 
