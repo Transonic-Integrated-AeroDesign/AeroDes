@@ -1,35 +1,72 @@
 #include <cstdlib>
 #include <cstdio>
 #include <vector>
-#include <iostream> // std
-#include <iomanip>  // setw
-#include <sstream>  // istream
-#include <fstream>  // fopen, ifstream
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <fstream>
 #include <string>
-#include <stdio.h>  // strcpy
+#include <stdio.h>
 
-#include "AD.hpp"
-#include "ADprandtline.hpp"
-#include "ADwake.hpp"
-#include "ADcanareq.hpp"
+#include "AD.hpp"   // static aerodes library
 
 /*
  *  compile(on mac os x):
- *      g++ -o test -laerolib main.cpp
+ *      g++ -o test -laerolib test.cpp
+ *      g++ -o test -laerolib test.cpp -w
  *
  *  compile(on linux):
- *      g++ -o test main.cpp -laerolib
+ *      g++ -static -L/usr/local/lib -I/usr/local/lib main.cpp -ladlib -lad_pran -lad_wake -lad_canary
+ *
+ * or (short version)
+ *
+ *      g++ -o test main.cpp -ladlib -lad_pran -lad_wake -lad_canary
+ *
+ *  leak checking (on mac os x):
+ *      leaks -atExit -- ./test
  *
  *  run:
  *      ./test
  */
 
-int main(int argc, char** argv) {
-    AD *aero = new AD(argc, argv);    // create new aero object
+struct input : ADinput {
+    input() {
+        JX = 121;         // jx number of points along wing span (<202)
+//        NP = 2;           // number of polars
+        ITX = 1000;       // itx maximum number of iterations
+        OMEGA = 0.2;      // omega relaxation factor
+        AVIS = 0.0;       // avis viscosity coefficient
+        B = 36.0;         // B wing span (m)
+        CX0 = 39.0;       // Cx0 root chord of wing or fuselage length (m)
+        LAMBD = 0.0;      // Lambd a.c. sweep angle (deg)
+        RSTR0 = 5.4;      // Rstr0 half strake span (m)
+        RF0 = 2.0;        // Rf0 diameter of fuselage (m)
+        DM = 0.0;         // dm relative camber of wing (ref.=C)
+        TM = 0.;          // tm setting angle at root (typically zero)
+        IWING = 2;        // iwing elliptic/rectangular/general shape/0/1/2
+        ALPHAD = 0.0;     // alphad geometric incidence (deg)
+        ACWASH = 0;       // acwash  reference (-1 rd) downwash of canard on main wing
+        RHO = 1.2;        // Rho air density (kg/m**3)
+        VINF = 100.;      // Vinf  wind velocity (m/s)
+        AMU = 0.0000181;  // Amu dynamic viscosity (kg/(m*s))
+        IVIS = 1;         // do you want to introduce viscous effects? Y/N=1/0
 
-    //
-    // ADprandtline scheme
-    //
+        IPOLAR = 1;       // do you want to use polar data? Y/N=1/0
+
+        ALPHAIN = 0;      // initial angle
+        ALPHAFI = 0;      // final angle
+        ALPHASTEP = 0;    // increment in angle
+    }
+};
+
+int main(int argc, char** argv) {
+    input *in = new input;
+    AD *aero = new AD(argc, argv, in[0]);    // create new aero object
+
+/*
+    // =============
+    // ADprandtline
+    // =============
     aero->prandtl->readInputParams("prandtline.data");
     aero->prandtl->readInputPolarMulti("wing_polarbl.dat"); // reads multiple polar within single file for main wing geometry (3 polars)
     aero->prandtl->setMesh();                                       // set wing discritization // initialize all arrays to 0
@@ -73,7 +110,9 @@ int main(int argc, char** argv) {
         aero->canary->nonlinearModel(); // solve for alpha, V, beta
         aero->canary->outputEquilibrium2JSON(filename);
     }
+    */
 
+    delete in;
     delete aero;
     return 1;
 }

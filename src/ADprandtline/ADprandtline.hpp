@@ -2,8 +2,8 @@
  * ©2022 The Regents of the University of California.  All rights reserved.
  */
 
-#ifndef PRANDTLINE_H
-#define PRANDTLINE_H
+#ifndef PRANDTLINE_HPP
+#define PRANDTLINE_HPP
 
 #include <cstdlib>
 #include <cstdio>
@@ -16,10 +16,12 @@
 
 #include "ADvariables.hpp"
 #include "ADmemory.hpp"
+#include "ADerror.hpp"
 
 class ADprandtline : virtual public ADvariables, virtual public ADmemory {
 public:
     ADprandtline(int argc, char** argv, AD *);
+    ADprandtline(int argc, char** argv, AD *, ADinput &);
     ~ADprandtline();
 
     // inputs
