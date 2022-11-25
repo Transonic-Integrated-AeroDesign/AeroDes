@@ -6,6 +6,7 @@ project(aerolib VERSION 1.0.1 DESCRIPTION "open source aero design")
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_FLAGS "-fPIC")
 
 # should we use debug mode
 option(DBG "debug mode" OFF)

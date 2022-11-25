@@ -15,11 +15,13 @@
  *      g++ -o test -laerolib test.cpp
  *      g++ -o test -laerolib test.cpp -w
  *
- *  compile(on linux):
+ *  compile shared (on linux):
+ *      g++ -o test main.cpp -laerodes
+ *
+ *  compile static (on linux):
  *      g++ -static -L/usr/local/lib -I/usr/local/lib main.cpp -ladlib -lad_pran -lad_wake -lad_canary
  *
- * or (short version)
- *
+ *      or (short version)
  *      g++ -o test main.cpp -ladlib -lad_pran -lad_wake -lad_canary
  *
  *  leak checking (on mac os x):

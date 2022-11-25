@@ -19,12 +19,14 @@ add_subdirectory(ADprandtline)
 add_subdirectory(ADwake)
 add_subdirectory(ADcanareq)
 
-# CREATED AERODES SHARED LIBRARY
+# CREATE AERODES STATIC LIBRARY
 add_library(adlib STATIC AD.cpp;ADoutput.cpp)
 target_sources(adlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/AD.hpp") # HEADER FILES
-target_include_directories(adlib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(adlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(adlib vlib inlib memlib errlib ad_pran ad_wake ad_canary)
+# CREATE AERODES OBJECT
+add_library(ad_obj OBJECT AD.cpp;ADoutput.cpp;ADerror.hpp)
+target_link_libraries(ad_obj vlib adlib errlib)
 
 install(TARGETS adlib
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -39,5 +41,11 @@ install(TARGETS ad_wake
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(TARGETS ad_canary
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# CREATE AERODES SHARED LIBRARY
+add_library(aerodes SHARED $<TARGET_OBJECTS:ad_obj> $<TARGET_OBJECTS:ad_pran_obj> $<TARGET_OBJECTS:ad_wake_obj> $<TARGET_OBJECTS:ad_canary_obj>)
+install(TARGETS aerodes
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
