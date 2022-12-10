@@ -1,18 +1,19 @@
 # ADD LIBRARY: vlib
-add_library(vlib ADvariables.hpp)
-set_target_properties(vlib PROPERTIES LINKER_LANGUAGE CXX)
+#add_library(vlib ADvariables.hpp)
+#set_target_properties(vlib PROPERTIES LINKER_LANGUAGE CXX)
+#target_include_directories(vlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # ADD LIBRARY: inlib
-add_library(inlib ADinput.hpp)
-set_target_properties(inlib PROPERTIES LINKER_LANGUAGE CXX)
+#add_library(inlib ADinput.hpp)
+#set_target_properties(inlib PROPERTIES LINKER_LANGUAGE CXX)
 
 # ADD LIBRARY: memlib
-add_library(memlib ADmemory.hpp)
-set_target_properties(memlib PROPERTIES LINKER_LANGUAGE CXX)
+#add_library(memlib ADmemory.hpp)
+#set_target_properties(memlib PROPERTIES LINKER_LANGUAGE CXX)
 
 # ADD LIBRARY: errlib
-add_library(errlib ADerror.hpp)
-set_target_properties(errlib PROPERTIES LINKER_LANGUAGE CXX)
+#add_library(errlib ADerror.hpp)
+#set_target_properties(errlib PROPERTIES LINKER_LANGUAGE CXX)
 
 # ADD LIBRARY: ad_pran, ad_wake, ad_canary
 add_subdirectory(ADprandtline)
@@ -23,10 +24,13 @@ add_subdirectory(ADcanareq)
 add_library(adlib STATIC AD.cpp;ADoutput.cpp)
 target_sources(adlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/AD.hpp") # HEADER FILES
 target_include_directories(adlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(adlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ADprandtline/)
+target_include_directories(adlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ADcanareq/)
+target_include_directories(adlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ADwake/)
 
 # CREATE AERODES OBJECT
 add_library(ad_obj OBJECT AD.cpp;ADoutput.cpp;ADerror.hpp)
-target_link_libraries(ad_obj vlib adlib errlib)
+target_link_libraries(ad_obj adlib)
 
 install(TARGETS adlib
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
