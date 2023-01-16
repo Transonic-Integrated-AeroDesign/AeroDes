@@ -1,4 +1,13 @@
-# Transfer of information
+# Developer Notes
+
+## 1. File Names
+
+Here are a few notational rules to follow when creating new source files.
+
+Core source-files should follow this naming convention, ```AD*.cpp```.
+
+
+## 2. Transfer of information
 
 Please commit this list of variables to memory and their definitions.
 

@@ -8,7 +8,7 @@
 #include <string>
 #include <stdio.h>
 
-#include "AD.hpp"   // static aerodes library
+#include "AD.hpp"   // aerodes library
 
 /*
  *  compile(on mac os x):
@@ -16,13 +16,7 @@
  *      g++ -o test -laerolib test.cpp -w
  *
  *  compile shared (on linux):
- *      g++ -o test main.cpp -laerodes
- *
- *  compile static (on linux):
- *      g++ -static -L/usr/local/lib -I/usr/local/lib main.cpp -ladlib -lad_pran -lad_wake -lad_canary
- *
- *      or (short version)
- *      g++ -o test main.cpp -ladlib -lad_pran -lad_wake -lad_canary
+ *      g++ -o test main.cpp -laerolib
  *
  *  leak checking (on mac os x):
  *      leaks -atExit -- ./test

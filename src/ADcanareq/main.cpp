@@ -13,7 +13,7 @@
 
 //#include "ADvariables.hpp"
 //#include "ADwake.hpp"
-#include "ADcanareq.hpp"
+#include "../ADcanareq.hpp"
 
 /*
  * compile for acceleration:

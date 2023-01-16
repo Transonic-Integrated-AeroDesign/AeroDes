@@ -2,29 +2,8 @@
  * ©2022 The Regents of the University of California.  All rights reserved.
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <vector>
-#include <iostream> // std
-#include <iomanip>  // setw
-#include <fstream>  // fopen
-#include <string>
-#include <math.h>   // pow
-
-#include "../ADwake.hpp"
-
-/*
- * compile:
- * 	g++ -Xpreprocessor -fopenmp -framework Accelerate -o test main.cpp algorithmic.cpp
- * 	g++ -o test main.cpp ADwake.cpp
- *  ./test -in ADwake.data
- *
- *  leak check (linux):
- *	    valgrind --leak-check=yes ADwake
- *
- *  leak check (mac os x)
- *      leaks -atExit -- ADwake
- */
+#include "AD.hpp"
+#include "ADwake.hpp"
 
 using namespace std;
 

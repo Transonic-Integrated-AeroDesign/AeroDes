@@ -26,9 +26,6 @@
 
 using namespace std;
 
-// g++ AD.cpp -c
-// g++ -o test AD.cpp
-
 AD::AD(int argc, char** argv) : mem(NULL), prandtl(NULL), wk(NULL), canary(NULL) {
     mem = new ADmemory(this);
     prandtl = new ADprandtline(argc, argv, this);

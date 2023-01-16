@@ -1,0 +1,11 @@
+# These are some examples of commonly ignored file patterns.
+
+# ignore all files in directories named:
+build/
+cmake-build-debug/
+fortran/
+
+# Applications
+*.app
+*.exe
+*.war
