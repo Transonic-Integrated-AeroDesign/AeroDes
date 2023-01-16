@@ -12,12 +12,6 @@ set(CMAKE_CXX_FLAGS "-fPIC")
 option(DBG "debug mode" OFF)
 option(SHARED "compile shared libs" ON)
 
-if(DBG)
-    set(DBG_VALUE 1)
-endif()
-
-configure_file(config.hpp.in "${CMAKE_SOURCE_DIR}/src/config.hpp" @ONLY)
-
 # main source code
 add_subdirectory(src)
 list(APPEND EXTRA_LIBS ad_obj)
